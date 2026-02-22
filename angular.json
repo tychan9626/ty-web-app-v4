@@ -17,6 +17,7 @@
         "build": {
           "builder": "@angular/build:application",
           "options": {
+            "outputPath": "dist/ty-web-app-v4",
             "browser": "src/main.ts",
             "polyfills": [
               "zone.js"
