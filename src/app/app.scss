@@ -1,0 +1,7 @@
+@use '@angular/material' as mat;
+@include mat.all-component-densities(-3);
+
+html, body { 
+  height: 100%; 
+  margin: 0; 
+}
