@@ -1,0 +1,9 @@
+<div class="welcome-container">
+  <h1>Welcome to {{ appName }}!</h1>
+  <p>Today is {{ currentDate | date: "mediumDate" }}.</p>
+
+  <div class="info-list">
+    <p>App Version: {{ appVersion }}</p>
+    <p>Release Date: {{ versionDate | date: "mediumDate" }}</p>
+  </div>
+</div>

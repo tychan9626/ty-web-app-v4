@@ -3,26 +3,23 @@
       [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
       [mode]="(isHandset$ | async) ? 'over' : 'side'"
       [opened]="(isHandset$ | async) === false">
-    <mat-toolbar>後台管理系統</mat-toolbar>
+    <mat-toolbar>
+      <span routerLink="/welcome" style="cursor: pointer;">Jaxfr</span>
+    </mat-toolbar>
     
     <mat-nav-list>
-      <a mat-list-item routerLink="/dashboard">
-        <mat-icon matListItemIcon>dashboard</mat-icon>
-        <span matListItemTitle>總覽首頁</span>
-      </a>
-
       <mat-accordion displayMode="flat">
         <mat-expansion-panel class="mat-elevation-z0">
           <mat-expansion-panel-header collapsedHeight="48px" expandedHeight="48px">
             <mat-panel-title style="display: flex; align-items: center; gap: 8px;">
               <mat-icon>people</mat-icon>
-              <span>會員管理</span>
+              <span>User Management</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
           
           <mat-nav-list class="sub-menu">
-            <a mat-list-item routerLink="/users/list"><span matListItemTitle>會員列表</span></a>
-            <a mat-list-item routerLink="/users/roles"><span matListItemTitle>權限設定</span></a>
+            <a mat-list-item routerLink="/users/list"><span matListItemTitle>User List</span></a>
+            <a mat-list-item routerLink="/users/roles"><span matListItemTitle>Roles & Permissions</span></a>
           </mat-nav-list>
         </mat-expansion-panel>
       </mat-accordion>
@@ -32,12 +29,12 @@
           <mat-expansion-panel-header collapsedHeight="48px" expandedHeight="48px">
             <mat-panel-title style="display: flex; align-items: center; gap: 8px;">
               <mat-icon>settings</mat-icon>
-              <span>系統設定</span>
+              <span>System Settings</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
           
           <mat-nav-list class="sub-menu">
-            <a mat-list-item routerLink="/settings/general"><span matListItemTitle>一般設定</span></a>
+            <a mat-list-item routerLink="/settings/general"><span matListItemTitle>General Settings</span></a>
           </mat-nav-list>
         </mat-expansion-panel>
       </mat-accordion>
@@ -52,7 +49,7 @@
           <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
         </button>
       }
-      <span>頁面標題</span>
+      <span>Page Title</span>
     </mat-toolbar>
     
     <div class="p-4">

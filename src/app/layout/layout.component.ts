@@ -34,4 +34,5 @@ export class LayoutComponent {
       map(result => result.matches),
       shareReplay()
     );
+  
 }
