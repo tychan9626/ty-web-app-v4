@@ -1,0 +1,78 @@
+.sidenav-container {
+  height: 100%;
+  background-color: #ffffff;
+}
+
+.sidenav {
+  width: 260px;
+  background-color: var(--mat-sys-surface-container-low);
+}
+
+.sidenav .mat-toolbar {
+  background: inherit;
+}
+
+.mat-toolbar.mat-primary {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: var(--mat-sys-surface-container-low);
+  color: var(--mat-sys-on-surface);
+}
+
+mat-sidenav.sidenav.mat-drawer-side {
+  border-radius: 0;
+}
+
+.sub-menu {
+  padding-left: 16px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.toolbar-dynamic-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.user-profile-btn {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.avatar-icon {
+  font-size: 38px;
+  width: 38px;
+  height: 38px;
+  line-height: 44px;
+}
+
+.menu-user-info {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  outline: none;
+}
+
+.info-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--mat-sys-on-surface);
+}
+
+.info-role {
+  font-size: 12px;
+  color: var(--mat-sys-on-surface-variant);
+  margin-top: 4px;
+}
+
+.username-text {
+  font-size: 14px;
+  font-weight: 500;
+}

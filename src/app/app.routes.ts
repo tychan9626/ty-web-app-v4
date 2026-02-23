@@ -1,9 +1,9 @@
 import { Routes } from '@angular/router';
-import { LayoutComponent } from './layout/layout.component';
+import { LayoutComponent } from './layout/layout';
 
 export const routes: Routes = [{
     path: '', 
-    component: LayoutComponent, // 外殼
+    component: LayoutComponent,
     children: [
       {
         path: 'welcome',
