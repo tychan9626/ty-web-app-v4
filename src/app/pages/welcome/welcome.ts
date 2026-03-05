@@ -1,16 +1,23 @@
+import { Component, signal, computed } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
 import { APP_CONFIG } from '../../app.constants';
 
 @Component({
   selector: 'app-welcome',
+  standalone: true,
   imports: [DatePipe],
   templateUrl: './welcome.html',
   styleUrl: './welcome.scss',
 })
 export class Welcome {
-appName = APP_CONFIG.appName;
-  appVersion = `${APP_CONFIG.version.major}.${APP_CONFIG.version.minor}.${APP_CONFIG.version.patch}`;
-  versionDate = APP_CONFIG.versionDate;
-  currentDate = new Date();
+  appName = signal(APP_CONFIG.appName);
+  
+  versionDate = signal(APP_CONFIG.versionDate);
+  
+  currentDate = signal(new Date());
+
+  appVersion = computed(() => {
+    const { major, minor, patch } = APP_CONFIG.version;
+    return `${major}.${minor}.${patch}`;
+  });
 }

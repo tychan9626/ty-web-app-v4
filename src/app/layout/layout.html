@@ -3,9 +3,9 @@
     #drawer
     class="sidenav"
     fixedInViewport
-    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-    [mode]="(isHandset$ | async) ? 'over' : 'side'"
-    [opened]="(isHandset$ | async) === false"
+    [attr.role]="isHandset() ? 'dialog' : 'navigation'"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset()"
   >
     <mat-toolbar>
       <span routerLink="/welcome" style="cursor: pointer">Jaxfr</span>
@@ -14,47 +14,37 @@
     <mat-nav-list>
       <mat-accordion displayMode="flat">
         <mat-expansion-panel class="mat-elevation-z0">
-          <mat-expansion-panel-header
-            collapsedHeight="48px"
-            expandedHeight="48px"
-          >
-            <mat-panel-title
-              style="display: flex; align-items: center; gap: 8px"
-            >
+          <mat-expansion-panel-header collapsedHeight="48px" expandedHeight="48px">
+            <mat-panel-title style="display: flex; align-items: center; gap: 8px">
               <mat-icon>people</mat-icon>
               <span>User Management</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
 
           <mat-nav-list class="sub-menu">
-            <a mat-list-item routerLink="/users/list"
-              ><span matListItemTitle>User List</span></a
-            >
-            <a mat-list-item routerLink="/users/roles"
-              ><span matListItemTitle>Roles & Permissions</span></a
-            >
+            <a mat-list-item routerLink="/users/list">
+              <span matListItemTitle>User List</span>
+            </a>
+            <a mat-list-item routerLink="/users/roles">
+              <span matListItemTitle>Roles & Permissions</span>
+            </a>
           </mat-nav-list>
         </mat-expansion-panel>
       </mat-accordion>
 
       <mat-accordion displayMode="flat">
         <mat-expansion-panel class="mat-elevation-z0">
-          <mat-expansion-panel-header
-            collapsedHeight="48px"
-            expandedHeight="48px"
-          >
-            <mat-panel-title
-              style="display: flex; align-items: center; gap: 8px"
-            >
+          <mat-expansion-panel-header collapsedHeight="48px" expandedHeight="48px">
+            <mat-panel-title style="display: flex; align-items: center; gap: 8px">
               <mat-icon>settings</mat-icon>
               <span>System Settings</span>
             </mat-panel-title>
           </mat-expansion-panel-header>
 
           <mat-nav-list class="sub-menu">
-            <a mat-list-item routerLink="/settings/general"
-              ><span matListItemTitle>General Settings</span></a
-            >
+            <a mat-list-item routerLink="/settings/general">
+              <span matListItemTitle>General Settings</span>
+            </a>
           </mat-nav-list>
         </mat-expansion-panel>
       </mat-accordion>
@@ -63,19 +53,17 @@
 
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-      @if (isHandset$ | async) {
+      @if (isHandset()) {
         <button
           type="button"
-          aria-label="Toggle sidenav"
           mat-icon-button
           (click)="drawer.toggle()"
         >
-          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+          <mat-icon>menu</mat-icon>
         </button>
       }
 
       <div class="toolbar-dynamic-actions"></div>
-
       <span class="spacer"></span>
 
       <button
@@ -88,15 +76,15 @@
 
       <mat-menu #userProfileMenu="matMenu" xPosition="before">
         <div class="menu-user-info">
-          <span class="info-name">Admin User</span>
-          <span class="info-role">Super Administrator</span>
+          <span class="info-name">{{ displayName() }}</span>
+          <span class="info-role">{{ displayRole() }}</span>
         </div>
         <mat-divider></mat-divider>
         <button mat-menu-item>
           <mat-icon>person</mat-icon>
           <span>My Profile</span>
         </button>
-        <button mat-menu-item>
+        <button mat-menu-item (click)="onSignOut()">
           <mat-icon>logout</mat-icon>
           <span>Sign Out</span>
         </button>

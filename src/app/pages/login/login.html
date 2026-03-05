@@ -1,7 +1,7 @@
 <div class="login-container">
   <div class="login-content">
     <div class="login-header">
-      <h1>Sign in to {{ appName }}</h1>
+      <h1>Sign in to {{ appName() }}</h1>
       <p>Enter your details below to continue.</p>
     </div>
 
@@ -21,18 +21,17 @@
         <mat-label>Password</mat-label>
         <input
           matInput
-          [type]="hidePassword ? 'password' : 'text'"
+          [type]="hidePassword() ? 'password' : 'text'"
           formControlName="password"
           autocomplete="current-password"
         />
         <button
+          type="button"
           mat-icon-button
           matSuffix
           (click)="togglePasswordVisibility($event)"
-          [attr.aria-label]="'Hide password'"
-          [attr.aria-pressed]="hidePassword"
         >
-          <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+          <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
         </button>
         @if (loginForm.get('password')?.hasError('required')) {
           <mat-error>Password is required</mat-error>
@@ -47,7 +46,7 @@
         color="primary"
         type="submit"
         class="submit-button"
-        [disabled]="loginForm.invalid || isLoading"
+        [disabled]="loginForm.invalid || isLoading()"
       >
         Sign In
       </button>

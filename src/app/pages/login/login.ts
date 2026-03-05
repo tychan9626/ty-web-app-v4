@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { APP_CONFIG } from '../../app.constants';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -22,29 +22,34 @@ import { APP_CONFIG } from '../../app.constants';
 })
 export class Login {
   private fb = inject(FormBuilder);
-  private router = inject(Router);
+  private authService = inject(AuthService);
 
-  appName = APP_CONFIG.appName;
-  hidePassword = true;
-  isLoading = false;
+  appName = signal(APP_CONFIG.appName);
+  hidePassword = signal(true);
+  isLoading = signal(false);
 
-  loginForm: FormGroup = this.fb.group({
+  loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
-  togglePasswordVisibility(event: MouseEvent): void {
+  togglePasswordVisibility(event: MouseEvent) {
     event.preventDefault();
-    this.hidePassword = !this.hidePassword;
+    this.hidePassword.update(v => !v);
   }
 
-  onSubmit(): void {
-    if (this.loginForm.valid) {
-      this.isLoading = true;
-      setTimeout(() => {
-        this.isLoading = false;
-        this.router.navigate(['/welcome']);
-      }, 1000);
+  async onSubmit() {
+    if (this.loginForm.invalid) return;
+
+    this.isLoading.set(true);
+
+    try {
+      const { email, password } = this.loginForm.getRawValue();
+      await this.authService.login(email, password);
+    } catch (error) {
+      alert('Login failed. Please check your credentials.');
+    } finally {
+      this.isLoading.set(false);
     }
   }
 }
