@@ -12,6 +12,8 @@ import { MatDividerModule } from '@angular/material/divider';
 import { RouterModule } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { AuthService } from '../core/services/auth.service';
+import { DisplayNamePipe } from "../core/pipes/display-name.pipe";
+import { RoleLabelPipe } from "../core/pipes/role-label.pipe";
 
 @Component({
   selector: 'app-layout',
@@ -28,7 +30,9 @@ import { AuthService } from '../core/services/auth.service';
     MatMenuModule,
     MatDividerModule,
     RouterModule,
-  ],
+    DisplayNamePipe,
+    RoleLabelPipe
+],
 })
 export class Layout {
   private breakpointObserver = inject(BreakpointObserver);
@@ -41,8 +45,7 @@ export class Layout {
     { initialValue: false }
   );
 
-  displayName = this.authService.displayName;
-  displayRole = this.authService.displayRole;
+  userProfile = this.authService.userProfile;
 
   async onSignOut() {
     await this.authService.logout();

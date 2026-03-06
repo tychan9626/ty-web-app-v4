@@ -31,59 +31,8 @@ export class AuthService {
     });
   }
 
-  displayName = computed(() => {
-    const user = this.userProfile();
-    if (!user) return 'Unknown User';
-    const {
-      name_display_mode,
-      legal_first_name,
-      legal_middle_name,
-      legal_last_name,
-      preferred_first_name,
-      customized_display_name,
-      user_id,
-    } = user;
-    const buildName = (...parts: (string | null)[]) =>
-      parts.filter((p) => !!p).join(' ');
-    let name = '';
-    switch (name_display_mode) {
-      case 1:
-        name = buildName(legal_first_name, legal_middle_name, legal_last_name);
-        break;
-      case 2:
-        name = buildName(legal_last_name, legal_middle_name, legal_first_name);
-        break;
-      case 3:
-        name = buildName(
-          preferred_first_name,
-          legal_middle_name,
-          legal_last_name,
-        );
-        break;
-      case 4:
-        name = buildName(
-          legal_last_name,
-          legal_middle_name,
-          preferred_first_name,
-        );
-        break;
-      case 5:
-        name = customized_display_name || '';
-        break;
-      default:
-        name = customized_display_name || '';
-    }
-    return name || user_id || 'Unknown User';
-  });
-
-  displayRole = computed(() => {
-    const user = this.userProfile();
-    if (!user) return 'Guest';
-    const role = user.role;
-    if (role >= 998) return 'Super Admin';
-    if (role >= 900) return 'Admin';
-    return 'User';
-  });
+  isSuperAdmin = computed(() => (this.userProfile()?.role ?? 0) >= 998);
+  isAdmin = computed(() => (this.userProfile()?.role ?? 0) >= 900);
 
   private async fetchProfile(userId: string) {
     const { data, error } = await this.supabase

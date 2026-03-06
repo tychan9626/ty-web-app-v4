@@ -76,8 +76,8 @@
 
       <mat-menu #userProfileMenu="matMenu" xPosition="before">
         <div class="menu-user-info">
-          <span class="info-name">{{ displayName() }}</span>
-          <span class="info-role">{{ displayRole() }}</span>
+          <span class="info-name">{{ userProfile() | tyDisplayName }}</span>
+          <span class="info-role">{{ userProfile()?.role | tyRoleLabel }}</span>
         </div>
         <mat-divider></mat-divider>
         <button mat-menu-item>
