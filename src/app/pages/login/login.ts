@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { APP_CONFIG } from '../../app.constants';
 import { AuthService } from '../../core/services/auth.service';
 
@@ -15,7 +16,8 @@ import { AuthService } from '../../core/services/auth.service';
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule
+    MatIconModule,
+    MatSnackBarModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
@@ -23,6 +25,7 @@ import { AuthService } from '../../core/services/auth.service';
 export class Login {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
+  private snack = inject(MatSnackBar);
 
   appName = signal(APP_CONFIG.appName);
   hidePassword = signal(true);
@@ -46,8 +49,8 @@ export class Login {
     try {
       const { email, password } = this.loginForm.getRawValue();
       await this.authService.login(email, password);
-    } catch (error) {
-      alert('Login failed. Please check your credentials.');
+    } catch (e: any) {
+      this.snack.open(e.message, 'OK', { duration: 5000 });
     } finally {
       this.isLoading.set(false);
     }
