@@ -1,0 +1,143 @@
+$white: #ffffff;
+$slate-200: #e2e8f0;
+$slate-500: #64748b;
+$slate-900: #0f172a;
+$blue-600: #2563eb;
+
+.user-list-view {
+  background-color: $white;
+  min-height: 100vh;
+  padding: 48px 32px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+.page-header {
+  margin-bottom: 40px;
+  
+  .header-main {
+    min-height: 64px; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+
+  h1 { 
+    font-size: 24px; 
+    font-weight: 500; 
+    color: $slate-900; 
+    margin: 0 0 4px 0;
+    line-height: 1.2;
+  }
+
+  .meta-info {
+    position: relative;
+    height: 20px;
+    display: flex;
+    align-items: center;
+
+    .user-count {
+      font-size: 14px;
+      color: $slate-500;
+      line-height: 20px;
+      transition: opacity 0.2s ease;
+      
+      &.hidden {
+        opacity: 0;
+      }
+    }
+
+    .header-spinner {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+    }
+  }
+}
+
+  .table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-top: 1px solid $slate-200;
+  }
+
+  .clean-table {
+    width: 100%;
+    background: $white;
+    min-width: 600px;
+    border-collapse: collapse;
+
+    .mat-mdc-header-cell {
+      color: $slate-500;
+      font-weight: 400;
+      font-size: 12px;
+      text-transform: uppercase;
+      padding: 20px 0;
+      border-bottom: 1px solid $slate-200;
+    }
+
+    .mat-mdc-cell {
+      padding: 24px 0;
+      border-bottom: 1px solid $slate-200;
+    }
+
+    .user-row:hover {
+      background-color: #fbfcfe;
+    }
+
+    .user-cell {
+      display: flex;
+      flex-direction: column;
+      padding-right: 16px;
+      .name-text {
+        font-size: 15px;
+        color: $slate-900;
+        white-space: nowrap;
+      }
+      .id-text {
+        font-size: 12px;
+        color: #cbd5e1;
+        margin-top: 4px;
+      }
+    }
+
+    .role-tag {
+      font-size: 12px;
+      color: $slate-500;
+      background-color: #f8fafc;
+      padding: 4px 10px;
+      border-radius: 4px;
+      border: 1px solid $slate-200;
+      white-space: nowrap;
+    }
+
+    .edit-action {
+      color: $blue-600;
+      text-decoration: none;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .user-list-view {
+    padding: 24px 16px;
+
+    .clean-table {
+      min-width: 500px;
+
+      .mat-mdc-cell,
+      .mat-mdc-header-cell {
+        padding: 16px 8px;
+      }
+
+      .desktop-only {
+        display: none;
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase.service';
-import { TyappUser } from '../models/user.model';
+import { TyappUser } from '../../features/user/models/user.model';
 
 @Injectable({
   providedIn: 'root',

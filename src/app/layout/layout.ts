@@ -46,6 +46,7 @@ export class Layout {
   );
 
   userProfile = this.authService.userProfile;
+  isAdmin = this.authService.isAdmin;
 
   async onSignOut() {
     await this.authService.logout();

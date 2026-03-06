@@ -1,9 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { TyappUser } from '../models/user.model';
+import { TyappUser } from '../../features/user/models/user.model';
 
 @Pipe({
   name: 'tyDisplayName',
   standalone: true,
+  pure: false
 })
 export class DisplayNamePipe implements PipeTransform {
   transform(user: TyappUser | null | undefined): string {

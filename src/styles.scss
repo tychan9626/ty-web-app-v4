@@ -1,12 +1,16 @@
 @use "@angular/material" as mat;
 
 html {
-  @include mat.theme((color: (primary: mat.$azure-palette,
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
         tertiary: mat.$blue-palette,
       ),
       typography: Roboto,
       density: 0,
-    ));
+    )
+  );
 }
 
 body {
@@ -25,4 +29,17 @@ body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+
+.mat-mdc-snack-bar-container.error-snackbar {
+  --mdc-snackbar-container-color: #fef2f2;
+  --mdc-snackbar-supporting-text-color: #991b1b;
+  border: 1px solid #fee2e2;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #ffffff;
+  --mdc-snackbar-supporting-text-color: #333333;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }

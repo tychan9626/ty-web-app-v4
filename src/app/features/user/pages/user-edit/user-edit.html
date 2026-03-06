@@ -1,0 +1,78 @@
+<div class="edit-view-container">
+  @if (user(); as u) {
+    <div class="form-width-limit">
+      <header class="view-header">
+        <div class="nav-back">
+          <button mat-icon-button routerLink="/users/list">
+            <mat-icon>west</mat-icon>
+          </button>
+          <h1>Edit User Settings</h1>
+        </div>
+      </header>
+
+      <section class="preview-section">
+        <span class="label">Resulting Display</span>
+        <div class="name-display">{{ u | tyDisplayName }}</div>
+      </section>
+
+      <div class="edit-form-content">
+        <div class="section-group">
+          <h3 class="group-title">Legal Identity</h3>
+          <div class="input-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>First Name</mat-label>
+              <input matInput [(ngModel)]="u.legal_first_name" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Middle Name</mat-label>
+              <input matInput [(ngModel)]="u.legal_middle_name" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Last Name</mat-label>
+              <input matInput [(ngModel)]="u.legal_last_name" />
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="section-group">
+          <h3 class="group-title">Preferences & Authority</h3>
+          <div class="input-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Display Mode</mat-label>
+              <mat-select [(ngModel)]="u.name_display_mode">
+                @for (mode of availableModes; track mode) {
+                  <mat-option [value]="mode">{{
+                    mode | tyDisplayNameMode
+                  }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>System Role</mat-label>
+              <mat-select [(ngModel)]="u.role">
+                @for (r of availableRoles; track r) {
+                  <mat-option [value]="r">{{ r | tyRoleLabel }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <footer class="form-footer">
+          <button
+            mat-button
+            class="save-btn"
+            (click)="onSave()"
+            [disabled]="isSaving()"
+          >
+            {{ isSaving() ? "Saving Changes..." : "Save Updates" }}
+          </button>
+          <button mat-button class="cancel-btn" routerLink="/users/list">
+            Discard
+          </button>
+        </footer>
+      </div>
+    </div>
+  }
+</div>
