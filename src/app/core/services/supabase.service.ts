@@ -6,30 +6,21 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class SupabaseService {
-  private zone = inject(NgZone);
-  private instance?: SupabaseClient;
-
-  get client(): SupabaseClient {
-    if (this.instance) return this.instance;
-
-    this.instance = this.zone.runOutsideAngular(() =>
-      createClient(
-        environment.supabaseUrl,
-        environment.supabaseKey,
-        {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            storageKey: 'jaxfr-v1-storage',
-            detectSessionInUrl: false,
-            lock: async (name, timeout, callback) => {
-              return await callback();
-            }
-          }
+  private readonly zone = inject(NgZone);
+  
+  public readonly client: SupabaseClient = this.zone.runOutsideAngular(() => 
+    createClient(
+      environment.supabaseUrl,
+      environment.supabaseKey,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          storageKey: 'jaxfr-v1-storage',
+          detectSessionInUrl: false,
+          lock: async (_, __, callback) => await callback(),
         }
-      )
-    );
-
-    return this.instance;
-  }
+      }
+    )
+  );
 }

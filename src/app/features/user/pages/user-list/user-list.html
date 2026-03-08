@@ -1,57 +1,55 @@
-<div class="user-list-view">
-<header class="page-header">
-    <div class="header-main">
-      <h1>User Management</h1>
-      <div class="meta-info">
-        <span class="user-count" [class.hidden]="userService.loading()">
-          {{ userService.users().length }} users total
-        </span>
-        
-        @if (userService.loading()) {
-          <div class="header-spinner">
-            <mat-spinner diameter="16"></mat-spinner>
-          </div>
-        }
-      </div>
-    </div>
-  </header>
+<ng-template #navActions>
+  <button
+    matButton="elevated"
+    (click)="onRefresh()"
+    [disabled]="userService.loading()"
+  >
+    <mat-icon [class.spinning]="userService.loading()">refresh</mat-icon>
+    <span>Refresh</span>
+  </button>
+  <button
+    matButton="elevated"
+    (click)="onExport()"
+    [disabled]="userService.loading() || userService.users().length === 0"
+  >
+    <mat-icon>download</mat-icon>
+    <span>Export CSV</span>
+  </button>
+</ng-template>
 
-  <div class="table-responsive-wrapper">
-    <table mat-table [dataSource]="userService.users()" class="clean-table">
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>Identity</th>
-        <td mat-cell *matCellDef="let user">
-          <div class="user-cell">
+<div class="user-management-view">
+  <div class="list-container">
+    @for (user of userService.users(); track user.user_id) {
+      <a class="user-item-link" [routerLink]="['../edit', user.user_id]">
+        <div class="item-content">
+          <div class="identity-group">
             <span class="name-text">{{ user | tyDisplayName }}</span>
             <span class="id-text desktop-only">{{ user.user_id }}</span>
           </div>
-        </td>
-      </ng-container>
 
-      <ng-container matColumnDef="role">
-        <th mat-header-cell *matHeaderCellDef>Access Level</th>
-        <td mat-cell *matCellDef="let user">
-          <span class="role-tag" [attr.data-role]="user.role">
-            {{ user.role | tyRoleLabel }}
-          </span>
-        </td>
-      </ng-container>
-
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef></th>
-        <td mat-cell *matCellDef="let user" class="action-cell">
-          <a class="edit-action" [routerLink]="['../edit', user.user_id]"
-            >Manage</a
-          >
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr
-        mat-row
-        *matRowDef="let row; columns: displayedColumns"
-        class="user-row"
-      ></tr>
-    </table>
+          <div class="status-group">
+            <span class="role-text">{{ user.role | tyRoleLabel }}</span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      @if (!userService.loading()) {
+        <div class="empty-placeholder">No users found.</div>
+      }
+    }
   </div>
+
+  <footer
+    class="list-footer"
+    [hidden]="userService.loading() || userService.users().length === 0"
+  >
+    <div class="divider"></div>
+    <span class="count-text"
+      >TOTAL {{ userService.users().length }} MEMBERS</span
+    >
+    @if (userService.loading()) {
+      <mat-spinner diameter="16"></mat-spinner>
+    }
+  </footer>
 </div>

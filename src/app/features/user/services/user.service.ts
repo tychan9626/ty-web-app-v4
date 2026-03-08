@@ -1,8 +1,8 @@
-import { Injectable, inject, signal } from "@angular/core";
-import { MatSnackBar } from "@angular/material/snack-bar";
-import { AuthService } from "../../../core/services/auth.service";
-import { SupabaseService } from "../../../core/services/supabase.service";
-import { TyappUser } from "../models/user.model";
+import { Injectable, inject, signal } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AuthService } from '../../../core/services/auth.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
+import { TyappUser } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -13,22 +13,33 @@ export class UserService {
   users = signal<TyappUser[]>([]);
   loading = signal(false);
 
-  async fetchAllUsers() {
-    this.loading.set(true);
-    const { data, error } = await this.supabase
-      .from('tyapp_user')
-      .select('*')
-      .order('created_at', { ascending: false });
+  private initialized = false;
 
-    if (error) {
-      this.showError('Fetch Failed', error.message);
-    } else if (data) {
-      this.users.set(data as TyappUser[]);
+  async fetchAllUsers(forceRefresh = false) {
+    if (this.loading() || (this.initialized && !forceRefresh)) return;
+
+    this.loading.set(true);
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_user')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      this.users.set(data || []);
+      this.initialized = true;
+    } catch (error) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  this.showError('Fetch Failed', errorMessage);
+} finally {
+      this.loading.set(false);
     }
-    this.loading.set(false);
   }
 
-  async updateUser(userId: string, updates: Partial<TyappUser>) {
+  async updateUser(
+    userId: string,
+    updates: Partial<TyappUser>,
+  ): Promise<boolean> {
     const { data, error } = await this.supabase
       .from('tyapp_user')
       .update(updates)
@@ -41,28 +52,25 @@ export class UserService {
       return false;
     }
 
-    if (data) {
-      const updatedUser = data as TyappUser;
+    const updatedUser = data as TyappUser;
+    if (!updatedUser) return false;
+    
+    this.users.update((list) =>
+      list.map((u) => (u.user_id === userId ? updatedUser : u)),
+    );
 
-      // 1. 更新管理清單中的 Signal
-      this.users.update(list => list.map(u => u.user_id === userId ? updatedUser : u));
-
-      // 2. 【核心修正】：如果改的是自己，同步更新 AuthService 的 profile
-      // 這樣 Navbar (Layout) 就會即時變動
-      if (userId === this.authService.userProfile()?.user_id) {
-        this.authService.userProfile.set(updatedUser);
-      }
-
-      this.snackBar.open('Profile updated successfully', 'OK', { duration: 3000 });
-      return true;
+    if (userId === this.authService.userProfile()?.user_id) {
+      this.authService.updateLocalProfile(updatedUser);
     }
-    return false;
+
+    this.snackBar.open('Updated successfully', 'OK', { duration: 3000 });
+    return true;
   }
 
   private showError(title: string, message: string) {
     this.snackBar.open(`${title}: ${message}`, 'Close', {
-      panelClass: ['error-snackbar'], // 可在 global css 自訂樣式
-      duration: 5000
+      panelClass: ['error-snackbar'],
+      duration: 5000,
     });
   }
 }

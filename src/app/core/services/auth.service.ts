@@ -1,38 +1,40 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase.service';
-import { TyappUser } from '../../features/user/models/user.model';
+import { TyappUser, USER_ROLES } from '../../features/user/models/user.model';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class AuthService {
   private supabase = inject(SupabaseService).client;
   private router = inject(Router);
 
-  userProfile = signal<TyappUser | null>(null);
+  private _userProfile = signal<TyappUser | null>(null);
+  public userProfile = this._userProfile.asReadonly();
+
+  isSuperAdmin = computed(
+    () => (this.userProfile()?.role ?? 0) >= USER_ROLES.SUPER_ADMIN,
+  );
+  isAdmin = computed(() => (this.userProfile()?.role ?? 0) >= USER_ROLES.ADMIN);
+  isAuthenticated = computed(() => !!this.userProfile());
 
   async init(): Promise<void> {
     const {
       data: { session },
     } = await this.supabase.auth.getSession();
-
-    if (session?.user) {
-      await this.fetchProfile(session.user.id);
-    }
+    if (session?.user) await this.fetchProfile(session.user.id);
 
     this.supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (
+        (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
+        session?.user
+      ) {
         await this.fetchProfile(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        this.userProfile.set(null);
+        this._userProfile.set(null);
         this.router.navigate(['/login']);
       }
     });
   }
-
-  isSuperAdmin = computed(() => (this.userProfile()?.role ?? 0) >= 998);
-  isAdmin = computed(() => (this.userProfile()?.role ?? 0) >= 900);
 
   private async fetchProfile(userId: string) {
     const { data, error } = await this.supabase
@@ -40,24 +42,28 @@ export class AuthService {
       .select('*')
       .eq('user_id', userId)
       .single();
-    if (!error && data) {
-      this.userProfile.set(data as TyappUser);
+
+    if (error) {
+      console.error('Fetch Profile Error:', error.message);
+      return;
     }
+    this._userProfile.set(data as TyappUser);
   }
 
   async login(email: string, pass: string) {
-    const { data, error } = await this.supabase.auth.signInWithPassword({
+    const { error } = await this.supabase.auth.signInWithPassword({
       email,
       password: pass,
     });
     if (error) throw error;
-    if (data.user) {
-      await this.fetchProfile(data.user.id);
-      await this.router.navigate(['/welcome']);
-    }
+    await this.router.navigate(['/welcome']);
   }
 
   async logout() {
     await this.supabase.auth.signOut();
+  }
+
+  updateLocalProfile(updatedUser: TyappUser) {
+    this._userProfile.set(updatedUser);
   }
 }

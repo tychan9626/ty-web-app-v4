@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { APP_CONFIG } from '../../app.constants';
 import { AuthService } from '../../core/services/auth.service';
+import { AuthError } from '@supabase/supabase-js';
 
 @Component({
   selector: 'app-login',
@@ -23,15 +24,15 @@ import { AuthService } from '../../core/services/auth.service';
   styleUrl: './login.scss'
 })
 export class Login {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private snack = inject(MatSnackBar);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly snack = inject(MatSnackBar);
 
-  appName = signal(APP_CONFIG.appName);
-  hidePassword = signal(true);
-  isLoading = signal(false);
+  readonly appName = signal(APP_CONFIG.appName);
+  readonly hidePassword = signal(true);
+  readonly isLoading = signal(false);
 
-  loginForm = this.fb.nonNullable.group({
+  readonly loginForm = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
@@ -42,15 +43,20 @@ export class Login {
   }
 
   async onSubmit() {
-    if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid || this.isLoading()) return;
 
     this.isLoading.set(true);
 
     try {
       const { email, password } = this.loginForm.getRawValue();
       await this.authService.login(email, password);
-    } catch (e: any) {
-      this.snack.open(e.message, 'OK', { duration: 5000 });
+    } catch (e: unknown) {
+      const message = (e as AuthError).message || 'Authentication failed';
+      this.snack.open(message, 'OK', { 
+        duration: 5000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom'
+      });
     } finally {
       this.isLoading.set(false);
     }

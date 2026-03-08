@@ -14,3 +14,9 @@ export interface TyappUser {
   deleted_at: string | null;
   remarks: string | null;
 }
+
+export const USER_ROLES = {
+  SUPER_ADMIN: 998,
+  ADMIN: 900,
+  USER: 100
+} as const;

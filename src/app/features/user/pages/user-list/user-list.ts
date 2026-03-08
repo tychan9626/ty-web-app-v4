@@ -1,77 +1,75 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  TemplateRef,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { MatTableModule } from '@angular/material/table';
+import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatSelectModule } from '@angular/material/select';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { UserService } from '../../services/user.service';
+import { HeaderService } from '../../../../core/services/header.service';
 import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
-import { TyappUser } from '../../models/user.model';
-import { RouterModule } from '@angular/router';
+import { exportToCsv } from '../../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-user-list',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    MatTableModule,
+    RouterModule,
     MatButtonModule,
     MatIconModule,
-    MatSidenavModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatInputModule,
     MatProgressSpinnerModule,
     DisplayNamePipe,
     RoleLabelPipe,
-    RouterModule,
+  ],
+  providers: [
+    DisplayNamePipe, 
+    RoleLabelPipe
   ],
   templateUrl: './user-list.html',
   styleUrl: './user-list.scss',
 })
-export class UserList implements OnInit {
-  userService = inject(UserService);
+export class UserList implements OnInit, OnDestroy {
+  public readonly userService = inject(UserService);
+  private readonly headerService = inject(HeaderService);
+  private displayNamePipe = inject(DisplayNamePipe);
+  private roleLabelPipe = inject(RoleLabelPipe);
 
-  isDrawerOpen = signal(false);
-  isSaving = signal(false);
-  selectedUser = signal<TyappUser | null>(null);
-
-  displayedColumns: string[] = ['name', 'role', 'actions'];
+  @ViewChild('navActions', { static: true }) navActions!: TemplateRef<unknown>;
 
   ngOnInit() {
+    this.headerService.portal.set(this.navActions);
     this.userService.fetchAllUsers();
   }
 
-  onEdit(user: TyappUser) {
-    this.selectedUser.set({ ...user });
-    this.isDrawerOpen.set(true);
+  ngOnDestroy() {
+    this.headerService.clear();
   }
 
-  async onSave() {
-    const user = this.selectedUser();
-    if (!user) return;
+  onExport() {
+    const users = this.userService.users();
+    if (users.length === 0) return;
 
-    this.isSaving.set(true);
-    const success = await this.userService.updateUser(user.user_id, {
-      legal_first_name: user.legal_first_name,
-      legal_last_name: user.legal_last_name,
-      preferred_first_name: user.preferred_first_name,
-      name_display_mode: user.name_display_mode,
-      customized_display_name: user.customized_display_name,
-      role: user.role,
-    });
+    const headers = ['ID', 'Name', 'Role'];
+    const rows = users.map((u) => [
+      u.user_id,
+      this.displayNamePipe.transform(u),
+      this.roleLabelPipe.transform(u.role),
+    ]);
 
-    if (success) {
-      this.isDrawerOpen.set(false);
-    }
-    this.isSaving.set(false);
+    exportToCsv('User List', headers, rows);
+  }
+
+  async onRefresh() {
+    await this.userService.fetchAllUsers(true);
   }
 }

@@ -1,106 +1,99 @@
-<mat-sidenav-container class="sidenav-container">
-  <mat-sidenav
-    #drawer
-    class="sidenav"
-    fixedInViewport
-    [attr.role]="isHandset() ? 'dialog' : 'navigation'"
+<mat-sidenav-container class="layout-shell">
+  <mat-sidenav #drawer class="sidebar"
     [mode]="isHandset() ? 'over' : 'side'"
-    [opened]="!isHandset()"
-  >
-    <mat-toolbar>
-      <span routerLink="/welcome" style="cursor: pointer">Jaxfr</span>
-    </mat-toolbar>
+    [opened]="!isHandset()">
+    
+    <div class="sidebar-wrapper">
+      <mat-toolbar class="sidebar-logo" routerLink="/welcome" style="cursor: pointer">
+        <span>Jaxfr</span>
+      </mat-toolbar>
 
-    <mat-nav-list>
-      @if (isAdmin()) {
+      <nav class="nav-container">
+        @if (isAdmin()) {
+          <mat-accordion displayMode="flat">
+            <mat-expansion-panel class="nav-panel" [expanded]="true">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>people_outline</mat-icon>
+                  <span>User Management</span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              
+              <div class="sub-menu">
+                <a mat-list-item routerLink="/users/list" routerLinkActive="active-sub-link" (click)="closeOnMobile()">
+                  <span matListItemTitle>User List</span>
+                </a>
+              </div>
+            </mat-expansion-panel>
+          </mat-accordion>
+        }
+
         <mat-accordion displayMode="flat">
-          <mat-expansion-panel class="mat-elevation-z0">
-            <mat-expansion-panel-header
-              collapsedHeight="48px"
-              expandedHeight="48px"
-            >
-              <mat-panel-title
-                style="display: flex; align-items: center; gap: 8px"
-              >
-                <mat-icon>people</mat-icon>
-                <span>User Management</span>
+          <mat-expansion-panel class="nav-panel">
+            <mat-expansion-panel-header>
+              <mat-panel-title>
+                <mat-icon>settings</mat-icon>
+                <span>System Settings</span>
               </mat-panel-title>
             </mat-expansion-panel-header>
-
-            <mat-nav-list class="sub-menu">
-              <a mat-list-item routerLink="/users/list">
-                <span matListItemTitle>User List</span>
+            
+            <div class="sub-menu">
+              <a mat-list-item routerLink="/settings/general" routerLinkActive="active-sub-link" (click)="closeOnMobile()">
+                <span matListItemTitle>General Settings</span>
               </a>
-              <a mat-list-item routerLink="/users/roles">
-                <span matListItemTitle>Roles & Permissions</span>
-              </a>
-            </mat-nav-list>
+            </div>
           </mat-expansion-panel>
         </mat-accordion>
-      }
-
-      <mat-accordion displayMode="flat">
-        <mat-expansion-panel class="mat-elevation-z0">
-          <mat-expansion-panel-header
-            collapsedHeight="48px"
-            expandedHeight="48px"
-          >
-            <mat-panel-title
-              style="display: flex; align-items: center; gap: 8px"
-            >
-              <mat-icon>settings</mat-icon>
-              <span>System Settings</span>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-
-          <mat-nav-list class="sub-menu">
-            <a mat-list-item routerLink="/settings/general">
-              <span matListItemTitle>General Settings</span>
-            </a>
-          </mat-nav-list>
-        </mat-expansion-panel>
-      </mat-accordion>
-    </mat-nav-list>
+      </nav>
+      
+      <span class="spacer"></span>
+      <div class="sidebar-footer">v1.0.0</div>
+    </div>
   </mat-sidenav>
 
-  <mat-sidenav-content>
-    <mat-toolbar color="primary">
+  <mat-sidenav-content class="content-wrapper">
+    <mat-toolbar class="dynamic-navbar">
       @if (isHandset()) {
-        <button type="button" mat-icon-button (click)="drawer.toggle()">
+        <button mat-icon-button (click)="drawer.toggle()">
           <mat-icon>menu</mat-icon>
         </button>
       }
+      
+      <div class="header-portal-container">
+        <span class="header-title">{{ headerService.title() }}</span>
+        <div class="header-portal-slot">
+          <ng-container [ngTemplateOutlet]="headerService.portal()"></ng-container>
+        </div>
+      </div>
 
-      <div class="toolbar-dynamic-actions"></div>
       <span class="spacer"></span>
 
-      <button
-        mat-icon-button
-        [matMenuTriggerFor]="userProfileMenu"
-        class="user-profile-btn"
-      >
-        <mat-icon class="avatar-icon">account_circle</mat-icon>
+      <button mat-icon-button [matMenuTriggerFor]="userProfileMenu">
+        <mat-icon>account_circle</mat-icon>
       </button>
 
-      <mat-menu #userProfileMenu="matMenu" xPosition="before">
-        <div class="menu-user-info">
-          <span class="info-name">{{ userProfile() | tyDisplayName }}</span>
-          <span class="info-role">{{ userProfile()?.role | tyRoleLabel }}</span>
-        </div>
-        <mat-divider></mat-divider>
-        <button mat-menu-item>
-          <mat-icon>person</mat-icon>
-          <span>My Profile</span>
-        </button>
-        <button mat-menu-item (click)="onSignOut()">
-          <mat-icon>logout</mat-icon>
-          <span>Sign Out</span>
-        </button>
-      </mat-menu>
+      <mat-menu #userProfileMenu="matMenu" xPosition="before" class="jaxfr-menu">
+  <div class="user-profile-section">
+    <mat-icon class="profile-avatar">account_circle</mat-icon>
+    <div class="profile-info">
+      <div class="profile-name">{{ userProfile() | tyDisplayName }}</div>
+      <div class="profile-role-tag">{{ userProfile()?.role | tyRoleLabel }}</div>
+    </div>
+  </div>
+  
+  <mat-divider></mat-divider>
+  
+  <button mat-menu-item (click)="onSignOut()" class="logout-item">
+    <mat-icon>logout</mat-icon>
+    <span>Sign Out</span>
+  </button>
+</mat-menu>
     </mat-toolbar>
 
-    <div class="p-4">
-      <router-outlet></router-outlet>
-    </div>
+    <main class="main-scroll-view">
+      <div class="page-container">
+        <router-outlet></router-outlet>
+      </div>
+    </main>
   </mat-sidenav-content>
 </mat-sidenav-container>
