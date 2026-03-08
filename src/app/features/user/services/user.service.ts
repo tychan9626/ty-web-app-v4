@@ -23,7 +23,7 @@ export class UserService {
       const { data, error } = await this.supabase
         .from('tyapp_user')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('tb_tyapp_pofl_seq_no', { ascending: true });
 
       if (error) throw error;
       this.users.set(data || []);
@@ -54,7 +54,7 @@ export class UserService {
 
     const updatedUser = data as TyappUser;
     if (!updatedUser) return false;
-    
+
     this.users.update((list) =>
       list.map((u) => (u.user_id === userId ? updatedUser : u)),
     );
