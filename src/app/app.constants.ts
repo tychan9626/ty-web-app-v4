@@ -5,5 +5,5 @@ export const APP_CONFIG = {
     minor: 0,
     patch: 0
   },
-  versionDate: '2026-03-07'
+  versionDate: '2026-03-08'
 };

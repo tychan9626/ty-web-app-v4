@@ -1,106 +1,85 @@
-$white: #ffffff;
-$slate-100: #f1f5f9;
-$slate-300: #cbd5e1;
-$slate-500: #64748b;
-$slate-900: #0f172a;
-$accent: #2563eb;
+/* src/app/features/user/pages/user-edit/user-edit.scss */
 
 .edit-view-container {
-  background-color: $white;
-  min-height: 100vh;
-  padding: 64px 32px;
-  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--mat-sys-surface);
+  min-height: 100%;
+  padding: 24px 16px; // 減少內距以達成 Dense UI
 
-  .form-width-limit {
-    max-width: 720px;
+  .form-content-limit {
+    max-width: 680px;
     margin: 0 auto;
-  }
-
-  .view-header {
-    margin-bottom: 48px;
-    .nav-back {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      h1 {
-        font-size: 22px;
-        font-weight: 500;
-        color: $slate-900;
-        margin: 0;
-      }
-    }
-  }
-
-  .preview-section {
-    padding-bottom: 48px;
-    border-bottom: 1px solid $slate-100;
-    margin-bottom: 48px;
-
-    .label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: $slate-500;
-    }
-    .name-display {
-      font-size: 32px;
-      font-weight: 400;
-      color: $slate-900;
-      margin-top: 12px;
-    }
-  }
-
-  .section-group {
-    margin-bottom: 48px;
-
-    .group-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: $slate-500;
-      margin-bottom: 24px;
-      text-transform: uppercase;
-    }
-
-    .input-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 20px;
-    }
-  }
-
-  .form-footer {
-    display: flex;
-    gap: 16px;
-    padding-top: 24px;
-    border-top: 1px solid $slate-100;
-
-    .save-btn {
-      background-color: $slate-900;
-      color: $white;
-      padding: 0 32px;
-      height: 44px;
-      border-radius: 4px;
-      font-weight: 400;
-      &:hover {
-        opacity: 0.9;
-      }
-    }
-
-    .cancel-btn {
-      color: $slate-500;
-      font-weight: 400;
-    }
   }
 }
 
+/* 預覽卡片：增加層次感 */
+.preview-card {
+  background-color: var(--mat-sys-surface-container-low);
+  padding: 32px 24px;
+  border-radius: 16px;
+  margin-bottom: 40px;
+  border: 1px solid var(--mat-sys-outline-variant);
+
+  .preview-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--mat-sys-primary);
+  }
+
+  .preview-value {
+    font-size: 28px;
+    font-weight: 400;
+    color: var(--mat-sys-on-surface);
+    margin-top: 8px;
+  }
+}
+
+/* 表單分組 */
+.form-section {
+  margin-bottom: 32px;
+
+  .section-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--mat-sys-outline);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-left: 4px;
+  }
+
+  .field-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+}
+
+/* 操作按鈕 */
+.action-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid var(--mat-sys-outline-variant);
+  margin-top: 16px;
+
+  .primary-save {
+    // 透過 CSS 變數微調，不使用 !important
+    --mdc-elevated-button-container-height: 44px;
+    --mdc-elevated-button-container-color: var(--mat-sys-primary);
+    --mdc-elevated-button-label-text-color: var(--mat-sys-on-primary);
+    padding: 0 32px;
+  }
+}
+
+/* 行動端優化 */
 @media (max-width: 600px) {
   .edit-view-container {
-    padding: 32px 20px;
-    .preview-section .name-display {
-      font-size: 24px;
-    }
-    .section-group .input-grid {
-      grid-template-columns: 1fr;
+    padding: 16px;
+    .preview-card {
+      padding: 24px 16px;
+      .preview-value { font-size: 22px; }
     }
   }
 }
