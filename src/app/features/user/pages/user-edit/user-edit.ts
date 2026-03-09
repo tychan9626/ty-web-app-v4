@@ -1,4 +1,12 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+  TemplateRef,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -8,12 +16,15 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { UserService } from '../../services/user.service';
 import { TyappUser } from '../../models/user.model';
 import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
 import { DisplayNameModePipe } from '../../../../core/pipes/display-name-mode.pipe';
+import { HeaderService } from '../../../../core/services/header.service';
+import { exportToCsv } from '../../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-user-edit',
@@ -27,17 +38,26 @@ import { DisplayNameModePipe } from '../../../../core/pipes/display-name-mode.pi
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatMenuModule,
     DisplayNamePipe,
     RoleLabelPipe,
     DisplayNameModePipe,
   ],
+  providers: [DisplayNamePipe, RoleLabelPipe],
   templateUrl: './user-edit.html',
   styleUrl: './user-edit.scss',
 })
-export class UserEdit implements OnInit {
+export class UserEdit implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  public userService = inject(UserService); // 改為 public 以便 template 使用
+  public userService = inject(UserService);
+  private headerService = inject(HeaderService);
+
+  private displayNamePipe = inject(DisplayNamePipe);
+  private roleLabelPipe = inject(RoleLabelPipe);
+
+  @ViewChild('editActions', { static: true })
+  editActions!: TemplateRef<unknown>;
 
   readonly availableRoles = [1, 900, 998];
   readonly availableModes = [1, 2, 3, 4, 5];
@@ -46,20 +66,34 @@ export class UserEdit implements OnInit {
   isSaving = signal(false);
 
   async ngOnInit() {
+    this.headerService.portal.set(this.editActions);
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    // 1. 確保基礎資料已載入 (處理 F5 刷新)
     await this.userService.fetchAllUsers();
 
-    // 2. 從訊號中尋找資料
     const found = this.userService.users().find((u) => u.user_id === id);
     if (found) {
-      // 使用深拷貝，避免在按下 Save 前就改動到全域 Signal
       this.user.set(JSON.parse(JSON.stringify(found)));
     } else {
       this.router.navigate(['/users/list']);
     }
+  }
+
+  onExport() {
+    const u = this.user();
+    if (!u) return;
+
+    const headers = ['ID', 'Name', 'Role'];
+    const rows = [
+      [
+        u.user_id,
+        this.displayNamePipe.transform(u),
+        this.roleLabelPipe.transform(u.role),
+      ],
+    ];
+
+    exportToCsv('User Detail', headers, rows);
   }
 
   async onSave() {
@@ -67,11 +101,14 @@ export class UserEdit implements OnInit {
     if (!data || this.isSaving()) return;
 
     this.isSaving.set(true);
-    // 這裡 userService.updateUser 已經處理了本地 Signal 同步
     const success = await this.userService.updateUser(data.user_id, data);
     if (success) {
       this.router.navigate(['/users/list']);
     }
     this.isSaving.set(false);
+  }
+
+  ngOnDestroy() {
+    this.headerService.clear();
   }
 }

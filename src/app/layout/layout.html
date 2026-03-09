@@ -1,12 +1,22 @@
 <mat-sidenav-container class="layout-shell">
-  <mat-sidenav #drawer class="sidebar"
+  <mat-sidenav
+    #drawer
+    class="sidebar"
     [mode]="isHandset() ? 'over' : 'side'"
-    [opened]="!isHandset()">
-    
+    [opened]="!isHandset()"
+  >
     <div class="sidebar-wrapper">
-      <mat-toolbar class="sidebar-logo" routerLink="/welcome" style="cursor: pointer">
+      <mat-toolbar class="sidebar-logo" routerLink="/welcome">
         <span>Jaxfr</span>
       </mat-toolbar>
+
+      <div class="sidebar-user-profile">
+        <mat-icon class="avatar">account_circle</mat-icon>
+        <div class="info">
+          <span class="name">{{ userProfile() | tyDisplayName }}</span>
+          <span class="role">{{ userProfile()?.role | tyRoleLabel }}</span>
+        </div>
+      </div>
 
       <nav class="nav-container">
         @if (isAdmin()) {
@@ -18,9 +28,13 @@
                   <span>User Management</span>
                 </mat-panel-title>
               </mat-expansion-panel-header>
-              
               <div class="sub-menu">
-                <a mat-list-item routerLink="/users/list" routerLinkActive="active-sub-link" (click)="closeOnMobile()">
+                <a
+                  mat-list-item
+                  routerLink="/users/list"
+                  routerLinkActive="active-sub-link"
+                  (click)="closeOnMobile()"
+                >
                   <span matListItemTitle>User List</span>
                 </a>
               </div>
@@ -36,58 +50,45 @@
                 <span>System Settings</span>
               </mat-panel-title>
             </mat-expansion-panel-header>
-            
             <div class="sub-menu">
-              <a mat-list-item routerLink="/settings/general" routerLinkActive="active-sub-link" (click)="closeOnMobile()">
+              <a
+                mat-list-item
+                routerLink="/settings/general"
+                routerLinkActive="active-sub-link"
+                (click)="closeOnMobile()"
+              >
                 <span matListItemTitle>General Settings</span>
               </a>
             </div>
           </mat-expansion-panel>
         </mat-accordion>
       </nav>
-      
+
       <span class="spacer"></span>
+
+      <button mat-button class="sidebar-logout" (click)="onSignOut()">
+        <mat-icon>logout</mat-icon>
+        <span>Sign Out</span>
+      </button>
       <div class="sidebar-footer">v1.0.0</div>
     </div>
   </mat-sidenav>
 
   <mat-sidenav-content class="content-wrapper">
     <mat-toolbar class="dynamic-navbar">
-      @if (isHandset()) {
-        <button mat-icon-button (click)="drawer.toggle()">
-          <mat-icon>menu</mat-icon>
-        </button>
-      }
-      
-      <div class="header-portal-container">
-        <span class="header-title">{{ headerService.title() }}</span>
-        <div class="header-portal-slot">
-          <ng-container [ngTemplateOutlet]="headerService.portal()"></ng-container>
-        </div>
+      <div class="nav-slot">
+        @if (isHandset()) {
+          <button mat-icon-button (click)="drawer.toggle()">
+            <mat-icon>menu</mat-icon>
+          </button>
+        }
       </div>
 
-      <span class="spacer"></span>
-
-      <button mat-icon-button [matMenuTriggerFor]="userProfileMenu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-
-      <mat-menu #userProfileMenu="matMenu" xPosition="before" class="jaxfr-menu">
-  <div class="user-profile-section">
-    <mat-icon class="profile-avatar">account_circle</mat-icon>
-    <div class="profile-info">
-      <div class="profile-name">{{ userProfile() | tyDisplayName }}</div>
-      <div class="profile-role-tag">{{ userProfile()?.role | tyRoleLabel }}</div>
-    </div>
-  </div>
-  
-  <mat-divider></mat-divider>
-  
-  <button mat-menu-item (click)="onSignOut()" class="logout-item">
-    <mat-icon>logout</mat-icon>
-    <span>Sign Out</span>
-  </button>
-</mat-menu>
+      <div class="header-portal-slot">
+        <ng-container
+          [ngTemplateOutlet]="headerService.portal()"
+        ></ng-container>
+      </div>
     </mat-toolbar>
 
     <main class="main-scroll-view">

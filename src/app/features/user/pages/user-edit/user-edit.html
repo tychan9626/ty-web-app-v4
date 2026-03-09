@@ -1,3 +1,50 @@
+<ng-template #editActions>
+  <div class="toolbar-actions-wrapper">
+    <div class="left-actions">
+      <button
+        mat-icon-button
+        routerLink="/users/list"
+        title="Discard and Go Back"
+      >
+        <mat-icon>west</mat-icon>
+      </button>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="right-actions">
+      <div class="desktop-only-actions">
+        <button mat-button (click)="onExport()">
+          <mat-icon>download</mat-icon>
+          <span>Export</span>
+        </button>
+      </div>
+
+      <button
+        matButton="elevated"
+        class="save-btn"
+        (click)="onSave()"
+        [disabled]="isSaving() || !user()"
+      >
+        <mat-icon>{{ isSaving() ? "hourglass_empty" : "check" }}</mat-icon>
+        <span>{{ isSaving() ? "Saving..." : "Save" }}</span>
+      </button>
+
+      <div class="mobile-only-actions">
+        <button mat-icon-button [matMenuTriggerFor]="moreMenu">
+          <mat-icon>more_vert</mat-icon>
+        </button>
+        <mat-menu #moreMenu="matMenu" xPosition="before">
+          <button mat-menu-item (click)="onExport()">
+            <mat-icon>download</mat-icon>
+            <span>Export CSV</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
 <div class="edit-view-container">
   @if (user(); as u) {
     <div class="form-content-limit">
@@ -12,7 +59,11 @@
           <div class="field-grid">
             <mat-form-field appearance="outline" class="dense-field">
               <mat-label>First Name</mat-label>
-              <input matInput [(ngModel)]="u.legal_first_name" placeholder="Required" />
+              <input
+                matInput
+                [(ngModel)]="u.legal_first_name"
+                placeholder="Required"
+              />
             </mat-form-field>
 
             <mat-form-field appearance="outline" class="dense-field">
@@ -34,7 +85,9 @@
               <mat-label>Display Mode</mat-label>
               <mat-select [(ngModel)]="u.name_display_mode">
                 @for (mode of availableModes; track mode) {
-                  <mat-option [value]="mode">{{ mode | tyDisplayNameMode }}</mat-option>
+                  <mat-option [value]="mode">{{
+                    mode | tyDisplayNameMode
+                  }}</mat-option>
                 }
               </mat-select>
             </mat-form-field>
@@ -50,17 +103,6 @@
           </div>
         </div>
       </div>
-
-      <footer class="action-footer">
-        <button 
-          matButton="elevated" 
-          class="primary-save"
-          (click)="onSave()" 
-          [disabled]="isSaving()">
-          {{ isSaving() ? "Saving..." : "Save Updates" }}
-        </button>
-        <button mat-button routerLink="/users/list">Discard</button>
-      </footer>
     </div>
   }
 </div>

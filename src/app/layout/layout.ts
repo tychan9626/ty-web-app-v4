@@ -16,26 +16,26 @@ import { MatDividerModule } from '@angular/material/divider';
 
 import { AuthService } from '../core/services/auth.service';
 import { HeaderService } from '../core/services/header.service';
-import { DisplayNamePipe } from "../core/pipes/display-name.pipe";
-import { RoleLabelPipe } from "../core/pipes/role-label.pipe";
+import { DisplayNamePipe } from '../core/pipes/display-name.pipe';
+import { RoleLabelPipe } from '../core/pipes/role-label.pipe';
 
 @Component({
   selector: 'app-layout',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
+    CommonModule,
+    RouterModule,
     NgTemplateOutlet,
-    MatSidenavModule, 
+    MatSidenavModule,
     MatToolbarModule,
-    MatListModule, 
-    MatIconModule, 
-    MatButtonModule, 
+    MatListModule,
+    MatIconModule,
+    MatButtonModule,
     MatExpansionModule,
-    MatMenuModule, 
-    MatDividerModule, 
-    DisplayNamePipe, 
-    RoleLabelPipe
+    MatMenuModule,
+    MatDividerModule,
+    DisplayNamePipe,
+    RoleLabelPipe,
   ],
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
@@ -48,8 +48,10 @@ export class Layout {
   public readonly headerService = inject(HeaderService);
 
   readonly isHandset = toSignal(
-    this.breakpointObserver.observe(Breakpoints.Handset).pipe(map(r => r.matches)),
-    { initialValue: false }
+    this.breakpointObserver
+      .observe(Breakpoints.Handset)
+      .pipe(map((r) => r.matches)),
+    { initialValue: false },
   );
 
   readonly userProfile = this.auth.userProfile;
