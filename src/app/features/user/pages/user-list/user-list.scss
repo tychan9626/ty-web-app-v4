@@ -92,28 +92,6 @@
   color: var(--mat-sys-outline);
 }
 
-.desktop-only {
-  display: none;
-}
-
-@media (min-width: 600px) {
-  .desktop-only {
-    display: block;
-  }
-  .list-container .user-item-link {
-    padding: 16px 24px;
-  }
-}
-
-.header-actions-group {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.spinning {
-  animation: rotate 1s linear infinite;
-}
 
 @keyframes rotate {
   from {

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, NgZone, inject, signal } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
@@ -9,6 +9,7 @@ export class UserService {
   private supabase = inject(SupabaseService).client;
   private authService = inject(AuthService);
   private snackBar = inject(MatSnackBar);
+  private zone = inject(NgZone);
 
   users = signal<TyappUser[]>([]);
   loading = signal(false);
@@ -18,7 +19,9 @@ export class UserService {
   async fetchAllUsers(forceRefresh = false) {
     if (this.loading() || (this.initialized && !forceRefresh)) return;
 
+    // 開始載入 (這在事件觸發當下，通常沒問題)
     this.loading.set(true);
+    
     try {
       const { data, error } = await this.supabase
         .from('tyapp_user')
@@ -26,14 +29,22 @@ export class UserService {
         .order('tb_tyapp_pofl_seq_no', { ascending: true });
 
       if (error) throw error;
-      this.users.set(data || []);
-      this.initialized = true;
+
+      // 3. 關鍵修復：強制在 Angular Zone 內更新狀態
+      this.zone.run(() => {
+        this.users.set(data || []);
+        this.initialized = true;
+        this.loading.set(false); // 確保轉圈圈會停下
+      });
+
     } catch (error) {
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  this.showError('Fetch Failed', errorMessage);
-} finally {
-      this.loading.set(false);
-    }
+      this.zone.run(() => {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        this.showError('Fetch Failed', errorMessage);
+        this.loading.set(false); // 發生錯誤也要停止轉圈圈
+      });
+    } 
+    // 注意：這裡我們移除了 finally 區塊，因為已經在 zone.run 裡面處理掉 loading.set(false) 了
   }
 
   async updateUser(

@@ -18,6 +18,7 @@ import { HeaderService } from '../../../../core/services/header.service';
 import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
 import { exportToCsv } from '../../../../core/utils/csv-export.util';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-user-list',
@@ -28,6 +29,7 @@ import { exportToCsv } from '../../../../core/utils/csv-export.util';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatMenuModule,
     DisplayNamePipe,
     RoleLabelPipe,
   ],

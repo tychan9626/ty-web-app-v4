@@ -48,16 +48,17 @@ import { exportToCsv } from '../../../../core/utils/csv-export.util';
   styleUrl: './user-edit.scss',
 })
 export class UserEdit implements OnInit, OnDestroy {
-  private route = inject(ActivatedRoute);
+private route = inject(ActivatedRoute);
   private router = inject(Router);
   public userService = inject(UserService);
   private headerService = inject(HeaderService);
-
+  
+  // 注入 Pipe 供邏輯使用
   private displayNamePipe = inject(DisplayNamePipe);
   private roleLabelPipe = inject(RoleLabelPipe);
 
-  @ViewChild('editActions', { static: true })
-  editActions!: TemplateRef<unknown>;
+  // 嚴格型別：使用 unknown 取代 any
+  @ViewChild('editActions', { static: true }) editActions!: TemplateRef<unknown>;
 
   readonly availableRoles = [1, 900, 998];
   readonly availableModes = [1, 2, 3, 4, 5];
@@ -66,15 +67,18 @@ export class UserEdit implements OnInit, OnDestroy {
   isSaving = signal(false);
 
   async ngOnInit() {
+    // 1. 優先掛載頂端動作條
     this.headerService.portal.set(this.editActions);
+
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
+    // 2. 獲取數據 (支援 F5 刷新)
     await this.userService.fetchAllUsers();
-
     const found = this.userService.users().find((u) => u.user_id === id);
+
     if (found) {
-      this.user.set(JSON.parse(JSON.stringify(found)));
+      this.user.set(structuredClone(found));
     } else {
       this.router.navigate(['/users/list']);
     }
@@ -108,7 +112,7 @@ export class UserEdit implements OnInit, OnDestroy {
     this.isSaving.set(false);
   }
 
-  ngOnDestroy() {
+ngOnDestroy() {
     this.headerService.clear();
   }
 }

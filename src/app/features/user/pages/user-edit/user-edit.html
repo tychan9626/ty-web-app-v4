@@ -1,108 +1,122 @@
 <ng-template #editActions>
-  <div class="toolbar-actions-wrapper">
+  <div class="page-toolbar-wrapper">
+    
     <div class="left-actions">
-      <button
-        mat-icon-button
-        routerLink="/users/list"
-        title="Discard and Go Back"
-      >
+      <button mat-icon-button routerLink="/users/list">
         <mat-icon>west</mat-icon>
       </button>
     </div>
 
-    <span class="spacer"></span>
-
     <div class="right-actions">
-      <div class="desktop-only-actions">
-        <button mat-button (click)="onExport()">
-          <mat-icon>download</mat-icon>
-          <span>Export</span>
-        </button>
-      </div>
-
-      <button
-        matButton="elevated"
-        class="save-btn"
-        (click)="onSave()"
-        [disabled]="isSaving() || !user()"
-      >
-        <mat-icon>{{ isSaving() ? "hourglass_empty" : "check" }}</mat-icon>
-        <span>{{ isSaving() ? "Saving..." : "Save" }}</span>
+      
+      <button mat-button class="desktop-only" (click)="onExport()">
+        <mat-icon>download</mat-icon>
+        <span>Export</span>
       </button>
 
-      <div class="mobile-only-actions">
+      <button 
+        mat-flat-button 
+        color="primary"
+        class="save-btn"
+        (click)="onSave()" 
+        [disabled]="isSaving() || !user()">
+        <mat-icon>{{ isSaving() ? 'hourglass_empty' : 'check' }}</mat-icon> 
+        <span>{{ isSaving() ? 'Saving' : 'Save Changes' }}</span>
+      </button>
+
+      <div class="mobile-only">
         <button mat-icon-button [matMenuTriggerFor]="moreMenu">
           <mat-icon>more_vert</mat-icon>
         </button>
-        <mat-menu #moreMenu="matMenu" xPosition="before">
+        <mat-menu #moreMenu="matMenu">
           <button mat-menu-item (click)="onExport()">
             <mat-icon>download</mat-icon>
             <span>Export CSV</span>
           </button>
         </mat-menu>
       </div>
+
     </div>
   </div>
 </ng-template>
 
-<div class="edit-view-container">
+<div class="split-workspace">
   @if (user(); as u) {
-    <div class="form-content-limit">
-      <section class="preview-card">
-        <div class="preview-label">Live Display Preview</div>
-        <div class="preview-value">{{ u | tyDisplayName }}</div>
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">Identity & Naming</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Legal First Name</mat-label>
+            <input matInput [(ngModel)]="u.legal_first_name" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Preferred Name (Known As)</mat-label>
+            <input matInput [(ngModel)]="u.preferred_first_name" placeholder="e.g. Jax" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Legal Middle Name</mat-label>
+            <input matInput [(ngModel)]="u.legal_middle_name" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Legal Last Name</mat-label>
+            <input matInput [(ngModel)]="u.legal_last_name" />
+          </mat-form-field>
+        </div>
       </section>
 
-      <div class="edit-sections">
-        <div class="form-section">
-          <h3 class="section-title">Legal Identity</h3>
-          <div class="field-grid">
-            <mat-form-field appearance="outline" class="dense-field">
-              <mat-label>First Name</mat-label>
-              <input
-                matInput
-                [(ngModel)]="u.legal_first_name"
-                placeholder="Required"
-              />
+      <section class="form-group">
+        <h3 class="group-header">Display Configuration</h3>
+        <div class="fields-row-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Display Mode</mat-label>
+            <mat-select [(ngModel)]="u.name_display_mode">
+              @for (m of availableModes; track m) {
+                <mat-option [value]="m">{{ m | tyDisplayNameMode }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (u.name_display_mode === 5) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Customized Display Name</mat-label>
+              <input matInput [(ngModel)]="u.customized_display_name" />
             </mat-form-field>
-
-            <mat-form-field appearance="outline" class="dense-field">
-              <mat-label>Middle Name</mat-label>
-              <input matInput [(ngModel)]="u.legal_middle_name" />
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="dense-field">
-              <mat-label>Last Name</mat-label>
-              <input matInput [(ngModel)]="u.legal_last_name" />
-            </mat-form-field>
-          </div>
+          }
         </div>
+      </section>
 
-        <div class="form-section">
-          <h3 class="section-title">System Configuration</h3>
-          <div class="field-grid">
-            <mat-form-field appearance="outline" class="dense-field">
-              <mat-label>Display Mode</mat-label>
-              <mat-select [(ngModel)]="u.name_display_mode">
-                @for (mode of availableModes; track mode) {
-                  <mat-option [value]="mode">{{
-                    mode | tyDisplayNameMode
-                  }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="dense-field">
-              <mat-label>System Role</mat-label>
-              <mat-select [(ngModel)]="u.role">
-                @for (r of availableRoles; track r) {
-                  <mat-option [value]="r">{{ r | tyRoleLabel }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
+      <section class="form-group">
+        <h3 class="group-header">System Access & Admin</h3>
+        <div class="fields-row-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>User Role</mat-label>
+            <mat-select [(ngModel)]="u.role">
+              @for (r of availableRoles; track r) {
+                <mat-option [value]="r">{{ r | tyRoleLabel }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <input matInput [value]="u.status === 1 ? 'Active' : 'Inactive'" disabled />
+          </mat-form-field>
         </div>
-      </div>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-label>Internal Remarks</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="u.remarks"></textarea>
+        </mat-form-field>
+      </section>
     </div>
+
+    <aside class="preview-sidebar">
+      <div class="sticky-preview">
+        <div class="p-header">LIVE PREVIEW</div>
+        <div class="p-label">Final Display Name</div>
+        <div class="p-value">{{ u | tyDisplayName }}</div>
+        <div class="p-divider"></div>
+        <div class="p-label">Assigned Role</div>
+        <div class="p-chip">{{ u.role | tyRoleLabel }}</div>
+      </div>
+    </aside>
   }
 </div>

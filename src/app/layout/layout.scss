@@ -123,10 +123,10 @@
 
 .dynamic-navbar {
   display: flex;
+  flex-direction: row;
   align-items: center;
   height: 56px;
-  background: var(--mat-sys-surface-container-low);
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
+  padding: 0 16px;
 
   .nav-slot {
     display: flex;
@@ -134,13 +134,24 @@
   }
 
   .header-portal-slot {
-    flex: 1;
+    flex: 1; // 佔滿剩餘寬度
     display: flex;
+    flex-direction: row;
     align-items: center;
     height: 100%;
     overflow: visible;
   }
 }
+
+.header-portal-slot {
+    flex: 1;
+    display: flex;
+    flex-direction: row; 
+    align-items: center;
+    height: 100%;
+    overflow: visible; 
+    white-space: nowrap;
+  }
 
 .main-scroll-view {
   flex: 1;
