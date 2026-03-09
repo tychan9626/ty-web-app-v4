@@ -43,22 +43,22 @@ import { exportToCsv } from '../../../../core/utils/csv-export.util';
     RoleLabelPipe,
     DisplayNameModePipe,
   ],
-  providers: [DisplayNamePipe, RoleLabelPipe],
+  providers: [DisplayNamePipe, RoleLabelPipe, DisplayNameModePipe],
   templateUrl: './user-edit.html',
   styleUrl: './user-edit.scss',
 })
 export class UserEdit implements OnInit, OnDestroy {
-private route = inject(ActivatedRoute);
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   public userService = inject(UserService);
   private headerService = inject(HeaderService);
-  
-  // 注入 Pipe 供邏輯使用
+
   private displayNamePipe = inject(DisplayNamePipe);
   private roleLabelPipe = inject(RoleLabelPipe);
+  private displayNameModePipe = inject(DisplayNameModePipe);
 
-  // 嚴格型別：使用 unknown 取代 any
-  @ViewChild('editActions', { static: true }) editActions!: TemplateRef<unknown>;
+  @ViewChild('editActions', { static: true })
+  editActions!: TemplateRef<unknown>;
 
   readonly availableRoles = [1, 900, 998];
   readonly availableModes = [1, 2, 3, 4, 5];
@@ -67,13 +67,11 @@ private route = inject(ActivatedRoute);
   isSaving = signal(false);
 
   async ngOnInit() {
-    // 1. 優先掛載頂端動作條
     this.headerService.portal.set(this.editActions);
 
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    // 2. 獲取數據 (支援 F5 刷新)
     await this.userService.fetchAllUsers();
     const found = this.userService.users().find((u) => u.user_id === id);
 
@@ -88,16 +86,38 @@ private route = inject(ActivatedRoute);
     const u = this.user();
     if (!u) return;
 
-    const headers = ['ID', 'Name', 'Role'];
+    const headers = [
+      'User ID',
+      'Legal First Name',
+      'Preferred Name',
+      'Legal Middle Name',
+      'Legal Last Name',
+      'Display Mode',
+      'Customized Display Name',
+      'Final Display Name (Preview)',
+      'Assigned Role',
+      'Status',
+      'Internal Remarks',
+    ];
+
     const rows = [
       [
         u.user_id,
+        u.legal_first_name || '',
+        u.preferred_first_name || '',
+        u.legal_middle_name || '',
+        u.legal_last_name || '',
+        this.displayNameModePipe.transform(u.name_display_mode),
+        u.customized_display_name || '',
         this.displayNamePipe.transform(u),
         this.roleLabelPipe.transform(u.role),
+        u.status === 1 ? 'Active' : 'Inactive',
+        u.remarks || '',
       ],
     ];
 
-    exportToCsv('User Detail', headers, rows);
+    const fileName = `User_Detail_${u.legal_first_name || u.user_id}`;
+    exportToCsv(fileName, headers, rows);
   }
 
   async onSave() {
@@ -112,7 +132,7 @@ private route = inject(ActivatedRoute);
     this.isSaving.set(false);
   }
 
-ngOnDestroy() {
+  ngOnDestroy() {
     this.headerService.clear();
   }
 }
