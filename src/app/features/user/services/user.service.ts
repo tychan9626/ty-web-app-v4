@@ -15,67 +15,108 @@ export class UserService {
   loading = signal(false);
 
   private initialized = false;
+  private fetchPromise: Promise<void> | null = null;
+  fetchAllUsers(forceRefresh = false): Promise<void> {
+    if (this.initialized && !forceRefresh) return Promise.resolve();
 
-  async fetchAllUsers(forceRefresh = false) {
-    if (this.loading() || (this.initialized && !forceRefresh)) return;
+    if (this.fetchPromise) return this.fetchPromise;
 
-    // 開始載入 (這在事件觸發當下，通常沒問題)
     this.loading.set(true);
-    
-    try {
-      const { data, error } = await this.supabase
-        .from('tyapp_user')
-        .select('*')
-        .order('tb_tyapp_pofl_seq_no', { ascending: true });
 
-      if (error) throw error;
+    const request = (async () => {
+      try {
+        const { data, error } = await this.supabase
+          .from('tyapp_user')
+          .select('*')
+          .order('tb_tyapp_pofl_seq_no', { ascending: true });
 
-      // 3. 關鍵修復：強制在 Angular Zone 內更新狀態
-      this.zone.run(() => {
-        this.users.set(data || []);
-        this.initialized = true;
-        this.loading.set(false); // 確保轉圈圈會停下
-      });
+        if (error) throw error;
 
-    } catch (error) {
-      this.zone.run(() => {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        this.showError('Fetch Failed', errorMessage);
-        this.loading.set(false); // 發生錯誤也要停止轉圈圈
-      });
-    } 
-    // 注意：這裡我們移除了 finally 區塊，因為已經在 zone.run 裡面處理掉 loading.set(false) 了
+        this.zone.run(() => {
+          this.users.set(data || []);
+          this.initialized = true;
+          this.loading.set(false);
+        });
+      } catch (error: unknown) {
+        this.zone.run(() => {
+          let errorMessage = 'An unexpected error occurred';
+
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          } else if (
+            typeof error === 'object' &&
+            error !== null &&
+            'message' in error
+          ) {
+            errorMessage = String(error.message);
+          } else if (typeof error === 'string') {
+            errorMessage = error;
+          }
+
+          this.showError('Fetch Failed', errorMessage);
+          this.loading.set(false);
+        });
+      } finally {
+        this.fetchPromise = null;
+      }
+    })();
+
+    this.fetchPromise = request;
+    return request;
   }
 
   async updateUser(
     userId: string,
     updates: Partial<TyappUser>,
   ): Promise<boolean> {
-    const { data, error } = await this.supabase
-      .from('tyapp_user')
-      .update(updates)
-      .eq('user_id', userId)
-      .select()
-      .single();
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_user')
+        .update(updates)
+        .eq('user_id', userId)
+        .select()
+        .single();
 
-    if (error) {
-      this.showError('Update Failed', error.message);
-      return false;
+      return this.zone.run(() => {
+        if (error) {
+          this.showError('Update Failed', error.message);
+          return false;
+        }
+
+        const updatedUser = data as TyappUser;
+        if (!updatedUser) return false;
+
+        this.users.update((list) =>
+          list.map((u) => (u.user_id === userId ? updatedUser : u)),
+        );
+
+        if (userId === this.authService.userProfile()?.user_id) {
+          this.authService.updateLocalProfile(updatedUser);
+        }
+
+        this.snackBar.open('Updated successfully', 'OK', { duration: 3000 });
+        return true;
+      });
+    } catch (error: unknown) {
+      return this.zone.run(() => {
+        let errorMessage = 'An unexpected error occurred during update';
+
+        if (error instanceof Error) {
+          errorMessage = error.message;
+        } else if (
+          typeof error === 'object' &&
+          error !== null &&
+          'message' in error
+        ) {
+          errorMessage = String(error.message);
+        } else if (typeof error === 'string') {
+          errorMessage = error;
+        }
+
+        this.showError('Update Error', errorMessage);
+        return false;
+      });
     }
-
-    const updatedUser = data as TyappUser;
-    if (!updatedUser) return false;
-
-    this.users.update((list) =>
-      list.map((u) => (u.user_id === userId ? updatedUser : u)),
-    );
-
-    if (userId === this.authService.userProfile()?.user_id) {
-      this.authService.updateLocalProfile(updatedUser);
-    }
-
-    this.snackBar.open('Updated successfully', 'OK', { duration: 3000 });
-    return true;
   }
 
   private showError(title: string, message: string) {

@@ -6,6 +6,7 @@ import {
   signal,
   TemplateRef,
   ViewChild,
+  NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -52,6 +53,7 @@ export class UserEdit implements OnInit, OnDestroy {
   private router = inject(Router);
   public userService = inject(UserService);
   private headerService = inject(HeaderService);
+  private zone = inject(NgZone);
 
   private displayNamePipe = inject(DisplayNamePipe);
   private roleLabelPipe = inject(RoleLabelPipe);
@@ -73,13 +75,15 @@ export class UserEdit implements OnInit, OnDestroy {
     if (!id) return;
 
     await this.userService.fetchAllUsers();
-    const found = this.userService.users().find((u) => u.user_id === id);
 
-    if (found) {
-      this.user.set(structuredClone(found));
-    } else {
-      this.router.navigate(['/users/list']);
-    }
+    this.zone.run(() => {
+      const found = this.userService.users().find((u) => u.user_id === id);
+      if (found) {
+        this.user.set(structuredClone(found));
+      } else {
+        this.router.navigate(['/users/list']);
+      }
+    });
   }
 
   onExport() {
@@ -126,10 +130,13 @@ export class UserEdit implements OnInit, OnDestroy {
 
     this.isSaving.set(true);
     const success = await this.userService.updateUser(data.user_id, data);
-    if (success) {
-      this.router.navigate(['/users/list']);
-    }
-    this.isSaving.set(false);
+
+    this.zone.run(() => {
+      if (success) {
+        this.router.navigate(['/users/list']);
+      }
+      this.isSaving.set(false);
+    });
   }
 
   ngOnDestroy() {

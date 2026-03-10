@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, computed, inject, ViewChild } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
@@ -18,6 +18,7 @@ import { AuthService } from '../core/services/auth.service';
 import { HeaderService } from '../core/services/header.service';
 import { DisplayNamePipe } from '../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../core/pipes/role-label.pipe';
+import { APP_CONFIG } from '../app.constants';
 
 @Component({
   selector: 'app-layout',
@@ -66,4 +67,9 @@ export class Layout {
   async onSignOut() {
     await this.auth.logout();
   }
+
+  appVersion = computed(() => {
+    const { major, minor, patch } = APP_CONFIG.version;
+    return `${major}.${minor}.${patch}`;
+  });
 }

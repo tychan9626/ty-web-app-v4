@@ -3,26 +3,31 @@
     <div class="left-actions"></div>
 
     <div class="right-actions">
-      
-      <button 
-        matButton="elevated" 
-        (click)="onRefresh()" 
-        [disabled]="userService.loading()">
+      <button
+        matButton="elevated"
+        (click)="onRefresh()"
+        [disabled]="userService.loading()"
+      >
         <mat-icon [class.spinning]="userService.loading()">refresh</mat-icon>
         <span>Refresh</span>
       </button>
 
-      <button 
-        matButton="elevated" 
-        class="desktop-only" 
+      <button
+        matButton="elevated"
+        class="desktop-only"
         (click)="onExport()"
-        [disabled]="userService.loading() || userService.users().length === 0">
+        [disabled]="userService.loading() || userService.users().length === 0"
+      >
         <mat-icon>download</mat-icon>
         <span>Export CSV</span>
       </button>
 
       <div class="mobile-only">
-        <button mat-icon-button [matMenuTriggerFor]="listMenu" [disabled]="userService.users().length === 0">
+        <button
+          mat-icon-button
+          [matMenuTriggerFor]="listMenu"
+          [disabled]="userService.users().length === 0"
+        >
           <mat-icon>more_vert</mat-icon>
         </button>
         <mat-menu #listMenu="matMenu">
@@ -32,7 +37,6 @@
           </button>
         </mat-menu>
       </div>
-
     </div>
   </div>
 </ng-template>
@@ -44,11 +48,11 @@
         <div class="item-content">
           <div class="identity-group">
             <span class="name-text">{{ user | tyDisplayName }}</span>
-            <span class="id-text desktop-only">{{ user.user_id }}</span>
+            <span class="role-text">{{ user.role | tyRoleLabel }}</span>
+            <span class="id-text">{{ user.user_id }}</span>
           </div>
 
           <div class="status-group">
-            <span class="role-text">{{ user.role | tyRoleLabel }}</span>
             <mat-icon class="chevron">chevron_right</mat-icon>
           </div>
         </div>
