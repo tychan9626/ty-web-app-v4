@@ -40,6 +40,27 @@
               </div>
             </mat-expansion-panel>
           </mat-accordion>
+
+          <mat-accordion displayMode="flat">
+            <mat-expansion-panel class="nav-panel">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <mat-icon>code</mat-icon>
+                  <span>Development</span>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <div class="sub-menu">
+                <a
+                  mat-list-item
+                  routerLink="/development/category/list"
+                  routerLinkActive="active-sub-link"
+                  (click)="closeOnMobile()"
+                >
+                  <span matListItemTitle>App Categories</span>
+                </a>
+                </div>
+            </mat-expansion-panel>
+          </mat-accordion>
         }
 
         <mat-accordion displayMode="flat">

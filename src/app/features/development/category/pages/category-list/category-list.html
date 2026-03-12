@@ -1,0 +1,52 @@
+<ng-template #navActions>
+  <div class="page-toolbar-wrapper">
+    <div class="left-actions">
+
+    </div>
+
+    <div class="right-actions">
+      <button
+        matButton="elevated"
+        (click)="onRefresh()"
+        [disabled]="categoryService.loading()"
+      >
+        <mat-icon [class.spinning]="categoryService.loading()"
+          >refresh</mat-icon
+        >
+        <span>Refresh</span>
+      </button>
+
+      <button mat-flat-button color="primary" routerLink="../new">
+        <mat-icon>add</mat-icon>
+        <span>New Category</span>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<div class="category-view">
+  <div class="list-container">
+    @for (cat of categoryService.categories(); track cat.tb_tyapp_ap_ctgy_id) {
+      <a class="item-link" [routerLink]="['../edit', cat.tb_tyapp_ap_ctgy_id]">
+        <div class="item-content">
+          <div class="info-group">
+            <span class="main-title">{{ cat.display_name }}</span>
+            <span class="sub-info">{{ cat.name_en }} · {{ cat.name_zh }}</span>
+          </div>
+
+          <div class="status-group">
+            <span class="status-tag" [class.inactive]="cat.status === 0">
+              {{ cat.status === 1 ? 'Active' : 'Inactive' }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    }
+    </div>
+
+  <footer class="list-footer">
+    <div class="divider"></div>
+    <span class="count-text">TOTAL {{ categoryService.categories().length }} CATEGORIES</span>
+  </footer>
+</div>

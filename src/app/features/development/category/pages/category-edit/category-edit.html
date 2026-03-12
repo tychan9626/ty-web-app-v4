@@ -1,0 +1,96 @@
+<ng-template #editActions>
+  <div class="page-toolbar-wrapper">
+    <div class="left-actions">
+      <button
+        mat-icon-button
+        routerLink="/development/category/list"
+        title="Discard changes"
+      >
+        <mat-icon>west</mat-icon>
+      </button>
+    </div>
+
+    <div class="right-actions">
+      @if (currentId) {
+        <button
+          mat-button
+          color="warn"
+          (click)="onDelete()"
+          [disabled]="categoryService.loading()"
+        >
+          Delete
+        </button>
+      }
+
+      <button
+        mat-flat-button
+        color="primary"
+        (click)="onSave()"
+        [disabled]="categoryService.loading()"
+      >
+        <mat-icon>{{
+          categoryService.loading() ? "hourglass_empty" : "check"
+        }}</mat-icon>
+        <span>{{ currentId ? "Save Changes" : "Create Category" }}</span>
+      </button>
+    </div>
+  </div>
+</ng-template>
+
+<div class="category-edit-container">
+  @if (item(); as c) {
+    <div class="form-card">
+      <header class="card-header">
+        <h2 class="form-title">{{ currentId ? "Edit" : "New" }} Category</h2>
+      </header>
+
+      <div class="form-grid">
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>Display Name</mat-label>
+          <input
+            matInput
+            [(ngModel)]="c.display_name"
+            placeholder="e.g. Frontend Development"
+            required
+          />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Name (English)</mat-label>
+          <input matInput [(ngModel)]="c.name_en" placeholder="English name" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Name (Chinese)</mat-label>
+          <input matInput [(ngModel)]="c.name_zh" placeholder="中文名稱" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="c.status">
+            <mat-option [value]="1">Active</mat-option>
+            <mat-option [value]="0">Inactive</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>Remarks</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [(ngModel)]="c.remarks"
+            placeholder="Optional notes..."
+          ></textarea>
+        </mat-form-field>
+      </div>
+    </div>
+  }
+</div>

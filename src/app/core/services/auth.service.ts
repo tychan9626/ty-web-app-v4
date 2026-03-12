@@ -1,4 +1,4 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, NgZone } from '@angular/core';
 import { Router } from '@angular/router';
 import { SupabaseService } from './supabase.service';
 import { TyappUser, USER_ROLES } from '../../features/user/models/user.model';
@@ -7,6 +7,7 @@ import { TyappUser, USER_ROLES } from '../../features/user/models/user.model';
 export class AuthService {
   private supabase = inject(SupabaseService).client;
   private router = inject(Router);
+  private zone = inject(NgZone);
 
   private _userProfile = signal<TyappUser | null>(null);
   public userProfile = this._userProfile.asReadonly();
@@ -23,16 +24,18 @@ export class AuthService {
     } = await this.supabase.auth.getSession();
     if (session?.user) await this.fetchProfile(session.user.id);
 
-    this.supabase.auth.onAuthStateChange(async (event, session) => {
-      if (
-        (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
-        session?.user
-      ) {
-        await this.fetchProfile(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
-        this._userProfile.set(null);
-        this.router.navigate(['/login']);
-      }
+    this.supabase.auth.onAuthStateChange((event, session) => {
+      this.zone.run(async () => {
+        if (
+          (event === 'SIGNED_IN' || event === 'USER_UPDATED') &&
+          session?.user
+        ) {
+          await this.fetchProfile(session.user.id);
+        } else if (event === 'SIGNED_OUT') {
+          this._userProfile.set(null);
+          this.router.navigate(['/login']);
+        }
+      });
     });
   }
 
