@@ -16,6 +16,33 @@ export class UserService {
 
   private initialized = false;
   private fetchPromise: Promise<void> | null = null;
+
+  async fetchUserById(userId: string): Promise<TyappUser | null> {
+    this.loading.set(true);
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_user')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      return this.zone.run(() => {
+        this.loading.set(false);
+        if (error) {
+          this.showError('Fetch Error', error.message);
+          return null;
+        }
+        return data as TyappUser;
+      });
+    } catch (error: any) {
+      return this.zone.run(() => {
+        this.loading.set(false);
+        this.showError('Fetch Error', error.message || 'Unknown error');
+        return null;
+      });
+    }
+  }
+
   fetchAllUsers(forceRefresh = false): Promise<void> {
     if (this.initialized && !forceRefresh) return Promise.resolve();
 

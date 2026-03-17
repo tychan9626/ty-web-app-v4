@@ -22,6 +22,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CategoryService } from '../../services/category.service';
 import { AppCategory } from '../../models/category.model';
 import { HeaderService } from '../../../../../core/services/header.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-category-edit',
@@ -35,6 +36,7 @@ import { HeaderService } from '../../../../../core/services/header.service';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './category-edit.html',
   styleUrl: './category-edit.scss',
@@ -53,23 +55,34 @@ export class CategoryEdit implements OnInit, OnDestroy {
   item = signal<Partial<AppCategory> | null>(null);
   currentId: string | null = null;
 
+  isSyncing = signal(false);
+
   async ngOnInit() {
     this.headerService.portal.set(this.editActions);
 
     this.currentId = this.route.snapshot.paramMap.get('id');
 
     if (this.currentId) {
-      await this.categoryService.fetchAllCategories();
-      const found = this.categoryService
+      this.isSyncing.set(true);
+
+      const cachedCat = this.categoryService
         .categories()
         .find((c) => c.tb_tyapp_ap_ctgy_id === this.currentId);
+      if (cachedCat) {
+        this.item.set(structuredClone(cachedCat));
+      }
+
+      const freshCat = await this.categoryService.fetchCategoryById(
+        this.currentId,
+      );
 
       this.zone.run(() => {
-        if (found) {
-          this.item.set(structuredClone(found));
-        } else {
+        if (freshCat) {
+          this.item.set(structuredClone(freshCat));
+        } else if (!cachedCat) {
           this.router.navigate(['/development/category/list']);
         }
+        this.isSyncing.set(false);
       });
     } else {
       this.item.set({

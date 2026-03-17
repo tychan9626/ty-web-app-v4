@@ -26,6 +26,7 @@ import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
 import { DisplayNameModePipe } from '../../../../core/pipes/display-name-mode.pipe';
 import { HeaderService } from '../../../../core/services/header.service';
 import { exportToCsv } from '../../../../core/utils/csv-export.util';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-user-edit',
@@ -43,6 +44,7 @@ import { exportToCsv } from '../../../../core/utils/csv-export.util';
     DisplayNamePipe,
     RoleLabelPipe,
     DisplayNameModePipe,
+    MatProgressSpinnerModule,
   ],
   providers: [DisplayNamePipe, RoleLabelPipe, DisplayNameModePipe],
   templateUrl: './user-edit.html',
@@ -67,6 +69,7 @@ export class UserEdit implements OnInit, OnDestroy {
 
   user = signal<TyappUser | null>(null);
   isSaving = signal(false);
+  isSyncing = signal(false);
 
   async ngOnInit() {
     this.headerService.portal.set(this.editActions);
@@ -74,15 +77,23 @@ export class UserEdit implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    await this.userService.fetchAllUsers();
+    this.isSyncing.set(true);
+
+    const cachedUser = this.userService.users().find((u) => u.user_id === id);
+    if (cachedUser) {
+      this.user.set(structuredClone(cachedUser));
+    }
+
+    const freshUser = await this.userService.fetchUserById(id);
 
     this.zone.run(() => {
-      const found = this.userService.users().find((u) => u.user_id === id);
-      if (found) {
-        this.user.set(structuredClone(found));
-      } else {
+      if (freshUser) {
+        this.user.set(structuredClone(freshUser));
+      } else if (!cachedUser) {
         this.router.navigate(['/users/list']);
       }
+
+      this.isSyncing.set(false);
     });
   }
 

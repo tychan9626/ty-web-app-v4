@@ -7,6 +7,14 @@
     </div>
 
     <div class="right-actions">
+@if (currentId) {
+  <div class="sync-status-indicator"> @if (isSyncing()) {
+      <mat-spinner diameter="16"></mat-spinner>
+      <span class="status-text desktop-only">Syncing...</span> } @else {
+      <mat-icon class="success-icon">cloud_done</mat-icon>
+      <span class="status-text desktop-only">Up to date</span> }
+  </div>
+}
       @if (currentId) {
         <button
           mat-button

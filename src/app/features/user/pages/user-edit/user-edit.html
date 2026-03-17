@@ -8,7 +8,13 @@
     </div>
 
     <div class="right-actions">
-      
+<div class="sync-status-indicator"> @if (isSyncing()) {
+    <mat-spinner diameter="16"></mat-spinner>
+    <span class="status-text desktop-only">Syncing...</span> } @else {
+    <mat-icon class="success-icon">cloud_done</mat-icon>
+    <span class="status-text desktop-only">Up to date</span> }
+</div>
+
       <button mat-button class="desktop-only" (click)="onExport()">
         <mat-icon>download</mat-icon>
         <span>Export</span>

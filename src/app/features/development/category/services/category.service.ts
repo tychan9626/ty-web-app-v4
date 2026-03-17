@@ -12,6 +12,24 @@ export class CategoryService {
   categories = signal<AppCategory[]>([]);
   loading = signal(false);
 
+  async fetchCategoryById(id: string): Promise<AppCategory | null> {
+    this.loading.set(true);
+    const { data, error } = await this.supabase
+      .from('tyapp_app_category')
+      .select('*')
+      .eq('tb_tyapp_ap_ctgy_id', id)
+      .single();
+
+    return this.zone.run(() => {
+      this.loading.set(false);
+      if (error) {
+        this.snackBar.open(error.message, 'OK');
+        return null;
+      }
+      return data as AppCategory;
+    });
+  }
+
   async fetchAllCategories(force = false) {
     if (this.categories().length > 0 && !force) return;
 
