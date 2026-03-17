@@ -1,11 +1,7 @@
 <ng-template #editActions>
   <div class="page-toolbar-wrapper">
     <div class="left-actions">
-      <button
-        mat-icon-button
-        routerLink="/development/category/list"
-        title="Discard changes"
-      >
+      <button mat-icon-button routerLink="/development/category/list">
         <mat-icon>west</mat-icon>
       </button>
     </div>
@@ -18,10 +14,10 @@
           (click)="onDelete()"
           [disabled]="categoryService.loading()"
         >
-          Delete
+          <mat-icon>delete_outline</mat-icon>
+          <span>Delete</span>
         </button>
       }
-
       <button
         mat-flat-button
         color="primary"
@@ -37,60 +33,54 @@
   </div>
 </ng-template>
 
-<div class="category-edit-container">
+<div class="split-workspace">
   @if (item(); as c) {
-    <div class="form-card">
-      <header class="card-header">
-        <h2 class="form-title">{{ currentId ? "Edit" : "New" }} Category</h2>
-      </header>
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">Identity & Naming</h3>
+        <div class="fields-grid-2">
+          <mat-form-field
+            appearance="outline"
+            class="full-width"
+            subscriptSizing="dynamic"
+          >
+            <mat-label>Display Name</mat-label>
+            <input matInput [(ngModel)]="c.display_name" required />
+          </mat-form-field>
 
-      <div class="form-grid">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>English Name</mat-label>
+            <input matInput [(ngModel)]="c.name_en" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Chinese Name</mat-label>
+            <input matInput [(ngModel)]="c.name_zh" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">System Configuration</h3>
+        <div class="fields-row-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="c.status">
+              <mat-option [value]="1">Active</mat-option>
+              <mat-option [value]="0">Inactive</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <mat-form-field
           appearance="outline"
           class="full-width"
           subscriptSizing="dynamic"
         >
-          <mat-label>Display Name</mat-label>
-          <input
-            matInput
-            [(ngModel)]="c.display_name"
-            placeholder="e.g. Frontend Development"
-            required
-          />
+          <mat-label>Internal Remarks</mat-label>
+          <textarea matInput rows="4" [(ngModel)]="c.remarks"></textarea>
         </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Name (English)</mat-label>
-          <input matInput [(ngModel)]="c.name_en" placeholder="English name" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Name (Chinese)</mat-label>
-          <input matInput [(ngModel)]="c.name_zh" placeholder="中文名稱" />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Status</mat-label>
-          <mat-select [(ngModel)]="c.status">
-            <mat-option [value]="1">Active</mat-option>
-            <mat-option [value]="0">Inactive</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field
-          appearance="outline"
-          class="full-width"
-          subscriptSizing="dynamic"
-        >
-          <mat-label>Remarks</mat-label>
-          <textarea
-            matInput
-            rows="4"
-            [(ngModel)]="c.remarks"
-            placeholder="Optional notes..."
-          ></textarea>
-        </mat-form-field>
-      </div>
+      </section>
     </div>
   }
 </div>

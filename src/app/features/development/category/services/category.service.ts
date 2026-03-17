@@ -35,16 +35,25 @@ export class CategoryService {
   async saveCategory(category: Partial<AppCategory>): Promise<boolean> {
     const isNew = !category.tb_tyapp_ap_ctgy_id;
 
+    const {
+      tb_tyapp_ap_ctgy_seq_no,
+      created_at,
+      updated_at,
+      deleted_at,
+      ...payload
+    } = category;
+
     this.loading.set(true);
+
     const query = isNew
       ? this.supabase
           .from('tyapp_app_category')
-          .insert(category)
+          .insert(payload)
           .select()
           .single()
       : this.supabase
           .from('tyapp_app_category')
-          .update(category)
+          .update(payload)
           .eq('tb_tyapp_ap_ctgy_id', category.tb_tyapp_ap_ctgy_id)
           .select()
           .single();
@@ -74,9 +83,12 @@ export class CategoryService {
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    const { error } = await this.supabase.rpc('rpc_delete_app_category', {
-      p_category_id: id,
-    });
+    const { error } = await this.supabase.rpc(
+      'tyapp_app_category_soft_delete_single_record',
+      {
+        record_id: id,
+      },
+    );
 
     return this.zone.run(() => {
       if (error) {

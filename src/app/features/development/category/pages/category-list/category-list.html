@@ -1,8 +1,6 @@
 <ng-template #navActions>
   <div class="page-toolbar-wrapper">
-    <div class="left-actions">
-
-    </div>
+    <div class="left-actions"></div>
 
     <div class="right-actions">
       <button
@@ -36,17 +34,19 @@
 
           <div class="status-group">
             <span class="status-tag" [class.inactive]="cat.status === 0">
-              {{ cat.status === 1 ? 'Active' : 'Inactive' }}
+              {{ cat.status === 1 ? "Active" : "Inactive" }}
             </span>
             <mat-icon class="chevron">chevron_right</mat-icon>
           </div>
         </div>
       </a>
     }
-    </div>
+  </div>
 
   <footer class="list-footer">
     <div class="divider"></div>
-    <span class="count-text">TOTAL {{ categoryService.categories().length }} CATEGORIES</span>
+    <span class="count-text"
+      >TOTAL {{ categoryService.categories().length }} CATEGORIES</span
+    >
   </footer>
 </div>
