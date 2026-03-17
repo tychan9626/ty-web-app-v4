@@ -22,17 +22,17 @@
   </div>
 </ng-template>
 
-<div class="category-view">
+<div class="standard-list-view">
   <div class="list-container">
     @for (cat of categoryService.categories(); track cat.tb_tyapp_ap_ctgy_id) {
       <a class="item-link" [routerLink]="['../edit', cat.tb_tyapp_ap_ctgy_id]">
         <div class="item-content">
-          <div class="info-group">
-            <span class="main-title">{{ cat.display_name }}</span>
-            <span class="sub-info">{{ cat.name_en }} · {{ cat.name_zh }}</span>
+          <div class="item-info-group">
+            <span class="main-text">{{ cat.display_name }}</span>
+            <span class="sub-text">{{ cat.name_en }} · {{ cat.name_zh }}</span>
           </div>
 
-          <div class="status-group">
+          <div class="item-status-group">
             <span class="status-tag" [class.inactive]="cat.status === 0">
               {{ cat.status === 1 ? "Active" : "Inactive" }}
             </span>
@@ -45,8 +45,6 @@
 
   <footer class="list-footer">
     <div class="divider"></div>
-    <span class="count-text"
-      >TOTAL {{ categoryService.categories().length }} CATEGORIES</span
-    >
+    <span class="count-text">TOTAL {{ categoryService.categories().length }} CATEGORIES</span>
   </footer>
 </div>

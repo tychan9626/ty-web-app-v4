@@ -1,4 +1,5 @@
 @use "@angular/material" as mat;
+@use "shared-list";
 
 html {
   @include mat.theme(
@@ -13,11 +14,14 @@ html {
   );
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
   padding: 0;
@@ -30,8 +34,13 @@ body {
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  
-  h1, h2, h3, h4, .mat-mdc-button, .mat-mdc-nav-list .mat-mdc-list-item {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .mat-mdc-button,
+  .mat-mdc-nav-list .mat-mdc-list-item {
     font-weight: 500;
   }
 }
@@ -49,9 +58,6 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* =========================================
-   全域頂端 Navbar 通用排版 (Global Toolbar)
-   ========================================= */
 .page-toolbar-wrapper {
   display: flex;
   align-items: center;
@@ -66,24 +72,30 @@ body {
     gap: 8px;
   }
 
-  /* --- 響應式顯示控制 (RWD) --- */
-  /* 預設狀態 (桌面版)：隱藏手機專屬按鈕 */
   .mobile-only {
     display: none;
   }
 
-  /* * 注意：這裡我們甚至不需要寫 .desktop-only { display: flex; } 
-   * 只要讓它保持 Angular Material 按鈕原本的 display 屬性即可，這樣更乾淨。
-   */
-
-  /* 當螢幕寬度小於 800px (手機/小平板) 時觸發 */
   @media (max-width: 800px) {
     .desktop-only {
-      display: none; /* 隱藏桌面版專屬按鈕 */
+      display: none;
     }
-    
+
     .mobile-only {
-      display: block; /* 顯示手機版 3 點選單 */
+      display: block;
     }
+  }
+}
+
+.spinning {
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
