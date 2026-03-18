@@ -1,13 +1,6 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  TemplateRef,
-  ViewChild,
-} from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -26,16 +19,37 @@ import { HeaderService } from '../../../../../core/services/header.service';
     MatProgressSpinnerModule,
   ],
   templateUrl: './category-list.html',
-  styleUrl: './category-list.scss',
 })
 export class CategoryList implements OnInit, OnDestroy {
   public readonly categoryService = inject(CategoryService);
   private readonly headerService = inject(HeaderService);
-
-  @ViewChild('navActions', { static: true }) navActions!: TemplateRef<unknown>;
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit() {
-    this.headerService.portal.set(this.navActions);
+    const isLoading = computed(() => this.categoryService.loading());
+
+    this.headerService.setConfig({
+      title: 'App Categories',
+      actions: [
+        {
+          label: 'Refresh',
+          icon: 'refresh',
+          type: 'secondary',
+          disabled: isLoading,
+          onClick: () => this.onRefresh(),
+        },
+        {
+          label: 'New Category',
+          icon: 'add',
+          type: 'primary',
+          disabled: isLoading,
+          onClick: () =>
+            this.router.navigate(['../new'], { relativeTo: this.route }),
+        },
+      ],
+    });
+
     this.categoryService.fetchAllCategories();
   }
 

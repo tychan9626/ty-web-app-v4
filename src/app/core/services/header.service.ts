@@ -1,13 +1,30 @@
-import { Injectable, TemplateRef, signal } from '@angular/core';
+import { Injectable, signal, Signal } from '@angular/core';
+
+export interface HeaderAction {
+  label: string;
+  icon: string;
+  type: 'primary' | 'secondary';
+  disabled?: Signal<boolean> | (() => boolean);
+  onClick: () => void;
+}
+
+export interface HeaderConfig {
+  backLink?: string;
+  title?: string;
+  showSyncStatus?: boolean;
+  isSyncing?: Signal<boolean>;
+  actions?: HeaderAction[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class HeaderService {
-  title = signal<string>('');
-  
-  portal = signal<TemplateRef<unknown> | null>(null);
+  config = signal<HeaderConfig | null>(null);
+
+  setConfig(config: HeaderConfig) {
+    this.config.set(config);
+  }
 
   clear() {
-    this.title.set('');
-    this.portal.set(null);
+    this.config.set(null);
   }
 }

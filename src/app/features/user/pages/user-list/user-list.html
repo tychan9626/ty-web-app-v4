@@ -1,46 +1,3 @@
-<ng-template #navActions>
-  <div class="page-toolbar-wrapper">
-    <div class="left-actions"></div>
-
-    <div class="right-actions">
-      <button
-        matButton="elevated"
-        (click)="onRefresh()"
-        [disabled]="userService.loading()"
-      >
-        <mat-icon [class.spinning]="userService.loading()">refresh</mat-icon>
-        <span>Refresh</span>
-      </button>
-
-      <button
-        matButton="elevated"
-        class="desktop-only"
-        (click)="onExport()"
-        [disabled]="userService.loading() || userService.users().length === 0"
-      >
-        <mat-icon>download</mat-icon>
-        <span>Export CSV</span>
-      </button>
-
-      <div class="mobile-only">
-        <button
-          mat-icon-button
-          [matMenuTriggerFor]="listMenu"
-          [disabled]="userService.users().length === 0"
-        >
-          <mat-icon>more_vert</mat-icon>
-        </button>
-        <mat-menu #listMenu="matMenu">
-          <button mat-menu-item (click)="onExport()">
-            <mat-icon>download</mat-icon>
-            <span>Export CSV</span>
-          </button>
-        </mat-menu>
-      </div>
-    </div>
-  </div>
-</ng-template>
-
 <div class="standard-list-view">
   <div class="list-container">
     @for (user of userService.users(); track user.user_id) {
@@ -48,7 +5,9 @@
         <div class="item-content">
           <div class="item-info-group">
             <span class="main-text">{{ user | tyDisplayName }}</span>
-            <span class="sub-text">{{ user.role | tyRoleLabel }} · {{ user.user_id }}</span>
+            <span class="sub-text"
+              >{{ user.role | tyRoleLabel }} · {{ user.user_id }}</span
+            >
           </div>
 
           <div class="item-status-group">
@@ -63,9 +22,14 @@
     }
   </div>
 
-  <footer class="list-footer" [hidden]="userService.loading() || userService.users().length === 0">
+  <footer
+    class="list-footer"
+    [hidden]="userService.loading() || userService.users().length === 0"
+  >
     <div class="divider"></div>
-    <span class="count-text">TOTAL {{ userService.users().length }} MEMBERS</span>
+    <span class="count-text"
+      >TOTAL {{ userService.users().length }} MEMBERS</span
+    >
     @if (userService.loading()) {
       <mat-spinner diameter="16"></mat-spinner>
     }

@@ -4,8 +4,7 @@ import {
   OnInit,
   OnDestroy,
   signal,
-  TemplateRef,
-  ViewChild,
+  computed,
   NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -17,12 +16,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { CategoryService } from '../../services/category.service';
 import { AppCategory } from '../../models/category.model';
-import { HeaderService } from '../../../../../core/services/header.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import {
+  HeaderService,
+  HeaderAction,
+} from '../../../../../core/services/header.service';
 
 @Component({
   selector: 'app-category-edit',
@@ -36,7 +36,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressSpinnerModule,
   ],
   templateUrl: './category-edit.html',
   styleUrl: './category-edit.scss',
@@ -45,22 +44,42 @@ export class CategoryEdit implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
-  private snackBar = inject(MatSnackBar);
   public categoryService = inject(CategoryService);
   private headerService = inject(HeaderService);
 
-  @ViewChild('editActions', { static: true })
-  editActions!: TemplateRef<unknown>;
-
   item = signal<Partial<AppCategory> | null>(null);
   currentId: string | null = null;
-
   isSyncing = signal(false);
 
   async ngOnInit() {
-    this.headerService.portal.set(this.editActions);
-
     this.currentId = this.route.snapshot.paramMap.get('id');
+
+    const isSaveDisabled = () => 
+      this.categoryService.loading() || !this.item()?.display_name;
+
+    const actions: HeaderAction[] = [];
+    if (this.currentId) {
+      actions.push({
+        label: 'Delete',
+        icon: 'delete_outline',
+        type: 'secondary',
+        onClick: () => this.onDelete(),
+      });
+    }
+    actions.push({
+      label: this.currentId ? 'Save Changes' : 'Create Category',
+      icon: 'check',
+      type: 'primary',
+      disabled: isSaveDisabled,
+      onClick: () => this.onSave(),
+    });
+
+    this.headerService.setConfig({
+      backLink: '/development/category/list',
+      showSyncStatus: !!this.currentId,
+      isSyncing: this.isSyncing,
+      actions: actions,
+    });
 
     if (this.currentId) {
       this.isSyncing.set(true);
@@ -97,9 +116,7 @@ export class CategoryEdit implements OnInit, OnDestroy {
 
   async onSave() {
     const data = this.item();
-    if (!data || !data.display_name?.trim()) {
-      return;
-    }
+    if (!data || !data.display_name?.trim()) return;
 
     const success = await this.categoryService.saveCategory(data);
     if (success) {

@@ -4,8 +4,7 @@ import {
   OnDestroy,
   OnInit,
   signal,
-  TemplateRef,
-  ViewChild,
+  computed,
   NgZone,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -26,7 +25,6 @@ import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
 import { DisplayNameModePipe } from '../../../../core/pipes/display-name-mode.pipe';
 import { HeaderService } from '../../../../core/services/header.service';
 import { exportToCsv } from '../../../../core/utils/csv-export.util';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-user-edit',
@@ -44,7 +42,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     DisplayNamePipe,
     RoleLabelPipe,
     DisplayNameModePipe,
-    MatProgressSpinnerModule,
   ],
   providers: [DisplayNamePipe, RoleLabelPipe, DisplayNameModePipe],
   templateUrl: './user-edit.html',
@@ -61,9 +58,6 @@ export class UserEdit implements OnInit, OnDestroy {
   private roleLabelPipe = inject(RoleLabelPipe);
   private displayNameModePipe = inject(DisplayNameModePipe);
 
-  @ViewChild('editActions', { static: true })
-  editActions!: TemplateRef<unknown>;
-
   readonly availableRoles = [1, 900, 998];
   readonly availableModes = [1, 2, 3, 4, 5];
 
@@ -72,10 +66,35 @@ export class UserEdit implements OnInit, OnDestroy {
   isSyncing = signal(false);
 
   async ngOnInit() {
-    this.headerService.portal.set(this.editActions);
-
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
+
+    const isSaveDisabled = () =>
+      this.isSaving() ||
+      !this.user() ||
+      !this.user()?.legal_first_name ||
+      !this.user()?.legal_last_name;
+
+    this.headerService.setConfig({
+      backLink: '/users/list',
+      showSyncStatus: true,
+      isSyncing: this.isSyncing,
+      actions: [
+        {
+          label: 'Export CSV',
+          icon: 'download',
+          type: 'secondary',
+          onClick: () => this.onExport(),
+        },
+        {
+          label: 'Save Changes',
+          icon: 'check',
+          type: 'primary',
+          disabled: isSaveDisabled,
+          onClick: () => this.onSave(),
+        },
+      ],
+    });
 
     this.isSyncing.set(true);
 
@@ -92,7 +111,6 @@ export class UserEdit implements OnInit, OnDestroy {
       } else if (!cachedUser) {
         this.router.navigate(['/users/list']);
       }
-
       this.isSyncing.set(false);
     });
   }
@@ -114,7 +132,6 @@ export class UserEdit implements OnInit, OnDestroy {
       'Status',
       'Internal Remarks',
     ];
-
     const rows = [
       [
         u.user_id,
@@ -131,8 +148,11 @@ export class UserEdit implements OnInit, OnDestroy {
       ],
     ];
 
-    const fileName = `User_Detail_${u.legal_first_name || u.user_id}`;
-    exportToCsv(fileName, headers, rows);
+    exportToCsv(
+      `User_Detail_${u.legal_first_name || u.user_id}`,
+      headers,
+      rows,
+    );
   }
 
   async onSave() {
@@ -142,9 +162,8 @@ export class UserEdit implements OnInit, OnDestroy {
       this.isSaving() ||
       !data.legal_first_name ||
       !data.legal_last_name
-    ) {
+    )
       return;
-    }
 
     this.isSaving.set(true);
     const success = await this.userService.updateUser(data.user_id, data);

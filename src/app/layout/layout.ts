@@ -2,7 +2,7 @@ import { Component, computed, inject, ViewChild } from '@angular/core';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { map } from 'rxjs/operators';
-import { CommonModule, NgTemplateOutlet } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
@@ -13,9 +13,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AuthService } from '../core/services/auth.service';
-import { HeaderService } from '../core/services/header.service';
+import { HeaderService, HeaderAction } from '../core/services/header.service';
 import { DisplayNamePipe } from '../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../core/pipes/role-label.pipe';
 import { APP_CONFIG } from '../app.constants';
@@ -26,7 +27,6 @@ import { APP_CONFIG } from '../app.constants';
   imports: [
     CommonModule,
     RouterModule,
-    NgTemplateOutlet,
     MatSidenavModule,
     MatToolbarModule,
     MatListModule,
@@ -35,6 +35,7 @@ import { APP_CONFIG } from '../app.constants';
     MatExpansionModule,
     MatMenuModule,
     MatDividerModule,
+    MatProgressSpinnerModule,
     DisplayNamePipe,
     RoleLabelPipe,
   ],
@@ -59,9 +60,7 @@ export class Layout {
   readonly isAdmin = this.auth.isAdmin;
 
   closeOnMobile() {
-    if (this.isHandset()) {
-      this.drawer.close();
-    }
+    if (this.isHandset()) this.drawer.close();
   }
 
   async onSignOut() {
@@ -72,4 +71,12 @@ export class Layout {
     const { major, minor, patch } = APP_CONFIG.version;
     return `${major}.${minor}.${patch}`;
   });
+
+  getPrimaryActions(actions?: HeaderAction[]) {
+    return (actions || []).filter((a) => a.type === 'primary');
+  }
+
+  getSecondaryActions(actions?: HeaderAction[]) {
+    return (actions || []).filter((a) => a.type === 'secondary');
+  }
 }

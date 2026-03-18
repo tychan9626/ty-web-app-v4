@@ -1,24 +1,16 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  TemplateRef,
-  ViewChild,
-  signal,
-} from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { UserService } from '../../services/user.service';
 import { HeaderService } from '../../../../core/services/header.service';
 import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
 import { exportToCsv } from '../../../../core/utils/csv-export.util';
-import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-user-list',
@@ -33,12 +25,8 @@ import { MatMenuModule } from '@angular/material/menu';
     DisplayNamePipe,
     RoleLabelPipe,
   ],
-  providers: [
-    DisplayNamePipe, 
-    RoleLabelPipe
-  ],
+  providers: [DisplayNamePipe, RoleLabelPipe],
   templateUrl: './user-list.html',
-  styleUrl: './user-list.scss',
 })
 export class UserList implements OnInit, OnDestroy {
   public readonly userService = inject(UserService);
@@ -46,10 +34,32 @@ export class UserList implements OnInit, OnDestroy {
   private displayNamePipe = inject(DisplayNamePipe);
   private roleLabelPipe = inject(RoleLabelPipe);
 
-  @ViewChild('navActions', { static: true }) navActions!: TemplateRef<unknown>;
-
   ngOnInit() {
-    this.headerService.portal.set(this.navActions);
+    const isRefreshDisabled = computed(() => this.userService.loading());
+    const isExportDisabled = computed(
+      () => this.userService.loading() || this.userService.users().length === 0,
+    );
+
+    this.headerService.setConfig({
+      title: 'User Management',
+      actions: [
+        {
+          label: 'Refresh',
+          icon: 'refresh',
+          type: 'secondary',
+          disabled: isRefreshDisabled,
+          onClick: () => this.onRefresh(),
+        },
+        {
+          label: 'Export CSV',
+          icon: 'download',
+          type: 'secondary',
+          disabled: isExportDisabled,
+          onClick: () => this.onExport(),
+        },
+      ],
+    });
+
     this.userService.fetchAllUsers();
   }
 

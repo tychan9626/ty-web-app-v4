@@ -134,7 +134,7 @@
   }
 
   .header-portal-slot {
-    flex: 1; // 佔滿剩餘寬度
+    flex: 1;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -144,14 +144,14 @@
 }
 
 .header-portal-slot {
-    flex: 1;
-    display: flex;
-    flex-direction: row; 
-    align-items: center;
-    height: 100%;
-    overflow: visible; 
-    white-space: nowrap;
-  }
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  overflow: visible;
+  white-space: nowrap;
+}
 
 .main-scroll-view {
   flex: 1;
@@ -167,4 +167,88 @@
   padding: 16px;
   font-size: 10px;
   color: var(--mat-sys-outline);
+}
+
+.page-toolbar-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 8px;
+
+  .left-actions,
+  .right-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .page-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+
+  .mobile-menu-trigger {
+    display: none;
+  }
+
+  .sync-status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: 8px;
+    padding: 4px 12px;
+    background-color: var(--mat-sys-surface-container-low);
+    border-radius: 16px;
+    border: 1px solid var(--mat-sys-outline-variant);
+
+    .status-text {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--mat-sys-outline);
+    }
+    .success-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+      color: var(--mat-sys-primary);
+    }
+  }
+
+  @media (max-width: 800px) {
+    .right-actions {
+      gap: 4px;
+
+      .desktop-only,
+      button.desktop-only {
+        display: none;
+      }
+
+      button.primary-action-btn.mat-mdc-unelevated-button {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+
+        .mat-icon {
+          margin: 0;
+        }
+      }
+    }
+
+    .mobile-menu-trigger {
+      display: block;
+    }
+
+    .sync-status-indicator {
+      padding: 4px 8px;
+      margin-right: 0;
+      gap: 0;
+    }
+  }
 }
