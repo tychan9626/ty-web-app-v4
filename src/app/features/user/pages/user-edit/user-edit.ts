@@ -137,7 +137,14 @@ export class UserEdit implements OnInit, OnDestroy {
 
   async onSave() {
     const data = this.user();
-    if (!data || this.isSaving()) return;
+    if (
+      !data ||
+      this.isSaving() ||
+      !data.legal_first_name ||
+      !data.legal_last_name
+    ) {
+      return;
+    }
 
     this.isSaving.set(true);
     const success = await this.userService.updateUser(data.user_id, data);

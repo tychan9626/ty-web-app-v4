@@ -4,14 +4,23 @@ import { UserList } from './pages/user-list/user-list';
 import { UserEdit } from './pages/user-edit/user-edit';
 
 export const USER_ROUTES: Routes = [
-  { 
-    path: 'list', 
-    component: UserList, 
-    canActivate: [adminGuard] 
+  {
+    path: '',
+    canActivate: [adminGuard],
+    children: [
+      {
+        path: '',
+        redirectTo: 'list',
+        pathMatch: 'full',
+      },
+      {
+        path: 'list',
+        component: UserList,
+      },
+      {
+        path: 'edit/:id',
+        component: UserEdit,
+      },
+    ],
   },
-  { 
-    path: 'edit/:id', 
-    component: UserEdit,
-    canActivate: [adminGuard] 
-  }
 ];

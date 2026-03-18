@@ -97,8 +97,7 @@ export class CategoryEdit implements OnInit, OnDestroy {
 
   async onSave() {
     const data = this.item();
-    if (!data || !data.display_name) {
-      this.snackBar.open('Display Name is required', 'OK', { duration: 3000 });
+    if (!data || !data.display_name?.trim()) {
       return;
     }
 

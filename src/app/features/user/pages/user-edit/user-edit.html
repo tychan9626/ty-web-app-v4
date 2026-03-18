@@ -1,6 +1,5 @@
 <ng-template #editActions>
   <div class="page-toolbar-wrapper">
-    
     <div class="left-actions">
       <button mat-icon-button routerLink="/users/list">
         <mat-icon>west</mat-icon>
@@ -8,12 +7,15 @@
     </div>
 
     <div class="right-actions">
-<div class="sync-status-indicator"> @if (isSyncing()) {
-    <mat-spinner diameter="16"></mat-spinner>
-    <span class="status-text desktop-only">Syncing...</span> } @else {
-    <mat-icon class="success-icon">cloud_done</mat-icon>
-    <span class="status-text desktop-only">Up to date</span> }
-</div>
+      <div class="sync-status-indicator">
+        @if (isSyncing()) {
+          <mat-spinner diameter="16"></mat-spinner>
+          <span class="status-text desktop-only">Syncing...</span>
+        } @else {
+          <mat-icon class="success-icon">cloud_done</mat-icon>
+          <span class="status-text desktop-only">Up to date</span>
+        }
+      </div>
 
       <button mat-button class="desktop-only" (click)="onExport()">
         <mat-icon>download</mat-icon>
@@ -21,14 +23,13 @@
       </button>
 
       <button 
-        mat-flat-button 
-        color="primary"
-        class="save-btn"
-        (click)="onSave()" 
-        [disabled]="isSaving() || !user()">
-        <mat-icon>{{ isSaving() ? 'hourglass_empty' : 'check' }}</mat-icon> 
-        <span>{{ isSaving() ? 'Saving' : 'Save Changes' }}</span>
-      </button>
+  mat-flat-button 
+  color="primary"
+  class="save-btn"
+  (click)="onSave()" 
+  [disabled]="isSaving() || !user() || !user()?.legal_first_name || !user()?.legal_last_name"> <mat-icon>{{ isSaving() ? 'hourglass_empty' : 'check' }}</mat-icon> 
+  <span>{{ isSaving() ? 'Saving' : 'Save Changes' }}</span>
+</button>
 
       <div class="mobile-only">
         <button mat-icon-button [matMenuTriggerFor]="moreMenu">
@@ -41,7 +42,6 @@
           </button>
         </mat-menu>
       </div>
-
     </div>
   </div>
 </ng-template>
@@ -54,11 +54,15 @@
         <div class="fields-grid-2">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Legal First Name</mat-label>
-            <input matInput [(ngModel)]="u.legal_first_name" />
+            <input matInput [(ngModel)]="u.legal_first_name" required />
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Preferred Name (Known As)</mat-label>
-            <input matInput [(ngModel)]="u.preferred_first_name" placeholder="e.g. Jax" />
+            <input
+              matInput
+              [(ngModel)]="u.preferred_first_name"
+              placeholder="e.g. Jax"
+            />
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Legal Middle Name</mat-label>
@@ -66,7 +70,7 @@
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Legal Last Name</mat-label>
-            <input matInput [(ngModel)]="u.legal_last_name" />
+            <input matInput [(ngModel)]="u.legal_last_name" required />
           </mat-form-field>
         </div>
       </section>
@@ -104,10 +108,18 @@
           </mat-form-field>
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Status</mat-label>
-            <input matInput [value]="u.status === 1 ? 'Active' : 'Inactive'" disabled />
+            <input
+              matInput
+              [value]="u.status === 1 ? 'Active' : 'Inactive'"
+              disabled
+            />
           </mat-form-field>
         </div>
-        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
           <mat-label>Internal Remarks</mat-label>
           <textarea matInput rows="3" [(ngModel)]="u.remarks"></textarea>
         </mat-form-field>

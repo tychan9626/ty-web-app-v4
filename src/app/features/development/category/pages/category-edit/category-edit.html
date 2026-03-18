@@ -27,16 +27,14 @@
         </button>
       }
       <button
-        mat-flat-button
-        color="primary"
-        (click)="onSave()"
-        [disabled]="categoryService.loading()"
-      >
-        <mat-icon>{{
-          categoryService.loading() ? "hourglass_empty" : "check"
-        }}</mat-icon>
-        <span>{{ currentId ? "Save Changes" : "Create Category" }}</span>
-      </button>
+  mat-flat-button
+  color="primary"
+  (click)="onSave()"
+  [disabled]="categoryService.loading() || !item()?.display_name"> <mat-icon>{{
+    categoryService.loading() ? "hourglass_empty" : "check"
+  }}</mat-icon>
+  <span>{{ currentId ? "Save Changes" : "Create Category" }}</span>
+</button>
     </div>
   </div>
 </ng-template>
