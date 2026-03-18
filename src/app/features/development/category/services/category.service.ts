@@ -1,53 +1,62 @@
 import { Injectable, NgZone, inject, signal } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { SupabaseService } from '../../../../core/services/supabase.service';
+import { NotificationService } from '../../../../core/services/notification.service';
 import { AppCategory } from '../models/category.model';
 
 @Injectable({ providedIn: 'root' })
 export class CategoryService {
   private supabase = inject(SupabaseService).client;
-  private snackBar = inject(MatSnackBar);
+  private notification = inject(NotificationService);
   private zone = inject(NgZone);
 
   categories = signal<AppCategory[]>([]);
   loading = signal(false);
 
-  async fetchCategoryById(id: string): Promise<AppCategory | null> {
-    this.loading.set(true);
-    const { data, error } = await this.supabase
-      .from('tyapp_app_category')
-      .select('*')
-      .eq('tb_tyapp_ap_ctgy_id', id)
-      .single();
-
-    return this.zone.run(() => {
-      this.loading.set(false);
-      if (error) {
-        this.snackBar.open(error.message, 'OK');
-        return null;
-      }
-      return data as AppCategory;
-    });
-  }
-
   async fetchAllCategories(force = false) {
     if (this.categories().length > 0 && !force) return;
 
     this.loading.set(true);
-    const { data, error } = await this.supabase
-      .from('tyapp_app_category')
-      .select('*')
-      .is('deleted_at', null)
-      .order('tb_tyapp_ap_ctgy_seq_no', { ascending: true });
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_app_category')
+        .select('*')
+        .is('deleted_at', null)
+        .order('tb_tyapp_ap_ctgy_seq_no', { ascending: true });
 
-    this.zone.run(() => {
-      if (error) {
-        this.snackBar.open(error.message, 'OK');
-      } else {
+      if (error) throw error;
+
+      this.zone.run(() => {
         this.categories.set(data || []);
-      }
-      this.loading.set(false);
-    });
+        this.loading.set(false);
+      });
+    } catch (error: unknown) {
+      this.notification.handleError('Fetch Categories Failed', error);
+      this.zone.run(() => this.loading.set(false));
+    }
+  }
+
+  async fetchCategoryById(id: string): Promise<AppCategory | null> {
+    this.loading.set(true);
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_app_category')
+        .select('*')
+        .eq('tb_tyapp_ap_ctgy_id', id)
+        .single();
+
+      if (error) throw error;
+
+      return this.zone.run(() => {
+        this.loading.set(false);
+        return data as AppCategory;
+      });
+    } catch (error: unknown) {
+      this.notification.handleError('Fetch Category Error', error);
+      return this.zone.run(() => {
+        this.loading.set(false);
+        return null;
+      });
+    }
   }
 
   async saveCategory(category: Partial<AppCategory>): Promise<boolean> {
@@ -76,48 +85,59 @@ export class CategoryService {
           .select()
           .single();
 
-    const { data, error } = await query;
+    try {
+      const { data, error } = await query;
+      if (error) throw error;
 
-    return this.zone.run(() => {
-      this.loading.set(false);
-      if (error) {
-        this.snackBar.open(error.message, 'OK');
+      return this.zone.run(() => {
+        const saved = data as AppCategory;
+        this.categories.update((list) =>
+          isNew
+            ? [...list, saved]
+            : list.map((item) =>
+                item.tb_tyapp_ap_ctgy_id === saved.tb_tyapp_ap_ctgy_id
+                  ? saved
+                  : item,
+              ),
+        );
+
+        this.loading.set(false);
+        this.notification.showSuccess('Saved successfully');
+        return true;
+      });
+    } catch (error: unknown) {
+      this.notification.handleError('Save Failed', error);
+      return this.zone.run(() => {
+        this.loading.set(false);
         return false;
-      }
-
-      const saved = data as AppCategory;
-      this.categories.update((list) =>
-        isNew
-          ? [...list, saved]
-          : list.map((item) =>
-              item.tb_tyapp_ap_ctgy_id === saved.tb_tyapp_ap_ctgy_id
-                ? saved
-                : item,
-            ),
-      );
-      this.snackBar.open('Saved successfully', 'OK', { duration: 2000 });
-      return true;
-    });
+      });
+    }
   }
 
   async deleteCategory(id: string): Promise<boolean> {
-    const { error } = await this.supabase.rpc(
-      'tyapp_app_category_soft_delete_single_record',
-      {
-        record_id: id,
-      },
-    );
-
-    return this.zone.run(() => {
-      if (error) {
-        this.snackBar.open(`Delete Failed: ${error.message}`, 'OK');
-        return false;
-      }
-      this.categories.update((list) =>
-        list.filter((item) => item.tb_tyapp_ap_ctgy_id !== id),
+    this.loading.set(true);
+    try {
+      const { error } = await this.supabase.rpc(
+        'tyapp_app_category_soft_delete_single_record',
+        { record_id: id },
       );
-      this.snackBar.open('Category deleted', 'OK', { duration: 2000 });
-      return true;
-    });
+
+      if (error) throw error;
+
+      return this.zone.run(() => {
+        this.categories.update((list) =>
+          list.filter((item) => item.tb_tyapp_ap_ctgy_id !== id),
+        );
+        this.loading.set(false);
+        this.notification.showSuccess('Category deleted');
+        return true;
+      });
+    } catch (error: unknown) {
+      this.notification.handleError('Delete Failed', error);
+      return this.zone.run(() => {
+        this.loading.set(false);
+        return false;
+      });
+    }
   }
 }

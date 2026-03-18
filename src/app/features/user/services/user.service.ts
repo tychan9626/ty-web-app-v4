@@ -1,14 +1,14 @@
 import { Injectable, NgZone, inject, signal } from '@angular/core';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { AuthService } from '../../../core/services/auth.service';
 import { SupabaseService } from '../../../core/services/supabase.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { TyappUser } from '../models/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private supabase = inject(SupabaseService).client;
   private authService = inject(AuthService);
-  private snackBar = inject(MatSnackBar);
+  private notification = inject(NotificationService);
   private zone = inject(NgZone);
 
   users = signal<TyappUser[]>([]);
@@ -17,35 +17,8 @@ export class UserService {
   private initialized = false;
   private fetchPromise: Promise<void> | null = null;
 
-  async fetchUserById(userId: string): Promise<TyappUser | null> {
-    this.loading.set(true);
-    try {
-      const { data, error } = await this.supabase
-        .from('tyapp_user')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-
-      return this.zone.run(() => {
-        this.loading.set(false);
-        if (error) {
-          this.showError('Fetch Error', error.message);
-          return null;
-        }
-        return data as TyappUser;
-      });
-    } catch (error: any) {
-      return this.zone.run(() => {
-        this.loading.set(false);
-        this.showError('Fetch Error', error.message || 'Unknown error');
-        return null;
-      });
-    }
-  }
-
   fetchAllUsers(forceRefresh = false): Promise<void> {
     if (this.initialized && !forceRefresh) return Promise.resolve();
-
     if (this.fetchPromise) return this.fetchPromise;
 
     this.loading.set(true);
@@ -65,24 +38,8 @@ export class UserService {
           this.loading.set(false);
         });
       } catch (error: unknown) {
-        this.zone.run(() => {
-          let errorMessage = 'An unexpected error occurred';
-
-          if (error instanceof Error) {
-            errorMessage = error.message;
-          } else if (
-            typeof error === 'object' &&
-            error !== null &&
-            'message' in error
-          ) {
-            errorMessage = String(error.message);
-          } else if (typeof error === 'string') {
-            errorMessage = error;
-          }
-
-          this.showError('Fetch Failed', errorMessage);
-          this.loading.set(false);
-        });
+        this.notification.handleError('Fetch Failed', error);
+        this.zone.run(() => this.loading.set(false));
       } finally {
         this.fetchPromise = null;
       }
@@ -92,10 +49,35 @@ export class UserService {
     return request;
   }
 
+  async fetchUserById(userId: string): Promise<TyappUser | null> {
+    this.loading.set(true);
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_user')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) throw error;
+
+      return this.zone.run(() => {
+        this.loading.set(false);
+        return data as TyappUser;
+      });
+    } catch (error: unknown) {
+      this.notification.handleError('Fetch User Error', error);
+      return this.zone.run(() => {
+        this.loading.set(false);
+        return null;
+      });
+    }
+  }
+
   async updateUser(
     userId: string,
     updates: Partial<TyappUser>,
   ): Promise<boolean> {
+    this.loading.set(true);
     try {
       const { data, error } = await this.supabase
         .from('tyapp_user')
@@ -104,12 +86,9 @@ export class UserService {
         .select()
         .single();
 
-      return this.zone.run(() => {
-        if (error) {
-          this.showError('Update Failed', error.message);
-          return false;
-        }
+      if (error) throw error;
 
+      return this.zone.run(() => {
         const updatedUser = data as TyappUser;
         if (!updatedUser) return false;
 
@@ -121,35 +100,16 @@ export class UserService {
           this.authService.updateLocalProfile(updatedUser);
         }
 
-        this.snackBar.open('Updated successfully', 'OK', { duration: 3000 });
+        this.loading.set(false);
+        this.notification.showSuccess('Updated successfully');
         return true;
       });
     } catch (error: unknown) {
+      this.notification.handleError('Update Error', error);
       return this.zone.run(() => {
-        let errorMessage = 'An unexpected error occurred during update';
-
-        if (error instanceof Error) {
-          errorMessage = error.message;
-        } else if (
-          typeof error === 'object' &&
-          error !== null &&
-          'message' in error
-        ) {
-          errorMessage = String(error.message);
-        } else if (typeof error === 'string') {
-          errorMessage = error;
-        }
-
-        this.showError('Update Error', errorMessage);
+        this.loading.set(false);
         return false;
       });
     }
-  }
-
-  private showError(title: string, message: string) {
-    this.snackBar.open(`${title}: ${message}`, 'Close', {
-      panelClass: ['error-snackbar'],
-      duration: 5000,
-    });
   }
 }
