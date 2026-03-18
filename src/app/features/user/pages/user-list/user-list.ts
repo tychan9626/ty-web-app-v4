@@ -51,7 +51,7 @@ export class UserList implements OnInit, OnDestroy {
           onClick: () => this.onRefresh(),
         },
         {
-          label: 'Export CSV',
+          label: 'Export',
           icon: 'download',
           type: 'secondary',
           disabled: isExportDisabled,

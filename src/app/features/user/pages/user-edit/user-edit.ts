@@ -81,7 +81,7 @@ export class UserEdit implements OnInit, OnDestroy {
       isSyncing: this.isSyncing,
       actions: [
         {
-          label: 'Export CSV',
+          label: 'Export',
           icon: 'download',
           type: 'secondary',
           onClick: () => this.onExport(),

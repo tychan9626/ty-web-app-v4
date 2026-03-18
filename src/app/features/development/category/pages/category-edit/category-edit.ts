@@ -24,6 +24,7 @@ import {
   HeaderAction,
 } from '../../../../../core/services/header.service';
 
+import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-category-edit',
   standalone: true,
@@ -54,11 +55,18 @@ export class CategoryEdit implements OnInit, OnDestroy {
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
-    const isSaveDisabled = () => 
+    const isSaveDisabled = () =>
       this.categoryService.loading() || !this.item()?.display_name;
 
     const actions: HeaderAction[] = [];
     if (this.currentId) {
+      actions.push({
+        label: 'Export',
+        icon: 'download',
+        type: 'secondary',
+        onClick: () => this.onExport(),
+      });
+
       actions.push({
         label: 'Delete',
         icon: 'delete_outline',
@@ -141,5 +149,35 @@ export class CategoryEdit implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.headerService.clear();
+  }
+
+  onExport() {
+    const c = this.item();
+    if (!c || !this.currentId) return;
+
+    const headers = [
+      'Category ID',
+      'Display Name',
+      'English Name',
+      'Chinese Name',
+      'Status',
+      'Internal Remarks',
+    ];
+    const rows = [
+      [
+        this.currentId,
+        c.display_name || '',
+        c.name_en || '',
+        c.name_zh || '',
+        c.status === 1 ? 'Active' : 'Inactive',
+        c.remarks || '',
+      ],
+    ];
+
+    exportToCsv(
+      `Category_Detail_${c.display_name || this.currentId}`,
+      headers,
+      rows,
+    );
   }
 }

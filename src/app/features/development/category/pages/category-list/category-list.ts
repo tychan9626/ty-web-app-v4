@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CategoryService } from '../../services/category.service';
 import { HeaderService } from '../../../../../core/services/header.service';
 
+import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-category-list',
   standalone: true,
@@ -29,6 +30,10 @@ export class CategoryList implements OnInit, OnDestroy {
   ngOnInit() {
     const isLoading = computed(() => this.categoryService.loading());
 
+    const isExportDisabled = computed(() => 
+      this.categoryService.loading() || this.categoryService.categories().length === 0
+    );
+
     this.headerService.setConfig({
       title: 'App Categories',
       actions: [
@@ -38,6 +43,13 @@ export class CategoryList implements OnInit, OnDestroy {
           type: 'secondary',
           disabled: isLoading,
           onClick: () => this.onRefresh(),
+        },
+        {
+          label: 'Export',
+          icon: 'download',
+          type: 'secondary',
+          disabled: isExportDisabled,
+          onClick: () => this.onExport(),
         },
         {
           label: 'New Category',
@@ -59,5 +71,21 @@ export class CategoryList implements OnInit, OnDestroy {
 
   async onRefresh() {
     await this.categoryService.fetchAllCategories(true);
+  }
+
+  onExport() {
+    const categories = this.categoryService.categories();
+    if (categories.length === 0) return;
+
+    const headers = ['Category ID', 'Display Name', 'English Name', 'Chinese Name', 'Status'];
+    const rows = categories.map((c) => [
+      c.tb_tyapp_ap_ctgy_id,
+      c.display_name || '',
+      c.name_en || '',
+      c.name_zh || '',
+      c.status === 1 ? 'Active' : 'Inactive'
+    ]);
+
+    exportToCsv('Category_List', headers, rows);
   }
 }
