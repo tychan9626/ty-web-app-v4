@@ -1,7 +1,7 @@
-import { Routes } from '@angular/router';
-import { adminGuard } from '../../core/guards/admin.guard';
-import { UserList } from './pages/user-list/user-list';
-import { UserEdit } from './pages/user-edit/user-edit';
+import { Routes } from "@angular/router";
+import { adminGuard } from "../../core/guards/admin.guard";
+import { UserEdit } from "./user-edit";
+import { UserList } from "./user-list";
 
 export const USER_ROUTES: Routes = [
   {

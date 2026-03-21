@@ -33,8 +33,8 @@ export const routes: Routes = [
           {
             path: 'category',
             loadChildren: () =>
-              import('./features/development/category/category.routes').then(
-                (m) => m.CATEGORY_ROUTES,
+              import('./features/development/app-category/app-category.routes').then(
+                (m) => m.APP_CATEGORY_ROUTES,
               ),
           },
           {

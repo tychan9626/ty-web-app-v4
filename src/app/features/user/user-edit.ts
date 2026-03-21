@@ -1,30 +1,21 @@
-import {
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-  signal,
-  computed,
-  NgZone,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, inject, NgZone, signal } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
+import { MatMenuModule } from "@angular/material/menu";
+import { MatSelectModule } from "@angular/material/select";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
+import { DisplayNameModePipe } from "../../core/pipes/display-name-mode.pipe";
+import { DisplayNamePipe } from "../../core/pipes/display-name.pipe";
+import { RoleLabelPipe } from "../../core/pipes/role-label.pipe";
+import { HeaderService } from "../../core/services/header.service";
+import { exportToCsv } from "../../core/utils/csv-export.util";
+import { TyappUser } from "./user.model";
+import { UserService } from "./user.service";
 
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
-
-import { UserService } from '../../services/user.service';
-import { TyappUser } from '../../models/user.model';
-import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
-import { RoleLabelPipe } from '../../../../core/pipes/role-label.pipe';
-import { DisplayNameModePipe } from '../../../../core/pipes/display-name-mode.pipe';
-import { HeaderService } from '../../../../core/services/header.service';
-import { exportToCsv } from '../../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-user-edit',

@@ -1,57 +1,57 @@
-import { Injectable, NgZone, inject, signal } from '@angular/core';
-import { SupabaseService } from '../../../../core/services/supabase.service';
-import { NotificationService } from '../../../../core/services/notification.service';
-import { AppFunction } from '../models/app-function.model';
+import { Injectable, inject, NgZone, signal } from "@angular/core";
+import { NotificationService } from "../../../core/services/notification.service";
+import { SupabaseService } from "../../../core/services/supabase.service";
+import { AppCategory } from "./app-category.model";
 
 @Injectable({ providedIn: 'root' })
-export class AppFunctionService {
+export class AppCategoryService {
   private supabase = inject(SupabaseService).client;
   private notification = inject(NotificationService);
   private zone = inject(NgZone);
 
-  functions = signal<AppFunction[]>([]);
+  categories = signal<AppCategory[]>([]);
   loading = signal(false);
 
-  async fetchAllFunctions(force = false) {
-    if (this.functions().length > 0 && !force) return;
+  async fetchAllCategories(force = false) {
+    if (this.categories().length > 0 && !force) return;
 
     this.loading.set(true);
     try {
       const { data, error } = await this.supabase
-        .from('tyapp_app_function')
+        .from('tyapp_app_category')
         .select('*')
         .is('deleted_at', null)
-        .order('tb_tyweb_ap_func_seq_no', { ascending: true });
+        .order('tb_tyapp_ap_ctgy_seq_no', { ascending: true });
 
       if (error) throw error;
 
       this.zone.run(() => {
-        this.functions.set(data || []);
+        this.categories.set(data || []);
         this.loading.set(false);
       });
     } catch (error: unknown) {
-      this.notification.handleError('Fetch Functions Failed', error);
+      this.notification.handleError('Fetch Categories Failed', error);
       this.zone.run(() => this.loading.set(false));
     }
   }
 
-  async fetchFunctionById(id: string): Promise<AppFunction | null> {
+  async fetchCategoryById(id: string): Promise<AppCategory | null> {
     this.loading.set(true);
     try {
       const { data, error } = await this.supabase
-        .from('tyapp_app_function')
+        .from('tyapp_app_category')
         .select('*')
-        .eq('tb_tyapp_ap_func_id', id)
+        .eq('tb_tyapp_ap_ctgy_id', id)
         .single();
 
       if (error) throw error;
 
       return this.zone.run(() => {
         this.loading.set(false);
-        return data as AppFunction;
+        return data as AppCategory;
       });
     } catch (error: unknown) {
-      this.notification.handleError('Fetch Function Error', error);
+      this.notification.handleError('Fetch Category Error', error);
       return this.zone.run(() => {
         this.loading.set(false);
         return null;
@@ -59,29 +59,29 @@ export class AppFunctionService {
     }
   }
 
-  async saveFunction(funcData: Partial<AppFunction>): Promise<boolean> {
-    const isNew = !funcData.tb_tyapp_ap_func_id;
+  async saveCategory(category: Partial<AppCategory>): Promise<boolean> {
+    const isNew = !category.tb_tyapp_ap_ctgy_id;
 
     const {
-      tb_tyweb_ap_func_seq_no,
+      tb_tyapp_ap_ctgy_seq_no,
       created_at,
       updated_at,
       deleted_at,
       ...payload
-    } = funcData;
+    } = category;
 
     this.loading.set(true);
 
     const query = isNew
       ? this.supabase
-          .from('tyapp_app_function')
+          .from('tyapp_app_category')
           .insert(payload)
           .select()
           .single()
       : this.supabase
-          .from('tyapp_app_function')
+          .from('tyapp_app_category')
           .update(payload)
-          .eq('tb_tyapp_ap_func_id', funcData.tb_tyapp_ap_func_id)
+          .eq('tb_tyapp_ap_ctgy_id', category.tb_tyapp_ap_ctgy_id)
           .select()
           .single();
 
@@ -90,19 +90,19 @@ export class AppFunctionService {
       if (error) throw error;
 
       return this.zone.run(() => {
-        const saved = data as AppFunction;
-        this.functions.update((list) =>
+        const saved = data as AppCategory;
+        this.categories.update((list) =>
           isNew
             ? [...list, saved]
             : list.map((item) =>
-                item.tb_tyapp_ap_func_id === saved.tb_tyapp_ap_func_id
+                item.tb_tyapp_ap_ctgy_id === saved.tb_tyapp_ap_ctgy_id
                   ? saved
                   : item,
               ),
         );
 
         this.loading.set(false);
-        this.notification.showSuccess('Function saved successfully');
+        this.notification.showSuccess('Saved successfully');
         return true;
       });
     } catch (error: unknown) {
@@ -114,22 +114,22 @@ export class AppFunctionService {
     }
   }
 
-  async deleteFunction(id: string): Promise<boolean> {
+  async deleteCategory(id: string): Promise<boolean> {
     this.loading.set(true);
     try {
       const { error } = await this.supabase.rpc(
-        'tyapp_app_function_soft_delete_single_record',
+        'tyapp_app_category_soft_delete_single_record',
         { record_id: id },
       );
 
       if (error) throw error;
 
       return this.zone.run(() => {
-        this.functions.update((list) =>
-          list.filter((item) => item.tb_tyapp_ap_func_id !== id),
+        this.categories.update((list) =>
+          list.filter((item) => item.tb_tyapp_ap_ctgy_id !== id),
         );
         this.loading.set(false);
-        this.notification.showSuccess('Function deleted');
+        this.notification.showSuccess('Category deleted');
         return true;
       });
     } catch (error: unknown) {

@@ -1,32 +1,20 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal,
-  computed,
-  NgZone,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, inject, NgZone, signal, computed } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { MatAutocompleteModule } from "@angular/material/autocomplete";
+import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
+import { MatSelectModule } from "@angular/material/select";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
+import { SelectOption } from "../../../core/models/common.model";
+import { HeaderService, HeaderAction } from "../../../core/services/header.service";
+import { exportToCsv } from "../../../core/utils/csv-export.util";
+import { AppCategoryService } from "../app-category/app-category.service";
+import { AppFunction } from "./app-function.model";
+import { AppFunctionService } from "./app-function.service";
 
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-
-import { AppFunctionService } from '../../services/app-function.service';
-import { CategoryService } from '../../../category/services/category.service';
-import { AppFunction } from '../../models/app-function.model';
-import {
-  HeaderService,
-  HeaderAction,
-} from '../../../../../core/services/header.service';
-import { SelectOption } from '../../../../../core/models/common.model';
-import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-function-edit',
@@ -49,7 +37,7 @@ export class AppFunctionEdit implements OnInit, OnDestroy {
   private router = inject(Router);
   private zone = inject(NgZone);
   public functionService = inject(AppFunctionService);
-  public categoryService = inject(CategoryService);
+  public categoryService = inject(AppCategoryService);
   private headerService = inject(HeaderService);
 
   item = signal<Partial<AppFunction> | null>(null);

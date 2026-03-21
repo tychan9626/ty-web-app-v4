@@ -1,30 +1,18 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal,
-  computed,
-  NgZone,
-} from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { FormsModule } from '@angular/forms';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, inject, NgZone, signal } from "@angular/core";
+import { FormsModule } from "@angular/forms";
+import { MatButtonModule } from "@angular/material/button";
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { MatIconModule } from "@angular/material/icon";
+import { MatInputModule } from "@angular/material/input";
+import { MatSelectModule } from "@angular/material/select";
+import { RouterModule, ActivatedRoute, Router } from "@angular/router";
+import { HeaderService, HeaderAction } from "../../../core/services/header.service";
+import { exportToCsv } from "../../../core/utils/csv-export.util";
+import { AppCategory } from "./app-category.model";
+import { AppCategoryService } from "./app-category.service";
 
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 
-import { CategoryService } from '../../services/category.service';
-import { AppCategory } from '../../models/category.model';
-import {
-  HeaderService,
-  HeaderAction,
-} from '../../../../../core/services/header.service';
-
-import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-category-edit',
   standalone: true,
@@ -38,13 +26,13 @@ import { exportToCsv } from '../../../../../core/utils/csv-export.util';
     MatButtonModule,
     MatIconModule,
   ],
-  templateUrl: './category-edit.html',
+  templateUrl: './app-category-edit.html',
 })
-export class CategoryEdit implements OnInit, OnDestroy {
+export class AppCategoryEdit implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
-  public categoryService = inject(CategoryService);
+  public categoryService = inject(AppCategoryService);
   private headerService = inject(HeaderService);
 
   item = signal<Partial<AppCategory> | null>(null);

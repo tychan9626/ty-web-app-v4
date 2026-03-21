@@ -1,14 +1,14 @@
-import { Component, inject, OnInit, OnDestroy, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, inject, computed } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { RouterModule, Router, ActivatedRoute } from "@angular/router";
+import { HeaderService } from "../../../core/services/header.service";
+import { exportToCsv } from "../../../core/utils/csv-export.util";
+import { AppCategoryService } from "./app-category.service";
 
-import { CategoryService } from '../../services/category.service';
-import { HeaderService } from '../../../../../core/services/header.service';
 
-import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-category-list',
   standalone: true,
@@ -19,10 +19,10 @@ import { exportToCsv } from '../../../../../core/utils/csv-export.util';
     MatIconModule,
     MatProgressSpinnerModule,
   ],
-  templateUrl: './category-list.html',
+  templateUrl: './app-category-list.html',
 })
-export class CategoryList implements OnInit, OnDestroy {
-  public readonly categoryService = inject(CategoryService);
+export class AppCategoryList implements OnInit, OnDestroy {
+  public readonly categoryService = inject(AppCategoryService);
   private readonly headerService = inject(HeaderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

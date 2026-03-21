@@ -1,14 +1,13 @@
-import { Component, inject, OnInit, OnDestroy, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute, RouterModule } from '@angular/router';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
-import { AppFunctionService } from '../../services/app-function.service';
-import { CategoryService } from '../../../category/services/category.service';
-import { HeaderService } from '../../../../../core/services/header.service';
-import { exportToCsv } from '../../../../../core/utils/csv-export.util';
+import { CommonModule } from "@angular/common";
+import { Component, OnInit, OnDestroy, inject, computed } from "@angular/core";
+import { MatButtonModule } from "@angular/material/button";
+import { MatIconModule } from "@angular/material/icon";
+import { MatProgressSpinnerModule } from "@angular/material/progress-spinner";
+import { RouterModule, Router, ActivatedRoute } from "@angular/router";
+import { HeaderService } from "../../../core/services/header.service";
+import { exportToCsv } from "../../../core/utils/csv-export.util";
+import { AppCategoryService } from "../app-category/app-category.service";
+import { AppFunctionService } from "./app-function.service";
 
 @Component({
   selector: 'app-function-list',
@@ -24,7 +23,7 @@ import { exportToCsv } from '../../../../../core/utils/csv-export.util';
 })
 export class AppFunctionList implements OnInit, OnDestroy {
   public functionService = inject(AppFunctionService);
-  public categoryService = inject(CategoryService);
+  public categoryService = inject(AppCategoryService);
   private headerService = inject(HeaderService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);

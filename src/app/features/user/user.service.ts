@@ -1,8 +1,8 @@
-import { Injectable, NgZone, inject, signal } from '@angular/core';
-import { AuthService } from '../../../core/services/auth.service';
-import { SupabaseService } from '../../../core/services/supabase.service';
-import { NotificationService } from '../../../core/services/notification.service';
-import { TyappUser } from '../models/user.model';
+import { Injectable, inject, NgZone, signal } from "@angular/core";
+import { AuthService } from "../../core/services/auth.service";
+import { NotificationService } from "../../core/services/notification.service";
+import { SupabaseService } from "../../core/services/supabase.service";
+import { TyappUser } from "./user.model";
 
 @Injectable({ providedIn: 'root' })
 export class UserService {

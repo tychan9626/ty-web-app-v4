@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { AppFunctionList } from './pages/app-function-list/app-function-list';
-import { AppFunctionEdit } from './pages/app-function-edit/app-function-edit';
+import { AppFunctionList } from './app-function-list';
+import { AppFunctionEdit } from './app-function-edit';
 
 export const APP_FUNCTION_ROUTES: Routes = [
   {
