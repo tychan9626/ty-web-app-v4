@@ -19,70 +19,33 @@
       </div>
 
       <nav class="nav-container">
-        @if (isAdmin()) {
+        @for (group of navMenu(); track group.title) {
           <mat-accordion displayMode="flat">
             <mat-expansion-panel class="nav-panel" [expanded]="true">
+              
               <mat-expansion-panel-header>
                 <mat-panel-title>
-                  <mat-icon>people_outline</mat-icon>
-                  <span>User Management</span>
+                  <mat-icon>{{ group.icon }}</mat-icon>
+                  <span>{{ group.title }}</span>
                 </mat-panel-title>
               </mat-expansion-panel-header>
-              <div class="sub-menu">
-                <a
-                  mat-list-item
-                  routerLink="/users/list"
-                  routerLinkActive="active-sub-link"
-                  (click)="closeOnMobile()"
-                >
-                  <span matListItemTitle>User List</span>
-                </a>
-              </div>
-            </mat-expansion-panel>
-          </mat-accordion>
 
-          <mat-accordion displayMode="flat">
-            <mat-expansion-panel class="nav-panel" [expanded]="true">
-              <mat-expansion-panel-header>
-                <mat-panel-title>
-                  <mat-icon>code</mat-icon>
-                  <span>Development</span>
-                </mat-panel-title>
-              </mat-expansion-panel-header>
               <div class="sub-menu">
-                <a
-                  mat-list-item
-                  routerLink="/development/category/list"
-                  routerLinkActive="active-sub-link"
-                  (click)="closeOnMobile()"
-                >
-                  <span matListItemTitle>App Categories</span>
-                </a>
-                </div>
+                @for (link of group.links; track link.route) {
+                  <a
+                    mat-list-item
+                    [routerLink]="link.route"
+                    routerLinkActive="active-sub-link"
+                    (click)="closeOnMobile()"
+                  >
+                    <span matListItemTitle>{{ link.title }}</span>
+                  </a>
+                }
+              </div>
+
             </mat-expansion-panel>
           </mat-accordion>
         }
-
-        <mat-accordion displayMode="flat">
-          <mat-expansion-panel class="nav-panel" [expanded]="true">
-            <mat-expansion-panel-header>
-              <mat-panel-title>
-                <mat-icon>settings</mat-icon>
-                <span>System Settings</span>
-              </mat-panel-title>
-            </mat-expansion-panel-header>
-            <div class="sub-menu">
-              <a
-                mat-list-item
-                routerLink="/settings/general"
-                routerLinkActive="active-sub-link"
-                (click)="closeOnMobile()"
-              >
-                <span matListItemTitle>General Settings</span>
-              </a>
-            </div>
-          </mat-expansion-panel>
-        </mat-accordion>
       </nav>
 
       <span class="spacer"></span>

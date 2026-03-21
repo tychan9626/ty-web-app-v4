@@ -1,0 +1,69 @@
+<div class="split-workspace">
+  @if (item(); as func) {
+    <div class="form-scroll-area">
+      
+      <section class="form-group">
+        <h3 class="group-header">Basic Information</h3>
+        <div class="fields-grid-2">
+          
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Function Name</mat-label>
+            <input matInput [(ngModel)]="func.function_name" required />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>App Category</mat-label>
+            <input 
+              type="text"
+              matInput 
+              required
+              [(ngModel)]="func.category_id"
+              (ngModelChange)="categorySearchQuery.set($event)"
+              (blur)="categoryBlurred.set(true)" 
+              [matAutocomplete]="auto">
+            
+            <mat-autocomplete 
+              #auto="matAutocomplete" 
+              autoActiveFirstOption 
+              [displayWith]="displayCategoryName.bind(this)">
+              @for (opt of filteredCategories(); track opt.value) {
+                <mat-option [value]="opt.value">
+                  {{ opt.label }}
+                </mat-option>
+              }
+            </mat-autocomplete>
+
+            @if (showCategoryError()) {
+              <mat-error>Please select a valid category from the list</mat-error>
+            }
+          </mat-form-field>
+          
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Details & Status</h3>
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic">
+          <mat-label>Description</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="func.description"></textarea>
+        </mat-form-field>
+
+        <div class="fields-row-2" style="margin-top: 16px;">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="func.status">
+              <mat-option [value]="1">Active</mat-option>
+              <mat-option [value]="0">Inactive</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width" subscriptSizing="dynamic" style="margin-top: 16px;">
+          <mat-label>Internal Remarks</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="func.remarks"></textarea>
+        </mat-form-field>
+      </section>
+
+    </div>
+  }
+</div>

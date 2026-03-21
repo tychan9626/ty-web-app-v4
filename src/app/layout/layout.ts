@@ -21,6 +21,18 @@ import { DisplayNamePipe } from '../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../core/pipes/role-label.pipe';
 import { APP_CONFIG } from '../app.constants';
 
+interface MenuLink {
+  title: string;
+  route: string;
+}
+
+interface MenuGroup {
+  title: string;
+  icon: string;
+  adminOnly: boolean;
+  links: MenuLink[];
+}
+
 @Component({
   selector: 'app-layout',
   standalone: true,
@@ -58,6 +70,29 @@ export class Layout {
 
   readonly userProfile = this.auth.userProfile;
   readonly isAdmin = this.auth.isAdmin;
+
+  private readonly masterMenu: MenuGroup[] = [
+    {
+      title: 'User Management',
+      icon: 'people_outline',
+      adminOnly: true,
+      links: [{ title: 'User List', route: '/users/list' }],
+    },
+    {
+      title: 'Development',
+      icon: 'code',
+      adminOnly: true,
+      links: [
+        { title: 'App Categories', route: '/development/category/list' },
+        { title: 'App Functions', route: '/development/function/list' },
+      ],
+    }
+  ];
+
+  readonly navMenu = computed(() => {
+    const admin = this.isAdmin();
+    return this.masterMenu.filter((group) => (admin ? true : !group.adminOnly));
+  });
 
   closeOnMobile() {
     if (this.isHandset()) this.drawer.close();

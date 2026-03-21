@@ -1,0 +1,211 @@
+import {
+  Component,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+  computed,
+  NgZone,
+} from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+import { AppFunctionService } from '../../services/app-function.service';
+import { CategoryService } from '../../../category/services/category.service';
+import { AppFunction } from '../../models/app-function.model';
+import {
+  HeaderService,
+  HeaderAction,
+} from '../../../../../core/services/header.service';
+import { SelectOption } from '../../../../../core/models/common.model';
+import { exportToCsv } from '../../../../../core/utils/csv-export.util';
+
+@Component({
+  selector: 'app-function-edit',
+  standalone: true,
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatIconModule,
+    MatAutocompleteModule,
+  ],
+  templateUrl: './app-function-edit.html',
+})
+export class AppFunctionEdit implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private zone = inject(NgZone);
+  public functionService = inject(AppFunctionService);
+  public categoryService = inject(CategoryService);
+  private headerService = inject(HeaderService);
+
+  item = signal<Partial<AppFunction> | null>(null);
+  currentId: string | null = null;
+  isSyncing = signal(false);
+
+  categorySearchQuery = signal<string>('');
+  categoryBlurred = signal(false);
+
+  categoryOptions = computed<SelectOption[]>(() =>
+    this.categoryService.categories().map((c) => ({
+      value: c.tb_tyapp_ap_ctgy_id,
+      label: c.display_name,
+    })),
+  );
+
+  filteredCategories = computed(() => {
+    const search = String(this.categorySearchQuery() || '').toLowerCase();
+    const options = this.categoryOptions();
+    return options.filter(
+      (opt) =>
+        opt.label.toLowerCase().includes(search) ||
+        String(opt.value) === search,
+    );
+  });
+
+  isCategoryValid = computed(() => {
+    const id = this.item()?.category_id;
+    if (!id) return false;
+    return this.categoryOptions().some((opt) => opt.value === id);
+  });
+
+  showCategoryError = computed(
+    () => this.categoryBlurred() && !this.isCategoryValid(),
+  );
+
+  displayCategoryName(id: string): string {
+    if (!id) return '';
+    const found = this.categoryOptions().find((opt) => opt.value === id);
+    return found ? found.label : '';
+  }
+
+  async ngOnInit() {
+    this.currentId = this.route.snapshot.paramMap.get('id');
+    await this.categoryService.fetchAllCategories();
+
+    const isSaveDisabled = () =>
+      this.functionService.loading() ||
+      !this.item()?.function_name?.trim() ||
+      !this.isCategoryValid();
+
+    const actions: HeaderAction[] = [];
+    if (this.currentId) {
+      actions.push({
+        label: 'Export',
+        icon: 'download',
+        type: 'secondary',
+        onClick: () => this.onExport(),
+      });
+      actions.push({
+        label: 'Delete',
+        icon: 'delete_outline',
+        type: 'secondary',
+        onClick: () => this.onDelete(),
+      });
+    }
+    actions.push({
+      label: this.currentId ? 'Save Changes' : 'Create Function',
+      icon: 'check',
+      type: 'primary',
+      disabled: isSaveDisabled,
+      onClick: () => this.onSave(),
+    });
+
+    this.headerService.setConfig({
+      backLink: '/development/function/list',
+      showSyncStatus: !!this.currentId,
+      isSyncing: this.isSyncing,
+      actions: actions,
+    });
+
+    if (this.currentId) {
+      this.isSyncing.set(true);
+      const fresh = await this.functionService.fetchFunctionById(
+        this.currentId,
+      );
+      this.zone.run(() => {
+        if (fresh) {
+          this.item.set(structuredClone(fresh));
+          this.categorySearchQuery.set(fresh.category_id);
+        } else {
+          this.router.navigate(['/development/function/list']);
+        }
+        this.isSyncing.set(false);
+      });
+    } else {
+      this.item.set({
+        function_name: '',
+        category_id: '',
+        description: '',
+        remarks: '',
+        status: 1,
+      });
+    }
+  }
+
+  async onSave() {
+    const data = this.item();
+    if (!data || !data.function_name?.trim() || !this.isCategoryValid()) {
+      this.categoryBlurred.set(true);
+      return;
+    }
+
+    const success = await this.functionService.saveFunction(data);
+    if (success) this.router.navigate(['/development/function/list']);
+  }
+
+  async onDelete() {
+    if (!this.currentId) return;
+    if (confirm('Are you sure you want to delete this function?')) {
+      const success = await this.functionService.deleteFunction(this.currentId);
+      if (success) this.router.navigate(['/development/function/list']);
+    }
+  }
+
+  onExport() {
+    const data = this.item();
+    if (!data || !this.currentId) return;
+
+    const headers = [
+      'Function ID',
+      'Function Name',
+      'Category Name',
+      'Description',
+      'Remarks',
+      'Status',
+    ];
+    const rows = [
+      [
+        this.currentId || '',
+        data.function_name || '',
+        this.displayCategoryName(data.category_id || ''),
+        data.description || '',
+        data.remarks || '',
+        data.status === 1 ? 'Active' : 'Inactive',
+      ],
+    ];
+
+    exportToCsv(
+      `Function_Detail_${data.function_name || this.currentId}`,
+      headers,
+      rows,
+    );
+  }
+
+  ngOnDestroy() {
+    this.headerService.clear();
+  }
+}

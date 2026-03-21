@@ -45,7 +45,6 @@ import { exportToCsv } from '../../../../core/utils/csv-export.util';
   ],
   providers: [DisplayNamePipe, RoleLabelPipe, DisplayNameModePipe],
   templateUrl: './user-edit.html',
-  styleUrl: './user-edit.scss',
 })
 export class UserEdit implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

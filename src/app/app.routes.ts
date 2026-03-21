@@ -37,6 +37,13 @@ export const routes: Routes = [
                 (m) => m.CATEGORY_ROUTES,
               ),
           },
+          {
+            path: 'function',
+            loadChildren: () =>
+              import('./features/development/app-function/app-function.routes').then(
+                (m) => m.APP_FUNCTION_ROUTES,
+              ),
+          },
         ],
       },
     ],

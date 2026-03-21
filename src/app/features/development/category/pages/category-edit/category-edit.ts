@@ -39,7 +39,6 @@ import { exportToCsv } from '../../../../../core/utils/csv-export.util';
     MatIconModule,
   ],
   templateUrl: './category-edit.html',
-  styleUrl: './category-edit.scss',
 })
 export class CategoryEdit implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

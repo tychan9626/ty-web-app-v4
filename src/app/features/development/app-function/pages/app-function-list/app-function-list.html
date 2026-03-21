@@ -1,0 +1,30 @@
+<div class="standard-list-view">
+  <div class="list-container">
+    @for (item of listVM(); track item.tb_tyapp_ap_func_id) {
+      <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_ap_func_id]">
+        <div class="item-content">
+          <div class="item-info-group">
+            <span class="main-text">{{ item.function_name }}</span>
+            <span class="sub-text">{{ item.categoryName }}</span>
+          </div>
+
+          <div class="item-status-group">
+            <span class="status-tag" [class.inactive]="item.status === 0">
+              {{ item.status === 1 ? "Active" : "Inactive" }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      @if (!functionService.loading()) {
+        <div class="empty-placeholder">No functions found.</div>
+      }
+    }
+  </div>
+
+  <footer class="list-footer">
+    <div class="divider"></div>
+    <span class="count-text">TOTAL {{ listVM().length }} FUNCTIONS</span>
+  </footer>
+</div>
