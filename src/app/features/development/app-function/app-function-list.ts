@@ -52,7 +52,6 @@ export class AppFunctionList implements OnInit, OnDestroy {
     );
 
     this.headerService.setConfig({
-      title: 'App Functions',
       actions: [
         {
           label: 'Refresh',

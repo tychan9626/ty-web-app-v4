@@ -35,7 +35,6 @@ export class AppCategoryList implements OnInit, OnDestroy {
     );
 
     this.headerService.setConfig({
-      title: 'App Categories',
       actions: [
         {
           label: 'Refresh',

@@ -41,7 +41,6 @@ export class UserList implements OnInit, OnDestroy {
     );
 
     this.headerService.setConfig({
-      title: 'User Management',
       actions: [
         {
           label: 'Refresh',
