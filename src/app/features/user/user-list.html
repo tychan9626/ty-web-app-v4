@@ -17,7 +17,7 @@
       </a>
     } @empty {
       @if (!userService.loading()) {
-        <div class="empty-placeholder">No users found.</div>
+        <div class="empty-placeholder">No items found.</div>
       }
     }
   </div>
@@ -28,7 +28,7 @@
   >
     <div class="divider"></div>
     <span class="count-text"
-      >TOTAL {{ userService.users().length }} MEMBERS</span
+      >TOTAL {{ userService.users().length }} ITEMS</span
     >
     @if (userService.loading()) {
       <mat-spinner diameter="16"></mat-spinner>

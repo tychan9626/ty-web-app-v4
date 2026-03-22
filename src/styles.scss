@@ -1,6 +1,6 @@
 @use "@angular/material" as mat;
-@use "shared-list";
-@use "shared-form";
+@use "app/styles/shared-list";
+@use "app/styles/shared-form";
 
 html {
   @include mat.theme(

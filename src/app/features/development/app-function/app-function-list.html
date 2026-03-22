@@ -18,13 +18,13 @@
       </a>
     } @empty {
       @if (!functionService.loading()) {
-        <div class="empty-placeholder">No functions found.</div>
+        <div class="empty-placeholder">No items found.</div>
       }
     }
   </div>
 
   <footer class="list-footer">
     <div class="divider"></div>
-    <span class="count-text">TOTAL {{ listVM().length }} FUNCTIONS</span>
+    <span class="count-text">TOTAL {{ listVM().length }} ITEMS</span>
   </footer>
 </div>
