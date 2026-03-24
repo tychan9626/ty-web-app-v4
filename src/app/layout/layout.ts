@@ -76,7 +76,9 @@ export class Layout {
       title: 'Articles',
       icon: 'article',
       adminOnly: false,
-      links: [{ title: 'Article List', route: '/article/list' }],
+      links: [
+        { title: 'Article Feed', route: '/article/feed' },
+        { title: 'Article List', route: '/article/list' }],
     },
     {
       title: 'User Management',

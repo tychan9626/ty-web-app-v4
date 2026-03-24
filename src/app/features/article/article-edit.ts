@@ -66,17 +66,17 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
   currentId: string | null = null;
   originalDataStr = signal<string>('');
 
+  returnUrl: string = '/article/list';
+
   isDirty = signal(false);
   isSaveDisabled = signal(true);
 
   userSearch = signal<string>('');
   userOptions = computed<SelectOption[]>(() =>
-    this.userService
-      .users()
-      .map((u) => ({
-        value: u.user_id,
-        label: this.displayNamePipe.transform(u),
-      })),
+    this.userService.users().map((u) => ({
+      value: u.user_id,
+      label: this.displayNamePipe.transform(u),
+    })),
   );
   filteredUsers = computed(() => {
     const q = this.userSearch().toLowerCase();
@@ -135,6 +135,9 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
+    this.returnUrl =
+      this.route.snapshot.queryParamMap.get('returnUrl') || '/article/list';
+
     await Promise.all([
       this.articleService.fetchAllArticles(),
       this.userService.fetchAllUsers(),
@@ -164,7 +167,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
     });
 
     this.headerService.setConfig({
-      backLink: '/article/list',
+      backLink: this.returnUrl,
       syncStatus: this.syncStatus,
       actions: actions,
     });
@@ -223,7 +226,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
     if (success) {
       this.originalDataStr.set(JSON.stringify(data));
       this.isDirty.set(false);
-      this.router.navigate(['/article/list']);
+      this.router.navigateByUrl(this.returnUrl);
     }
   }
 
@@ -233,7 +236,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
       const success = await this.articleService.deleteArticle(this.currentId);
       if (success) {
         this.isDirty.set(false);
-        this.router.navigate(['/article/list']);
+        this.router.navigateByUrl(this.returnUrl);
       }
     }
   }

@@ -1,0 +1,145 @@
+<style>
+  .feed-container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .feed-card {
+    box-shadow: none !important;
+    border: 1px solid var(--mat-sys-outline-variant);
+    border-radius: 12px !important;
+  }
+
+  .custom-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 16px 12px 16px !important;
+  }
+
+  .article-title {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.4;
+    margin: 0 0 8px 0;
+    color: var(--mat-sys-on-surface);
+  }
+
+  .article-meta {
+    font-size: 14px;
+    color: var(--mat-sys-on-surface-variant);
+    margin-bottom: 4px;
+  }
+
+  .original-link {
+    color: var(--mat-sys-primary);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .original-link:hover {
+    text-decoration: underline;
+  }
+
+  .article-body {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    font-size: 15px;
+    color: var(--mat-sys-on-surface);
+  }
+
+  @media (max-width: 600px) {
+    .feed-container {
+      padding: 0;
+      gap: 8px;
+      background-color: var(--mat-sys-surface-variant);
+    }
+    .feed-card {
+      border-radius: 0 !important;
+      border-left: none;
+      border-right: none;
+    }
+  }
+</style>
+
+<div class="feed-container">
+  @for (article of feedVM(); track article.tb_tyapp_atcl_id) {
+    <mat-card class="feed-card" [id]="article.tb_tyapp_atcl_id">
+      <mat-card-header class="custom-header">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            align-items: flex-start;
+            gap: 8px;
+          "
+        >
+          <div class="article-title">{{ article.title }}</div>
+
+          <button
+            mat-icon-button
+            (click)="onEdit(article.tb_tyapp_atcl_id)"
+            style="
+              margin-top: -8px;
+              margin-right: -8px;
+              color: var(--mat-sys-outline);
+              flex-shrink: 0;
+            "
+          >
+            <mat-icon>edit</mat-icon>
+          </button>
+        </div>
+
+        <div class="article-meta">
+          {{ article.author }} · {{ article.publish_date }}
+        </div>
+
+        <div class="article-meta">
+          {{ article.platform }}
+          @if (article.url_link) {
+            ·
+            <a [href]="article.url_link" target="_blank" class="original-link"
+              >View Original
+              <mat-icon
+                style="
+                  font-size: 14px;
+                  width: 14px;
+                  height: 14px;
+                  vertical-align: middle;
+                "
+                >open_in_new</mat-icon
+              ></a
+            >
+          }
+        </div>
+      </mat-card-header>
+
+      <mat-card-content style="padding: 0 16px 16px 16px !important">
+        <div class="article-body">{{ article.content }}</div>
+      </mat-card-content>
+    </mat-card>
+  } @empty {
+    @if (!articleService.loading()) {
+      <div style="text-align: center; padding: 40px; color: gray">
+        No published articles available.
+      </div>
+    }
+  }
+
+  @if (hasMore()) {
+    <div style="display: flex; justify-content: center; padding: 16px 0 32px 0">
+      <button
+        mat-stroked-button
+        (click)="loadMore()"
+        style="width: 200px; border-radius: 20px"
+      >
+        Load More
+      </button>
+    </div>
+  }
+</div>
