@@ -1,20 +1,32 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, OnDestroy, inject, NgZone, signal, computed } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MatAutocompleteModule } from "@angular/material/autocomplete";
-import { MatButtonModule } from "@angular/material/button";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
-import { RouterModule, ActivatedRoute, Router } from "@angular/router";
-import { SelectOption } from "../../../core/models/common.model";
-import { HeaderService, HeaderAction } from "../../../core/services/header.service";
-import { exportToCsv } from "../../../core/utils/csv-export.util";
-import { AppCategoryService } from "../app-category/app-category.service";
-import { AppFunction } from "./app-function.model";
-import { AppFunctionService } from "./app-function.service";
-
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  NgZone,
+  signal,
+  computed,
+  DoCheck,
+  HostListener,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { SelectOption } from '../../../core/models/common.model';
+import {
+  HeaderService,
+  HeaderAction,
+} from '../../../core/services/header.service';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
+import { AppCategoryService } from '../app-category/app-category.service';
+import { AppFunction } from './app-function.model';
+import { AppFunctionService } from './app-function.service';
 
 @Component({
   selector: 'app-function-edit',
@@ -32,7 +44,7 @@ import { AppFunctionService } from "./app-function.service";
   ],
   templateUrl: './app-function-edit.html',
 })
-export class AppFunctionEdit implements OnInit, OnDestroy {
+export class AppFunctionEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
@@ -42,7 +54,8 @@ export class AppFunctionEdit implements OnInit, OnDestroy {
 
   item = signal<Partial<AppFunction> | null>(null);
   currentId: string | null = null;
-  isSyncing = signal(false);
+
+  originalDataStr = signal<string>('');
 
   categorySearchQuery = signal<string>('');
   categoryBlurred = signal(false);
@@ -80,14 +93,26 @@ export class AppFunctionEdit implements OnInit, OnDestroy {
     return found ? found.label : '';
   }
 
+  isDirty = signal(false);
+
+  syncStatus = computed<'loading' | 'up-to-date' | 'unsaved' | 'none'>(() => {
+    if (this.functionService.loading()) return 'loading';
+    if (this.isDirty()) return 'unsaved';
+    if (this.currentId) return 'up-to-date';
+    return 'none';
+  });
+
+  isSaveDisabled = computed(
+    () =>
+      this.functionService.loading() ||
+      !this.item()?.function_name?.trim() ||
+      !this.isCategoryValid() ||
+      !this.isDirty(),
+  );
+
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
     await this.categoryService.fetchAllCategories();
-
-    const isSaveDisabled = () =>
-      this.functionService.loading() ||
-      !this.item()?.function_name?.trim() ||
-      !this.isCategoryValid();
 
     const actions: HeaderAction[] = [];
     if (this.currentId) {
@@ -108,39 +133,60 @@ export class AppFunctionEdit implements OnInit, OnDestroy {
       label: this.currentId ? 'Save Changes' : 'Create Function',
       icon: 'check',
       type: 'primary',
-      disabled: isSaveDisabled,
+      disabled: this.isSaveDisabled,
       onClick: () => this.onSave(),
     });
 
     this.headerService.setConfig({
       backLink: '/development/function/list',
-      showSyncStatus: !!this.currentId,
-      isSyncing: this.isSyncing,
+      syncStatus: this.syncStatus,
       actions: actions,
     });
 
     if (this.currentId) {
-      this.isSyncing.set(true);
       const fresh = await this.functionService.fetchFunctionById(
         this.currentId,
       );
       this.zone.run(() => {
         if (fresh) {
           this.item.set(structuredClone(fresh));
+          this.originalDataStr.set(JSON.stringify(fresh));
           this.categorySearchQuery.set(fresh.category_id);
         } else {
           this.router.navigate(['/development/function/list']);
         }
-        this.isSyncing.set(false);
       });
     } else {
-      this.item.set({
+      const newFunc = {
         function_name: '',
         category_id: '',
         description: '',
         remarks: '',
         status: 1,
-      });
+      };
+      this.item.set(newFunc);
+      this.originalDataStr.set(JSON.stringify(newFunc));
+    }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.isDirty()) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  ngDoCheck() {
+    const current = this.item();
+    const original = this.originalDataStr();
+
+    if (current && original) {
+      const currentlyDirty = JSON.stringify(current) !== original;
+      if (this.isDirty() !== currentlyDirty) {
+        this.isDirty.set(currentlyDirty);
+      }
     }
   }
 
@@ -152,7 +198,11 @@ export class AppFunctionEdit implements OnInit, OnDestroy {
     }
 
     const success = await this.functionService.saveFunction(data);
-    if (success) this.router.navigate(['/development/function/list']);
+    if (success) {
+      this.originalDataStr.set(JSON.stringify(data));
+      this.isDirty.set(false);
+      this.router.navigate(['/development/function/list']);
+    }
   }
 
   async onDelete() {

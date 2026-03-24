@@ -1,17 +1,29 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, OnDestroy, inject, NgZone, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatSelectModule } from "@angular/material/select";
-import { RouterModule, ActivatedRoute, Router } from "@angular/router";
-import { HeaderService, HeaderAction } from "../../../core/services/header.service";
-import { exportToCsv } from "../../../core/utils/csv-export.util";
-import { AppCategory } from "./app-category.model";
-import { AppCategoryService } from "./app-category.service";
-
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  NgZone,
+  signal,
+  computed,
+  DoCheck,
+  HostListener,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import {
+  HeaderService,
+  HeaderAction,
+} from '../../../core/services/header.service';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
+import { AppCategory } from './app-category.model';
+import { AppCategoryService } from './app-category.service';
 
 @Component({
   selector: 'app-category-edit',
@@ -28,7 +40,7 @@ import { AppCategoryService } from "./app-category.service";
   ],
   templateUrl: './app-category-edit.html',
 })
-export class AppCategoryEdit implements OnInit, OnDestroy {
+export class AppCategoryEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
@@ -37,13 +49,27 @@ export class AppCategoryEdit implements OnInit, OnDestroy {
 
   item = signal<Partial<AppCategory> | null>(null);
   currentId: string | null = null;
-  isSyncing = signal(false);
+
+  originalDataStr = signal<string>('');
+
+  isDirty = signal(false);
+
+  syncStatus = computed<'loading' | 'up-to-date' | 'unsaved' | 'none'>(() => {
+    if (this.categoryService.loading()) return 'loading';
+    if (this.isDirty()) return 'unsaved';
+    if (this.currentId) return 'up-to-date';
+    return 'none';
+  });
+
+  isSaveDisabled = computed(
+    () =>
+      this.categoryService.loading() ||
+      !this.item()?.display_name?.trim() ||
+      !this.isDirty(),
+  );
 
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
-
-    const isSaveDisabled = () =>
-      this.categoryService.loading() || !this.item()?.display_name;
 
     const actions: HeaderAction[] = [];
     if (this.currentId) {
@@ -53,7 +79,6 @@ export class AppCategoryEdit implements OnInit, OnDestroy {
         type: 'secondary',
         onClick: () => this.onExport(),
       });
-
       actions.push({
         label: 'Delete',
         icon: 'delete_outline',
@@ -65,25 +90,23 @@ export class AppCategoryEdit implements OnInit, OnDestroy {
       label: this.currentId ? 'Save Changes' : 'Create Category',
       icon: 'check',
       type: 'primary',
-      disabled: isSaveDisabled,
+      disabled: this.isSaveDisabled,
       onClick: () => this.onSave(),
     });
 
     this.headerService.setConfig({
       backLink: '/development/category/list',
-      showSyncStatus: !!this.currentId,
-      isSyncing: this.isSyncing,
+      syncStatus: this.syncStatus,
       actions: actions,
     });
 
     if (this.currentId) {
-      this.isSyncing.set(true);
-
       const cachedCat = this.categoryService
         .categories()
         .find((c) => c.tb_tyapp_ap_ctgy_id === this.currentId);
       if (cachedCat) {
         this.item.set(structuredClone(cachedCat));
+        this.originalDataStr.set(JSON.stringify(cachedCat));
       }
 
       const freshCat = await this.categoryService.fetchCategoryById(
@@ -93,19 +116,43 @@ export class AppCategoryEdit implements OnInit, OnDestroy {
       this.zone.run(() => {
         if (freshCat) {
           this.item.set(structuredClone(freshCat));
+          this.originalDataStr.set(JSON.stringify(freshCat));
         } else if (!cachedCat) {
           this.router.navigate(['/development/category/list']);
         }
-        this.isSyncing.set(false);
       });
     } else {
-      this.item.set({
+      const newCat = {
         display_name: '',
         name_en: '',
         name_zh: '',
         status: 1,
         remarks: '',
-      });
+      };
+      this.item.set(newCat);
+      this.originalDataStr.set(JSON.stringify(newCat));
+    }
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.isDirty()) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  ngDoCheck() {
+    const current = this.item();
+    const original = this.originalDataStr();
+
+    if (current && original) {
+      const currentlyDirty = JSON.stringify(current) !== original;
+
+      if (this.isDirty() !== currentlyDirty) {
+        this.isDirty.set(currentlyDirty);
+      }
     }
   }
 
@@ -115,6 +162,8 @@ export class AppCategoryEdit implements OnInit, OnDestroy {
 
     const success = await this.categoryService.saveCategory(data);
     if (success) {
+      this.originalDataStr.set(JSON.stringify(data));
+      this.isDirty.set(false);
       this.router.navigate(['/development/category/list']);
     }
   }

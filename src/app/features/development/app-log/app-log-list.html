@@ -1,0 +1,56 @@
+<div class="page-container">
+  <div class="header-actions">
+    <h2>App Logs</h2>
+    <button routerLink="../new" class="btn btn-primary">New Log</button>
+  </div>
+
+  @if (appLogService.loading()) {
+    <div class="loading-spinner">Loading...</div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Seq No.</th>
+          <th>Version</th>
+          <th>Version Date</th>
+          <th>Message</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (log of appLogService.logs(); track log.tb_tyapp_ap_lg_id) {
+          <tr>
+            <td>{{ log.tb_tyapp_ap_lg_seq_no }}</td>
+            <td>
+              v{{ log.version_major }}.{{ log.version_minor }}.{{
+                log.version_patch
+              }}
+            </td>
+            <td>{{ log.version_date | date: "yyyy-MM-dd" }}</td>
+            <td>{{ log.log_message }}</td>
+            <td>{{ log.status === 1 ? "Active" : "Inactive" }}</td>
+            <td>
+              <button
+                (click)="onEdit(log.tb_tyapp_ap_lg_id)"
+                class="btn btn-sm btn-outline"
+              >
+                Edit
+              </button>
+              <button
+                (click)="onDelete(log.tb_tyapp_ap_lg_id)"
+                class="btn btn-sm btn-danger"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="text-center">No logs found.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

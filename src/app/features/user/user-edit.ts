@@ -1,21 +1,30 @@
-import { CommonModule } from "@angular/common";
-import { Component, OnInit, OnDestroy, inject, NgZone, signal } from "@angular/core";
-import { FormsModule } from "@angular/forms";
-import { MatButtonModule } from "@angular/material/button";
-import { MatFormFieldModule } from "@angular/material/form-field";
-import { MatIconModule } from "@angular/material/icon";
-import { MatInputModule } from "@angular/material/input";
-import { MatMenuModule } from "@angular/material/menu";
-import { MatSelectModule } from "@angular/material/select";
-import { RouterModule, ActivatedRoute, Router } from "@angular/router";
-import { DisplayNameModePipe } from "../../core/pipes/display-name-mode.pipe";
-import { DisplayNamePipe } from "../../core/pipes/display-name.pipe";
-import { RoleLabelPipe } from "../../core/pipes/role-label.pipe";
-import { HeaderService } from "../../core/services/header.service";
-import { exportToCsv } from "../../core/utils/csv-export.util";
-import { TyappUser } from "./user.model";
-import { UserService } from "./user.service";
-
+import { CommonModule } from '@angular/common';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  NgZone,
+  signal,
+  computed,
+  DoCheck,
+  HostListener,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatSelectModule } from '@angular/material/select';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { DisplayNameModePipe } from '../../core/pipes/display-name-mode.pipe';
+import { DisplayNamePipe } from '../../core/pipes/display-name.pipe';
+import { RoleLabelPipe } from '../../core/pipes/role-label.pipe';
+import { HeaderService } from '../../core/services/header.service';
+import { exportToCsv } from '../../core/utils/csv-export.util';
+import { TyappUser } from './user.model';
+import { UserService } from './user.service';
 
 @Component({
   selector: 'app-user-edit',
@@ -37,7 +46,7 @@ import { UserService } from "./user.service";
   providers: [DisplayNamePipe, RoleLabelPipe, DisplayNameModePipe],
   templateUrl: './user-edit.html',
 })
-export class UserEdit implements OnInit, OnDestroy {
+export class UserEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   public userService = inject(UserService);
@@ -53,22 +62,34 @@ export class UserEdit implements OnInit, OnDestroy {
 
   user = signal<TyappUser | null>(null);
   isSaving = signal(false);
-  isSyncing = signal(false);
+
+  originalDataStr = signal<string>('');
+
+  isDirty = signal(false);
+
+  syncStatus = computed<'loading' | 'up-to-date' | 'unsaved' | 'none'>(() => {
+    if (this.isSaving() || this.userService.loading()) return 'loading';
+    if (this.isDirty()) return 'unsaved';
+    if (this.user()) return 'up-to-date';
+    return 'none';
+  });
+
+  isSaveDisabled = computed(
+    () =>
+      this.isSaving() ||
+      !this.user() ||
+      !this.user()?.legal_first_name?.trim() ||
+      !this.user()?.legal_last_name?.trim() ||
+      !this.isDirty(),
+  );
 
   async ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return;
 
-    const isSaveDisabled = () =>
-      this.isSaving() ||
-      !this.user() ||
-      !this.user()?.legal_first_name ||
-      !this.user()?.legal_last_name;
-
     this.headerService.setConfig({
       backLink: '/users/list',
-      showSyncStatus: true,
-      isSyncing: this.isSyncing,
+      syncStatus: this.syncStatus,
       actions: [
         {
           label: 'Export',
@@ -80,17 +101,16 @@ export class UserEdit implements OnInit, OnDestroy {
           label: 'Save Changes',
           icon: 'check',
           type: 'primary',
-          disabled: isSaveDisabled,
+          disabled: this.isSaveDisabled,
           onClick: () => this.onSave(),
         },
       ],
     });
 
-    this.isSyncing.set(true);
-
     const cachedUser = this.userService.users().find((u) => u.user_id === id);
     if (cachedUser) {
       this.user.set(structuredClone(cachedUser));
+      this.originalDataStr.set(JSON.stringify(cachedUser));
     }
 
     const freshUser = await this.userService.fetchUserById(id);
@@ -98,10 +118,54 @@ export class UserEdit implements OnInit, OnDestroy {
     this.zone.run(() => {
       if (freshUser) {
         this.user.set(structuredClone(freshUser));
+        this.originalDataStr.set(JSON.stringify(freshUser));
       } else if (!cachedUser) {
         this.router.navigate(['/users/list']);
       }
-      this.isSyncing.set(false);
+    });
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent) {
+    if (this.isDirty()) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  ngDoCheck() {
+    const current = this.user();
+    const original = this.originalDataStr();
+
+    if (current && original) {
+      const currentlyDirty = JSON.stringify(current) !== original;
+      if (this.isDirty() !== currentlyDirty) {
+        this.isDirty.set(currentlyDirty);
+      }
+    }
+  }
+
+  async onSave() {
+    const data = this.user();
+    if (
+      !data ||
+      this.isSaving() ||
+      !data.legal_first_name?.trim() ||
+      !data.legal_last_name?.trim()
+    )
+      return;
+
+    this.isSaving.set(true);
+    const success = await this.userService.updateUser(data.user_id, data);
+
+    this.zone.run(() => {
+      if (success) {
+        this.originalDataStr.set(JSON.stringify(data));
+        this.isDirty.set(false);
+        this.router.navigate(['/users/list']);
+      }
+      this.isSaving.set(false);
     });
   }
 
@@ -143,27 +207,6 @@ export class UserEdit implements OnInit, OnDestroy {
       headers,
       rows,
     );
-  }
-
-  async onSave() {
-    const data = this.user();
-    if (
-      !data ||
-      this.isSaving() ||
-      !data.legal_first_name ||
-      !data.legal_last_name
-    )
-      return;
-
-    this.isSaving.set(true);
-    const success = await this.userService.updateUser(data.user_id, data);
-
-    this.zone.run(() => {
-      if (success) {
-        this.router.navigate(['/users/list']);
-      }
-      this.isSaving.set(false);
-    });
   }
 
   ngOnDestroy() {

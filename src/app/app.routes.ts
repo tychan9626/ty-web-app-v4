@@ -44,6 +44,13 @@ export const routes: Routes = [
                 (m) => m.APP_FUNCTION_ROUTES,
               ),
           },
+          {
+            path: 'log',
+            loadChildren: () =>
+              import('./features/development/app-log/app-log.routes').then(
+                (m) => m.APP_LOG_ROUTES,
+              ),
+          }
         ],
       },
     ],

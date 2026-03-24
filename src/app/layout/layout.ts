@@ -85,8 +85,9 @@ export class Layout {
       links: [
         { title: 'App Categories', route: '/development/category/list' },
         { title: 'App Functions', route: '/development/function/list' },
+        { title: 'App Logs', route: '/development/log/list' },
       ],
-    }
+    },
   ];
 
   readonly navMenu = computed(() => {

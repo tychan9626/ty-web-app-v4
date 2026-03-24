@@ -22,7 +22,6 @@
         @for (group of navMenu(); track group.title) {
           <mat-accordion displayMode="flat">
             <mat-expansion-panel class="nav-panel" [expanded]="true">
-              
               <mat-expansion-panel-header>
                 <mat-panel-title>
                   <mat-icon>{{ group.icon }}</mat-icon>
@@ -42,7 +41,6 @@
                   </a>
                 }
               </div>
-
             </mat-expansion-panel>
           </mat-accordion>
         }
@@ -71,7 +69,6 @@
       <div class="header-portal-slot">
         @if (headerService.config(); as config) {
           <div class="page-toolbar-wrapper">
-            
             <div class="left-actions">
               @if (config.backLink) {
                 <button mat-icon-button [routerLink]="config.backLink">
@@ -84,31 +81,63 @@
             </div>
 
             <div class="right-actions">
-              @if (config.showSyncStatus && config.isSyncing) {
+              @if (config.syncStatus && config.syncStatus() !== "none") {
                 <div class="sync-status-indicator">
-                  @if (config.isSyncing()) {
-                    <mat-spinner diameter="16"></mat-spinner>
-                    <span class="status-text desktop-only">Syncing...</span>
-                  } @else {
-                    <mat-icon class="success-icon">cloud_done</mat-icon>
-                    <span class="status-text desktop-only">Up to date</span>
+                  @switch (config.syncStatus()) {
+                    @case ("loading") {
+                      <mat-spinner diameter="16"></mat-spinner>
+                      <span class="status-text desktop-only">Syncing...</span>
+                    }
+                    @case ("unsaved") {
+                      <mat-icon
+                        style="
+                          color: var(--mat-sys-error);
+                          font-size: 16px;
+                          width: 16px;
+                          height: 16px;
+                        "
+                        >error_outline</mat-icon
+                      >
+                      <span
+                        class="status-text desktop-only"
+                        style="color: var(--mat-sys-error)"
+                        >Unsaved changes</span
+                      >
+                    }
+                    @case ("up-to-date") {
+                      <mat-icon class="success-icon">cloud_done</mat-icon>
+                      <span class="status-text desktop-only">Up to date</span>
+                    }
                   }
                 </div>
               }
 
-              @for (action of getSecondaryActions(config.actions); track action.label) {
-                <button mat-button class="desktop-only" 
-                        (click)="action.onClick()"
-                        [disabled]="action.disabled ? action.disabled() : false">
+              @for (
+                action of getSecondaryActions(config.actions);
+                track action.label
+              ) {
+                <button
+                  mat-button
+                  class="desktop-only"
+                  (click)="action.onClick()"
+                  [disabled]="action.disabled ? action.disabled() : false"
+                >
                   <mat-icon>{{ action.icon }}</mat-icon>
                   <span>{{ action.label }}</span>
                 </button>
               }
 
-              @for (action of getPrimaryActions(config.actions); track action.label) {
-                <button mat-flat-button color="primary" class="primary-action-btn"
-                        (click)="action.onClick()"
-                        [disabled]="action.disabled ? action.disabled() : false">
+              @for (
+                action of getPrimaryActions(config.actions);
+                track action.label
+              ) {
+                <button
+                  mat-flat-button
+                  color="primary"
+                  class="primary-action-btn"
+                  (click)="action.onClick()"
+                  [disabled]="action.disabled ? action.disabled() : false"
+                >
                   <mat-icon>{{ action.icon }}</mat-icon>
                   <span class="desktop-only">{{ action.label }}</span>
                 </button>
@@ -120,10 +149,15 @@
                     <mat-icon>more_vert</mat-icon>
                   </button>
                   <mat-menu #moreMenu="matMenu">
-                    @for (action of getSecondaryActions(config.actions); track action.label) {
-                      <button mat-menu-item 
-                              (click)="action.onClick()"
-                              [disabled]="action.disabled ? action.disabled() : false">
+                    @for (
+                      action of getSecondaryActions(config.actions);
+                      track action.label
+                    ) {
+                      <button
+                        mat-menu-item
+                        (click)="action.onClick()"
+                        [disabled]="action.disabled ? action.disabled() : false"
+                      >
                         <mat-icon>{{ action.icon }}</mat-icon>
                         <span>{{ action.label }}</span>
                       </button>

@@ -8,11 +8,12 @@ export interface HeaderAction {
   onClick: () => void;
 }
 
+export type SyncStatus = 'loading' | 'up-to-date' | 'unsaved' | 'none';
+
 export interface HeaderConfig {
   backLink?: string;
   title?: string;
-  showSyncStatus?: boolean;
-  isSyncing?: Signal<boolean>;
+  syncStatus?: Signal<SyncStatus>;
   actions?: HeaderAction[];
 }
 
