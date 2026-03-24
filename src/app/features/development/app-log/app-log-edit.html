@@ -1,131 +1,204 @@
-<div class="page-container">
-  <h2>{{ isEditMode ? "Edit Log" : "Create New Log" }}</h2>
+<div class="split-workspace">
+  @if (item(); as log) {
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">Version Info</h3>
+        <div class="fields-grid-2">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 8px;
+              "
+            >
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Major</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="log.version_major"
+                  required
+                  min="0"
+                />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Minor</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="log.version_minor"
+                  required
+                  min="0"
+                />
+              </mat-form-field>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Patch</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  [(ngModel)]="log.version_patch"
+                  required
+                  min="0"
+                />
+              </mat-form-field>
+            </div>
 
-  <form [formGroup]="logForm" (ngSubmit)="onSubmit()" class="form-container">
-    <div class="form-row flex-gap">
-      <div class="form-group">
-        <label for="version_major"
-          >Major Version <span class="text-danger">*</span></label
+            @if (!currentId) {
+              <div style="display: flex; gap: 8px; flex-wrap: wrap">
+                <button
+                  mat-button
+                  type="button"
+                  (click)="bumpMajor()"
+                  style="flex: 1; min-width: 80px"
+                >
+                  + Major
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  (click)="bumpMinor()"
+                  style="flex: 1; min-width: 80px"
+                >
+                  + Minor
+                </button>
+                <button
+                  mat-button
+                  type="button"
+                  (click)="bumpPatch()"
+                  style="flex: 1; min-width: 80px"
+                >
+                  + Patch
+                </button>
+              </div>
+            }
+          </div>
+
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+            "
+          >
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="full-width"
+            >
+              <mat-label>Release Date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="picker"
+                [(ngModel)]="log.version_date"
+                required
+              />
+              <mat-datepicker-toggle
+                matIconSuffix
+                [for]="picker"
+              ></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Context & Author</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>App Category</mat-label>
+            <input
+              matInput
+              required
+              #catInput
+              [(ngModel)]="log.category_id"
+              [matAutocomplete]="catAuto"
+              (focus)="catSearch.set('')"
+              (input)="catSearch.set(catInput.value)"
+              #catCtrl="ngModel"
+            />
+            <mat-autocomplete
+              #catAuto="matAutocomplete"
+              requireSelection
+              [displayWith]="displayCategoryName.bind(this)"
+            >
+              @for (opt of filteredCategories(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (catCtrl.invalid && (catCtrl.dirty || catCtrl.touched)) {
+              <mat-error
+                >Please select a valid category from the list.</mat-error
+              >
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Log Author</mat-label>
+            <input
+              matInput
+              required
+              #userInput
+              [(ngModel)]="log.log_user"
+              [matAutocomplete]="userAuto"
+              (focus)="userSearch.set('')"
+              (input)="userSearch.set(userInput.value)"
+              #userCtrl="ngModel"
+            />
+            <mat-autocomplete
+              #userAuto="matAutocomplete"
+              requireSelection
+              [displayWith]="displayUserName.bind(this)"
+            >
+              @for (opt of filteredUsers(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (userCtrl.invalid && (userCtrl.dirty || userCtrl.touched)) {
+              <mat-error>Please select a valid author from the list.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Details</h3>
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
         >
-        <input
-          id="version_major"
-          type="number"
-          formControlName="version_major"
-          class="form-control"
-        />
-      </div>
-      <div class="form-group">
-        <label for="version_minor"
-          >Minor Version <span class="text-danger">*</span></label
+          <mat-label>Log Message</mat-label>
+          <textarea
+            matInput
+            rows="4"
+            [(ngModel)]="log.log_message"
+            required
+            placeholder="Describe the updates..."
+          ></textarea>
+        </mat-form-field>
+
+        <div class="fields-row-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="log.status">
+              <mat-option [value]="1">Active (Published)</mat-option>
+              <mat-option [value]="0">Inactive (Draft)</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
         >
-        <input
-          id="version_minor"
-          type="number"
-          formControlName="version_minor"
-          class="form-control"
-        />
-      </div>
-      <div class="form-group">
-        <label for="version_patch"
-          >Patch Version <span class="text-danger">*</span></label
-        >
-        <input
-          id="version_patch"
-          type="number"
-          formControlName="version_patch"
-          class="form-control"
-        />
-      </div>
+          <mat-label>Internal Remarks</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="log.remarks"></textarea>
+        </mat-form-field>
+      </section>
     </div>
-
-    <div class="form-group">
-      <label for="version_date"
-        >Version Date <span class="text-danger">*</span></label
-      >
-      <input
-        id="version_date"
-        type="date"
-        formControlName="version_date"
-        class="form-control"
-      />
-    </div>
-
-    <div class="form-row flex-gap">
-      <div class="form-group">
-        <label for="category_id"
-          >Category <span class="text-danger">*</span></label
-        >
-        <select
-          id="category_id"
-          formControlName="category_id"
-          class="form-control"
-        >
-          <option value="" disabled>Select a category...</option>
-          @for (
-            category of appCategoryService.categories();
-            track category.tb_tyapp_ap_ctgy_id
-          ) {
-            <option [value]="category.tb_tyapp_ap_ctgy_id">
-              {{ category.display_name }}
-            </option>
-          }
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="log_user"
-          >User ID (UUID) <span class="text-danger">*</span></label
-        >
-        <input
-          id="log_user"
-          type="text"
-          formControlName="log_user"
-          class="form-control"
-        />
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="log_message"
-        >Log Message <span class="text-danger">*</span></label
-      >
-      <textarea
-        id="log_message"
-        formControlName="log_message"
-        class="form-control"
-        rows="3"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="remarks">Remarks</label>
-      <textarea
-        id="remarks"
-        formControlName="remarks"
-        class="form-control"
-        rows="2"
-      ></textarea>
-    </div>
-
-    <div class="form-group">
-      <label for="status">Status</label>
-      <select id="status" formControlName="status" class="form-control">
-        <option [ngValue]="1">Active (1)</option>
-        <option [ngValue]="0">Inactive (0)</option>
-      </select>
-    </div>
-
-    <div class="form-actions mt-4">
-      <button type="button" routerLink="../" class="btn btn-outline">
-        Cancel
-      </button>
-      <button
-        type="submit"
-        class="btn btn-primary"
-        [disabled]="appLogService.loading() || logForm.invalid"
-      >
-        {{ appLogService.loading() ? "Saving..." : "Save" }}
-      </button>
-    </div>
-  </form>
+  }
 </div>

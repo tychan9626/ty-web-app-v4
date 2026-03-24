@@ -12,7 +12,7 @@ export class AppLogService {
   logs = signal<AppLog[]>([]);
   loading = signal(false);
 
-  async fetchAllLogs(force = false): Promise<void> {
+  async fetchAllLogs(force = false) {
     if (this.logs().length > 0 && !force) return;
 
     this.loading.set(true);
@@ -21,12 +21,13 @@ export class AppLogService {
         .from('tyapp_app_log')
         .select('*')
         .is('deleted_at', null)
+        .order('version_date', { ascending: false })
         .order('tb_tyapp_ap_lg_seq_no', { ascending: false });
 
       if (error) throw error;
 
       this.zone.run(() => {
-        this.logs.set(data as AppLog[]);
+        this.logs.set(data || []);
         this.loading.set(false);
       });
     } catch (error: unknown) {
@@ -61,7 +62,6 @@ export class AppLogService {
 
   async saveLog(logData: Partial<AppLog>): Promise<boolean> {
     const isNew = !logData.tb_tyapp_ap_lg_id;
-
     const {
       tb_tyapp_ap_lg_seq_no,
       created_at,
@@ -77,7 +77,7 @@ export class AppLogService {
       : this.supabase
           .from('tyapp_app_log')
           .update(payload)
-          .eq('tb_tyapp_ap_lg_id', logData.tb_tyapp_ap_lg_id as string)
+          .eq('tb_tyapp_ap_lg_id', logData.tb_tyapp_ap_lg_id)
           .select()
           .single();
 
@@ -96,7 +96,6 @@ export class AppLogService {
                   : item,
               ),
         );
-
         this.loading.set(false);
         this.notification.showSuccess('Log saved successfully');
         return true;
@@ -117,7 +116,6 @@ export class AppLogService {
         'tyapp_app_log_soft_delete_single_record',
         { record_id: id },
       );
-
       if (error) throw error;
 
       return this.zone.run(() => {

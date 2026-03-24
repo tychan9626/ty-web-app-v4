@@ -1,56 +1,37 @@
-<div class="page-container">
-  <div class="header-actions">
-    <h2>App Logs</h2>
-    <button routerLink="../new" class="btn btn-primary">New Log</button>
+<div class="standard-list-view">
+  <div class="list-container">
+    @for (item of listVM(); track item.tb_tyapp_ap_lg_id) {
+      <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_ap_lg_id]">
+        <div class="item-content">
+          <div class="item-info-group">
+            <span class="main-text"
+              >v{{ item.version_major }}.{{ item.version_minor }}.{{
+                item.version_patch
+              }}
+              - {{ item.version_date }}</span
+            >
+            <span class="sub-text"
+              >{{ item.categoryName }} · By {{ item.authorName }}</span
+            >
+          </div>
+
+          <div class="item-status-group">
+            <span class="status-tag" [class.inactive]="item.status === 0">
+              {{ item.status === 1 ? "Published" : "Draft" }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      @if (!logService.loading()) {
+        <div class="empty-placeholder">No logs found.</div>
+      }
+    }
   </div>
 
-  @if (appLogService.loading()) {
-    <div class="loading-spinner">Loading...</div>
-  } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Seq No.</th>
-          <th>Version</th>
-          <th>Version Date</th>
-          <th>Message</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (log of appLogService.logs(); track log.tb_tyapp_ap_lg_id) {
-          <tr>
-            <td>{{ log.tb_tyapp_ap_lg_seq_no }}</td>
-            <td>
-              v{{ log.version_major }}.{{ log.version_minor }}.{{
-                log.version_patch
-              }}
-            </td>
-            <td>{{ log.version_date | date: "yyyy-MM-dd" }}</td>
-            <td>{{ log.log_message }}</td>
-            <td>{{ log.status === 1 ? "Active" : "Inactive" }}</td>
-            <td>
-              <button
-                (click)="onEdit(log.tb_tyapp_ap_lg_id)"
-                class="btn btn-sm btn-outline"
-              >
-                Edit
-              </button>
-              <button
-                (click)="onDelete(log.tb_tyapp_ap_lg_id)"
-                class="btn btn-sm btn-danger"
-              >
-                Delete
-              </button>
-            </td>
-          </tr>
-        } @empty {
-          <tr>
-            <td colspan="6" class="text-center">No logs found.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  }
+  <footer class="list-footer">
+    <div class="divider"></div>
+    <span class="count-text">TOTAL {{ listVM().length }} LOGS</span>
+  </footer>
 </div>
