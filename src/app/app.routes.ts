@@ -50,8 +50,15 @@ export const routes: Routes = [
               import('./features/development/app-log/app-log.routes').then(
                 (m) => m.APP_LOG_ROUTES,
               ),
-          }
+          },
         ],
+      },
+      {
+        path: 'article',
+        loadChildren: () =>
+          import('./features/article/article.routes').then(
+            (m) => m.ARTICLE_ROUTES,
+          ),
       },
     ],
   },

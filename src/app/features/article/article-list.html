@@ -1,0 +1,33 @@
+<div class="standard-list-view">
+  <div class="list-container">
+    @for (item of listVM(); track item.tb_tyapp_atcl_id) {
+      <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_atcl_id]">
+        <div class="item-content">
+          <div class="item-info-group">
+            <span class="main-text">{{ item.title }}</span>
+            <span class="sub-text"
+              >{{ item.platform }} · {{ item.author }} ·
+              {{ item.publish_date }}</span
+            >
+          </div>
+
+          <div class="item-status-group">
+            <span class="status-tag" [class.inactive]="item.status === 0">
+              {{ item.status === 1 ? "Published" : "Draft" }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      @if (!articleService.loading()) {
+        <div class="empty-placeholder">No articles found.</div>
+      }
+    }
+  </div>
+
+  <footer class="list-footer">
+    <div class="divider"></div>
+    <span class="count-text">TOTAL {{ listVM().length }} ARTICLES</span>
+  </footer>
+</div>

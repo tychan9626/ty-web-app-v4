@@ -1,0 +1,132 @@
+<div class="split-workspace">
+  @if (item(); as article) {
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">Basic Info</h3>
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>Article Title</mat-label>
+          <input
+            matInput
+            [(ngModel)]="article.title"
+            required
+            placeholder="Enter article title"
+          />
+        </mat-form-field>
+
+        <div class="fields-grid-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Author</mat-label>
+            <input matInput [(ngModel)]="article.author" required />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Platform</mat-label>
+            <input
+              matInput
+              [(ngModel)]="article.platform"
+              required
+              placeholder="e.g. Medium, Blog"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="fields-grid-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Publish Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              [(ngModel)]="article.publish_date"
+              required
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Manage User</mat-label>
+            <input
+              matInput
+              required
+              #userInput
+              [(ngModel)]="article.manage_user_id"
+              [matAutocomplete]="userAuto"
+              (focus)="userSearch.set('')"
+              (input)="userSearch.set(userInput.value)"
+              #userCtrl="ngModel"
+            />
+            <mat-autocomplete
+              #userAuto="matAutocomplete"
+              requireSelection
+              [displayWith]="displayUserName.bind(this)"
+            >
+              @for (opt of filteredUsers(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (userCtrl.invalid && (userCtrl.dirty || userCtrl.touched)) {
+              <mat-error>Please select a valid user from the list.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Content & Details</h3>
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>URL Link (Optional)</mat-label>
+          <input
+            matInput
+            [(ngModel)]="article.url_link"
+            placeholder="https://"
+          />
+        </mat-form-field>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
+        >
+          <mat-label>Article Content</mat-label>
+          <textarea
+            matInput
+            rows="6"
+            [(ngModel)]="article.content"
+            required
+          ></textarea>
+        </mat-form-field>
+
+        <div class="fields-row-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="article.status">
+              <mat-option [value]="1">Active (Published)</mat-option>
+              <mat-option [value]="0">Inactive (Draft)</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
+        >
+          <mat-label>Internal Remarks</mat-label>
+          <textarea matInput rows="2" [(ngModel)]="article.remarks"></textarea>
+        </mat-form-field>
+      </section>
+    </div>
+  }
+</div>

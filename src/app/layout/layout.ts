@@ -73,6 +73,12 @@ export class Layout {
 
   private readonly masterMenu: MenuGroup[] = [
     {
+      title: 'Articles',
+      icon: 'article',
+      adminOnly: false,
+      links: [{ title: 'Article List', route: '/article/list' }],
+    },
+    {
       title: 'User Management',
       icon: 'people_outline',
       adminOnly: true,
