@@ -1,7 +1,18 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, OnDestroy, inject, computed } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  inject,
+  computed,
+  signal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 
@@ -17,12 +28,17 @@ import { exportToCsv } from '../../core/utils/csv-export.util';
   imports: [
     CommonModule,
     RouterModule,
+    FormsModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatPaginatorModule,
   ],
   providers: [DisplayNamePipe],
   templateUrl: './article-list.html',
+  styleUrl: './article-list.scss',
 })
 export class ArticleList implements OnInit, OnDestroy {
   public articleService = inject(ArticleService);
@@ -33,7 +49,11 @@ export class ArticleList implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private displayNamePipe = inject(DisplayNamePipe);
 
-  listVM = computed(() => {
+  searchQuery = signal<string>('');
+  pageSize = signal<number>(10);
+  pageIndex = signal<number>(0);
+
+  rawListVM = computed(() => {
     const articles = this.articleService.articles();
     const users = this.userService.users();
 
@@ -46,6 +66,25 @@ export class ArticleList implements OnInit, OnDestroy {
           : 'Unknown User',
       };
     });
+  });
+
+  filteredListVM = computed(() => {
+    const q = this.searchQuery().toLowerCase().trim();
+    const list = this.rawListVM();
+    if (!q) return list;
+
+    return list.filter(
+      (item) =>
+        item.title?.toLowerCase().includes(q) ||
+        item.author?.toLowerCase().includes(q) ||
+        item.platform?.toLowerCase().includes(q),
+    );
+  });
+
+  pagedListVM = computed(() => {
+    const start = this.pageIndex() * this.pageSize();
+    const end = start + this.pageSize();
+    return this.filteredListVM().slice(start, end);
   });
 
   ngOnInit() {
@@ -89,8 +128,17 @@ export class ArticleList implements OnInit, OnDestroy {
     await this.userService.fetchAllUsers(true);
   }
 
+  onSearchChange() {
+    this.pageIndex.set(0);
+  }
+
+  onPageChange(event: PageEvent) {
+    this.pageIndex.set(event.pageIndex);
+    this.pageSize.set(event.pageSize);
+  }
+
   onExport() {
-    const articles = this.listVM();
+    const articles = this.filteredListVM();
     if (!articles.length) return;
 
     const headers = [

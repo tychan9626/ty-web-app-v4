@@ -1,6 +1,19 @@
 <div class="standard-list-view">
+  <div class="list-search-container">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="list-search-input">
+      <mat-icon matPrefix>search</mat-icon>
+      <mat-label>Search articles by title, author, or platform...</mat-label>
+      <input matInput [(ngModel)]="searchQuery" (ngModelChange)="onSearchChange()">
+      @if (searchQuery()) {
+        <button mat-icon-button matSuffix (click)="searchQuery.set(''); onSearchChange()">
+          <mat-icon>close</mat-icon>
+        </button>
+      }
+    </mat-form-field>
+  </div>
+
   <div class="list-container">
-    @for (item of listVM(); track item.tb_tyapp_atcl_id) {
+    @for (item of pagedListVM(); track item.tb_tyapp_atcl_id) {
       <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_atcl_id]">
         <div class="item-content">
           <div class="item-info-group">
@@ -21,13 +34,23 @@
       </a>
     } @empty {
       @if (!articleService.loading()) {
-        <div class="empty-placeholder">No articles found.</div>
+        <div class="empty-placeholder">
+          No articles found matching your criteria.
+        </div>
       }
     }
   </div>
 
-  <footer class="list-footer">
+  <footer class="list-footer" style="padding: 0; display: block">
     <div class="divider"></div>
-    <span class="count-text">TOTAL {{ listVM().length }} ARTICLES</span>
+    <mat-paginator
+      [length]="filteredListVM().length"
+      [pageSize]="pageSize()"
+      [pageIndex]="pageIndex()"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      (page)="onPageChange($event)"
+      aria-label="Select page of articles"
+    >
+    </mat-paginator>
   </footer>
 </div>
