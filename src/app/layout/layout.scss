@@ -121,7 +121,20 @@
   }
 }
 
+.content-wrapper {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+}
+
 .dynamic-navbar {
+  position: relative;
+  z-index: 2;
+  flex-shrink: 0;
+  background-color: var(--mat-sys-surface);
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
+
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -143,20 +156,11 @@
   }
 }
 
-.header-portal-slot {
-  flex: 1;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
-  overflow: visible;
-  white-space: nowrap;
-}
-
 .main-scroll-view {
   flex: 1;
   overflow-y: auto;
   background-color: var(--mat-sys-surface);
+
   .page-container {
     min-height: 100%;
     background-color: var(--mat-sys-surface);
