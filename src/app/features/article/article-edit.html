@@ -1,6 +1,54 @@
 <div class="split-workspace">
   @if (item(); as article) {
     <div class="form-scroll-area">
+      @if (!currentId) {
+        <section
+          class="form-group"
+          style="
+            background-color: var(--mat-sys-surface-variant);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+          "
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 12px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 8px">
+              <mat-icon style="color: var(--mat-sys-primary)"
+                >auto_fix_high</mat-icon
+              >
+              <h3 style="margin: 0; font-size: 16px; font-weight: 600">
+                Smart Auto-fill (Ming Pao)
+              </h3>
+            </div>
+            <button
+              mat-stroked-button
+              color="primary"
+              (click)="extractArticleData()"
+            >
+              Extract Data
+            </button>
+          </div>
+          <mat-form-field
+            appearance="outline"
+            class="full-width"
+            subscriptSizing="dynamic"
+          >
+            <textarea
+              matInput
+              rows="4"
+              [(ngModel)]="rawArticleText"
+              placeholder="Paste the raw article text here..."
+            ></textarea>
+          </mat-form-field>
+        </section>
+      }
       <section class="form-group">
         <h3 class="group-header">Basic Info</h3>
         <mat-form-field

@@ -32,6 +32,7 @@ import { ArticleService } from './article.service';
 import { SelectOption } from '../../core/models/common.model';
 import { DisplayNamePipe } from '../../core/pipes/display-name.pipe';
 import { exportToCsv } from '../../core/utils/csv-export.util';
+import { NotificationService } from '../../core/services/notification.service';
 
 @Component({
   selector: 'app-article-edit',
@@ -57,6 +58,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
   private zone = inject(NgZone);
   private headerService = inject(HeaderService);
   private displayNamePipe = inject(DisplayNamePipe);
+  private notification = inject(NotificationService);
 
   public articleService = inject(ArticleService);
   public userService = inject(UserService);
@@ -67,6 +69,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
   originalDataStr = signal<string>('');
 
   returnUrl: string = '/article/list';
+  rawArticleText = signal<string>('');
 
   isDirty = signal(false);
   isSaveDisabled = signal(true);
@@ -283,5 +286,88 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
 
   ngOnDestroy() {
     this.headerService.clear();
+  }
+
+  extractArticleData() {
+    const text = this.rawArticleText();
+    if (!text.trim()) return;
+
+    let publish_date: any = null;
+    let author = '';
+    let platform = '';
+    let title = '';
+    let content = '';
+    let url_link = '';
+
+    const dateMatch = text.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (dateMatch) {
+      const YYYY = parseInt(dateMatch[1], 10);
+      const MM = parseInt(dateMatch[2], 10) - 1;
+      const DD = parseInt(dateMatch[3], 10);
+      publish_date = new Date(YYYY, MM, DD);
+    }
+
+    const lines = text
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    const dateLineIdx = lines.findIndex((l) =>
+      /\d{4}年\d{1,2}月\d{1,2}日/.test(l),
+    );
+
+    if (dateLineIdx !== -1) {
+      for (
+        let i = dateLineIdx + 1;
+        i < Math.min(lines.length, dateLineIdx + 5);
+        i++
+      ) {
+        if (
+          !/星期/.test(lines[i]) &&
+          !/\d{4}年\d{1,2}月\d{1,2}日/.test(lines[i]) &&
+          /^[\u4e00-\u9fa5]{2,6}$/.test(lines[i])
+        ) {
+          author = lines[i];
+          break;
+        }
+      }
+    }
+
+    const titleMatch = text.match(/^\s*([^\n\/]+\/\s*[^\n]+)\s*$/m);
+    if (titleMatch) {
+      title = titleMatch[1].split(' / ')[0].trim();
+    }
+
+    platform = text.includes('明報') ? '明報' : '未知';
+    const urlMatch = text.match(/(https:\/\/\S+)/);
+    if (urlMatch) url_link = urlMatch[1];
+
+    const contentStart = text.indexOf('【明報文章】');
+    if (contentStart !== -1) {
+      content = text.substring(contentStart + '【明報文章】'.length).trim();
+      content = content.replace(/原文網址：.+$/, '').trim();
+    } else {
+      content = text;
+    }
+
+    if (!title && content) title = content.slice(0, 10);
+
+    this.item.update((current) => {
+      if (!current) return current;
+      return {
+        ...current,
+        publish_date: publish_date || current.publish_date,
+        author: author || current.author,
+        platform: platform || current.platform,
+        title: title || current.title,
+        content: content || current.content,
+        url_link: url_link || current.url_link,
+        status: 1,
+      };
+    });
+
+    this.rawArticleText.set('');
+    this.notification.showSuccess(
+      'Text extracted and auto-filled successfully!',
+    );
   }
 }
