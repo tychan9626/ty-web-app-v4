@@ -23,10 +23,14 @@
   .sidebar-logo {
     background: transparent;
     cursor: pointer;
-    font-size: 20px;
-    letter-spacing: -0.5px;
-    color: var(--mat-sys-primary);
     --mdc-top-app-bar-container-height: 64px;
+
+    .brand-logo {
+      height: 35px;
+      width: auto;
+      max-width: 200px;
+      margin-top: 4px;
+    }
   }
 
   .sidebar-user-profile {
