@@ -1,4 +1,4 @@
-# Jaxfr (TyWebAppV4)
+# Jaxfr
 
 A modern, pragmatic Content and Admin Management System built with Angular 20 and Supabase. Designed from the ground up with a relentless focus on clean UX, responsive layouts, and maintainable code architecture.
 
@@ -38,28 +38,26 @@ A modern, pragmatic Content and Admin Management System built with Angular 20 an
 ### 2. Installation
 Clone the repository and install dependencies:
 
-bash
-npm install
+`npm install`
 
 ### 3. Environment Configuration
 Create an environment.development.ts (and environment.ts for production) in src/environments/ and add your Supabase credentials:
 
-export const environment = {
+`export const environment = {
   supabaseUrl: 'YOUR_SUPABASE_URL',
   supabaseKey: 'YOUR_SUPABASE_ANON_KEY'
-};
+};`
 
 ### 4. Serve
 Start the local development server:
 
-Bash
-ng serve
+`ng serve`
+
 Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
 
 ## Deployment
 This project is fully optimized for production. To build the artifacts:
 
-Bash
-ng build
+`ng build`
 
 The compiled files will be generated in the dist/ directory, ready to be hosted on platforms like Vercel, Firebase Hosting, or Cloudflare Pages.
