@@ -1,0 +1,44 @@
+<div class="standard-list-view">
+  <div class="list-container">
+    @for (item of rawListVM(); track item.tb_tyapp_wk_mplm_id) {
+      <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_wk_mplm_id]">
+        <div class="item-content">
+          <div class="item-info-group">
+            <span class="main-text">
+              {{ item.employer_name_en }}
+              @if (item.employer_name_zh) {
+                <span>({{ item.employer_name_zh }})</span>
+              }
+            </span>
+            <span class="sub-text"
+              >{{ item.position_title_en }} · {{ item.workload_type }} ·
+              {{ item.manageUserName }}</span
+            >
+          </div>
+
+          <div class="item-status-group">
+            <span class="status-tag" [class.inactive]="item.status === 0">
+              {{ item.status === 1 ? "Active" : "Inactive" }}
+            </span>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </div>
+        </div>
+      </a>
+    } @empty {
+      @if (!employmentService.loading()) {
+        <div class="empty-placeholder">No items found.</div>
+      }
+    }
+  </div>
+
+  <footer
+    class="list-footer"
+    [hidden]="employmentService.loading() || rawListVM().length === 0"
+  >
+    <div class="divider"></div>
+    <span class="count-text">TOTAL {{ rawListVM().length }} ITEMS</span>
+    @if (employmentService.loading()) {
+      <mat-spinner diameter="16"></mat-spinner>
+    }
+  </footer>
+</div>

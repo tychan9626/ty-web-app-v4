@@ -60,6 +60,13 @@ export const routes: Routes = [
             (m) => m.ARTICLE_ROUTES,
           ),
       },
+      {
+        path: 'employment',
+        loadChildren: () =>
+          import('./features/employment/employment.routes').then(
+            (m) => m.EMPLOYMENT_ROUTES,
+          ),
+      }
     ],
   },
   {

@@ -1,0 +1,102 @@
+<div class="split-workspace">
+  @if (item(); as emp) {
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">Company Info</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Employer Name (EN)</mat-label>
+            <input matInput [(ngModel)]="emp.employer_name_en" required />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Employer Name (ZH) - Optional</mat-label>
+            <input matInput [(ngModel)]="emp.employer_name_zh" />
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Position & Details</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Position Title (EN)</mat-label>
+            <input matInput [(ngModel)]="emp.position_title_en" required />
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Position Title (ZH) - Optional</mat-label>
+            <input matInput [(ngModel)]="emp.position_title_zh" />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Workload Type</mat-label>
+            <mat-select [(ngModel)]="emp.workload_type" required>
+              <mat-option value="Full-time">Full-time</mat-option>
+              <mat-option value="Part-time">Part-time</mat-option>
+              <mat-option value="Project-based">Project-based</mat-option>
+              <mat-option value="Hourly">Hourly</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Employment Type</mat-label>
+            <mat-select [(ngModel)]="emp.employment_type" required>
+              <mat-option value="Permanent">Permanent</mat-option>
+              <mat-option value="Contract">Contract</mat-option>
+              <mat-option value="Freelance">Freelance</mat-option>
+              <mat-option value="Internship">Internship</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">User & Status</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Assigned User</mat-label>
+            <input
+              matInput
+              required
+              #userInput
+              [(ngModel)]="emp.user_id"
+              [matAutocomplete]="userAuto"
+              (focus)="userSearch.set('')"
+              (input)="userSearch.set(userInput.value)"
+              #userCtrl="ngModel"
+            />
+            <mat-autocomplete
+              #userAuto="matAutocomplete"
+              requireSelection
+              [displayWith]="displayUserName.bind(this)"
+            >
+              @for (opt of filteredUsers(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-autocomplete>
+            @if (userCtrl.invalid && (userCtrl.dirty || userCtrl.touched)) {
+              <mat-error>Please select a valid user from the list.</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [(ngModel)]="emp.status">
+              <mat-option [value]="1">Active</mat-option>
+              <mat-option [value]="0">Inactive</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
+        >
+          <mat-label>Internal Remarks (Optional)</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="emp.remarks"></textarea>
+        </mat-form-field>
+      </section>
+    </div>
+  }
+</div>
