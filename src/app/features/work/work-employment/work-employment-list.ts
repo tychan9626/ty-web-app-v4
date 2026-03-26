@@ -5,14 +5,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 
-import { HeaderService } from '../../core/services/header.service';
-import { UserService } from '../user/user.service';
-import { EmploymentService } from './employment.service';
-import { DisplayNamePipe } from '../../core/pipes/display-name.pipe';
-import { exportToCsv } from '../../core/utils/csv-export.util';
+import { HeaderService } from '../../../core/services/header.service';
+import { UserService } from '../../user/user.service';
+import { WorkEmploymentService } from './work-employment.service';
+import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 
 @Component({
-  selector: 'app-employment-list',
+  selector: 'app-work-employment-list',
   standalone: true,
   imports: [
     CommonModule,
@@ -22,10 +22,10 @@ import { exportToCsv } from '../../core/utils/csv-export.util';
     MatProgressSpinnerModule,
   ],
   providers: [DisplayNamePipe],
-  templateUrl: './employment-list.html',
+  templateUrl: './work-employment-list.html',
 })
-export class EmploymentList implements OnInit, OnDestroy {
-  public employmentService = inject(EmploymentService);
+export class WorkEmploymentList implements OnInit, OnDestroy {
+  public workEmploymentService = inject(WorkEmploymentService);
   public userService = inject(UserService);
 
   private headerService = inject(HeaderService);
@@ -34,7 +34,7 @@ export class EmploymentList implements OnInit, OnDestroy {
   private displayNamePipe = inject(DisplayNamePipe);
 
   rawListVM = computed(() => {
-    const employments = this.employmentService.employments();
+    const employments = this.workEmploymentService.workEmployments();
     const users = this.userService.users();
 
     return employments.map((emp) => {
@@ -50,7 +50,7 @@ export class EmploymentList implements OnInit, OnDestroy {
 
   ngOnInit() {
     const isLoading = computed(
-      () => this.employmentService.loading() || this.userService.loading(),
+      () => this.workEmploymentService.loading() || this.userService.loading(),
     );
 
     this.headerService.setConfig({
@@ -80,12 +80,12 @@ export class EmploymentList implements OnInit, OnDestroy {
       ],
     });
 
-    this.employmentService.fetchAllEmployments();
+    this.workEmploymentService.fetchAllWorkEmployments();
     this.userService.fetchAllUsers();
   }
 
   async onRefresh() {
-    await this.employmentService.fetchAllEmployments(true);
+    await this.workEmploymentService.fetchAllWorkEmployments(true);
     await this.userService.fetchAllUsers(true);
   }
 

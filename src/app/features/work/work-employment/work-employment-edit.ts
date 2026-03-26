@@ -19,20 +19,20 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 
-import { AuthService } from '../../core/services/auth.service';
+import { AuthService } from '../../../core/services/auth.service';
 import {
   HeaderService,
   HeaderAction,
-} from '../../core/services/header.service';
-import { UserService } from '../user/user.service';
-import { Employment } from './employment.model';
-import { EmploymentService } from './employment.service';
-import { SelectOption } from '../../core/models/common.model';
-import { DisplayNamePipe } from '../../core/pipes/display-name.pipe';
-import { exportToCsv } from '../../core/utils/csv-export.util';
+} from '../../../core/services/header.service';
+import { UserService } from '../../user/user.service';
+import { WorkEmployment } from './work-employment.model';
+import { WorkEmploymentService } from './work-employment.service';
+import { SelectOption } from '../../../core/models/common.model';
+import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 
 @Component({
-  selector: 'app-employment-edit',
+  selector: 'app-work-employment-edit',
   standalone: true,
   imports: [
     CommonModule,
@@ -46,20 +46,20 @@ import { exportToCsv } from '../../core/utils/csv-export.util';
     MatAutocompleteModule,
   ],
   providers: [DisplayNamePipe],
-  templateUrl: './employment-edit.html',
+  templateUrl: './work-employment-edit.html',
 })
-export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
+export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
   private headerService = inject(HeaderService);
   private displayNamePipe = inject(DisplayNamePipe);
 
-  public employmentService = inject(EmploymentService);
+  public workEmploymentService = inject(WorkEmploymentService);
   public userService = inject(UserService);
   public authService = inject(AuthService);
 
-  item = signal<Partial<Employment> | null>(null);
+  item = signal<Partial<WorkEmployment> | null>(null);
   currentId: string | null = null;
   originalDataStr = signal<string>('');
 
@@ -83,7 +83,7 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
   });
 
   syncStatus = computed<'loading' | 'up-to-date' | 'unsaved' | 'none'>(() => {
-    if (this.employmentService.loading()) return 'loading';
+    if (this.workEmploymentService.loading()) return 'loading';
     if (this.isDirty()) return 'unsaved';
     if (this.currentId) return 'up-to-date';
     return 'none';
@@ -109,7 +109,7 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
       }
 
       const disabled =
-        this.employmentService.loading() ||
+        this.workEmploymentService.loading() ||
         !currentlyDirty ||
         !current.employer_name_en?.trim() ||
         !current.position_title_en?.trim() ||
@@ -132,7 +132,7 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
     await Promise.all([
-      this.employmentService.fetchAllEmployments(),
+      this.workEmploymentService.fetchAllWorkEmployments(),
       this.userService.fetchAllUsers(),
     ]);
 
@@ -160,22 +160,13 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
     });
 
     this.headerService.setConfig({
-      backLink: '/employment/list',
+      backLink: '/work/employment/list',
       syncStatus: this.syncStatus,
       actions: actions,
     });
 
     if (this.currentId) {
-      const cached = this.employmentService
-        .employments()
-        .find((a) => a.tb_tyapp_wk_mplm_id === this.currentId);
-      if (cached) {
-        this.item.set(structuredClone(cached));
-        this.originalDataStr.set(JSON.stringify(cached));
-        this.userSearch.set(cached.user_id);
-      }
-
-      const fresh = await this.employmentService.fetchEmploymentById(
+      const fresh = await this.workEmploymentService.fetchWorkEmploymentById(
         this.currentId,
       );
       this.zone.run(() => {
@@ -183,12 +174,12 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
           this.item.set(structuredClone(fresh));
           this.originalDataStr.set(JSON.stringify(fresh));
           this.userSearch.set(fresh.user_id);
-        } else if (!cached) {
-          this.router.navigate(['/employment/list']);
+        } else {
+          this.router.navigate(['/work/employment/list']);
         }
       });
     } else {
-      const newEmp: Partial<Employment> = {
+      const newEmp: Partial<WorkEmployment> = {
         employer_name_en: '',
         employer_name_zh: '',
         position_title_en: '',
@@ -208,23 +199,23 @@ export class EmploymentEdit implements OnInit, OnDestroy, DoCheck {
     const data = this.item();
     if (!data || !data.employer_name_en?.trim() || !data.user_id) return;
 
-    const success = await this.employmentService.saveEmployment(data);
+    const success = await this.workEmploymentService.saveWorkEmployment(data);
     if (success) {
       this.originalDataStr.set(JSON.stringify(data));
       this.isDirty.set(false);
-      this.router.navigate(['/employment/list']);
+      this.router.navigate(['/work/employment/list']);
     }
   }
 
   async onDelete() {
     if (!this.currentId) return;
     if (confirm('Are you sure you want to delete this employment record?')) {
-      const success = await this.employmentService.deleteEmployment(
+      const success = await this.workEmploymentService.deleteWorkEmployment(
         this.currentId,
       );
       if (success) {
         this.isDirty.set(false);
-        this.router.navigate(['/employment/list']);
+        this.router.navigate(['/work/employment/list']);
       }
     }
   }

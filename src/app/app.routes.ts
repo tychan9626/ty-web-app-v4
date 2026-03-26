@@ -63,7 +63,7 @@ export const routes: Routes = [
       {
         path: 'employment',
         loadChildren: () =>
-          import('./features/employment/employment.routes').then(
+          import('./features/work/work-employment/work-employment.routes').then(
             (m) => m.EMPLOYMENT_ROUTES,
           ),
       }

@@ -1,0 +1,166 @@
+<div class="split-workspace">
+  @if (item(); as scdl) {
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">General Info</h3>
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Assigned User</mat-label>
+            <input
+              matInput
+              required
+              #userInput
+              [(ngModel)]="scdl.user_id"
+              [matAutocomplete]="userAuto"
+              (focus)="userSearch.set('')"
+              (input)="userSearch.set(userInput.value)"
+              #userCtrl="ngModel"
+            />
+            <mat-autocomplete
+              #userAuto="matAutocomplete"
+              requireSelection
+              [displayWith]="displayUserName.bind(this)"
+            >
+              @for (opt of filteredUsers(); track opt.value) {
+                <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+              }
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Work Date</mat-label>
+            <input
+              matInput
+              [matDatepicker]="picker"
+              [ngModel]="bindDate()"
+              (ngModelChange)="bindDate.set($event)"
+              required
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="picker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </section>
+
+      <section
+        class="form-group"
+        style="
+          background-color: var(--mat-sys-surface-variant);
+          padding: 16px;
+          border-radius: 12px;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+          "
+        >
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">
+            Shift Details
+          </h3>
+          <mat-slide-toggle [(ngModel)]="scdl.is_day_off" color="primary"
+            >Mark as Day Off</mat-slide-toggle
+          >
+        </div>
+
+        @if (!scdl.is_day_off) {
+          <div class="fields-grid-2">
+            <mat-form-field
+              appearance="outline"
+              subscriptSizing="dynamic"
+              class="full-width"
+              style="grid-column: span 2"
+            >
+              <mat-label>Select Employment</mat-label>
+              <mat-select [(ngModel)]="scdl.mplm_id" required>
+                @for (
+                  emp of filteredEmployments();
+                  track emp.tb_tyapp_wk_mplm_id
+                ) {
+                  <mat-option [value]="emp.tb_tyapp_wk_mplm_id">
+                    {{ emp.employer_name_en }} ({{ emp.position_title_en }})
+                  </mat-option>
+                }
+              </mat-select>
+              @if (filteredEmployments().length === 0) {
+                <mat-hint style="color: var(--mat-sys-error)"
+                  >No active employment found for this user.</mat-hint
+                >
+              }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Start Time</mat-label>
+              <input
+                matInput
+                type="time"
+                [(ngModel)]="timeInputs().start"
+                required
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>End Time</mat-label>
+              <input
+                matInput
+                type="time"
+                [(ngModel)]="timeInputs().end"
+                required
+              />
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Planned Meal (Minutes)</mat-label>
+              <input
+                matInput
+                type="number"
+                [(ngModel)]="scdl.planned_meal_minutes"
+              />
+            </mat-form-field>
+          </div>
+        } @else {
+          <div
+            style="
+              color: var(--mat-sys-outline);
+              font-size: 14px;
+              padding: 8px 0;
+            "
+          >
+            This day is marked as a day off. Time and employment tracking are
+            disabled.
+          </div>
+        }
+      </section>
+
+      <section class="form-group">
+        <h3 class="group-header">Additional Info</h3>
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+        >
+          <mat-label>Internal Log / Notes</mat-label>
+          <textarea matInput rows="3" [(ngModel)]="scdl.log"></textarea>
+        </mat-form-field>
+
+        <mat-form-field
+          appearance="outline"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
+        >
+          <mat-label>Status</mat-label>
+          <mat-select [(ngModel)]="scdl.status">
+            <mat-option [value]="1">Active</mat-option>
+            <mat-option [value]="0">Inactive</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </section>
+    </div>
+  }
+</div>

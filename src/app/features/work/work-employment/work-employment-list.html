@@ -25,7 +25,7 @@
         </div>
       </a>
     } @empty {
-      @if (!employmentService.loading()) {
+      @if (!workEmploymentService.loading()) {
         <div class="empty-placeholder">No items found.</div>
       }
     }
@@ -33,11 +33,11 @@
 
   <footer
     class="list-footer"
-    [hidden]="employmentService.loading() || rawListVM().length === 0"
+    [hidden]="workEmploymentService.loading() || rawListVM().length === 0"
   >
     <div class="divider"></div>
     <span class="count-text">TOTAL {{ rawListVM().length }} ITEMS</span>
-    @if (employmentService.loading()) {
+    @if (workEmploymentService.loading()) {
       <mat-spinner diameter="16"></mat-spinner>
     }
   </footer>

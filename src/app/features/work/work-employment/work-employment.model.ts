@@ -1,4 +1,4 @@
-export interface Employment {
+export interface WorkEmployment {
   tb_tyapp_wk_mplm_id: string;
   tb_tyweb_wk_mplm_seq_no?: number;
   employer_name_en: string;
