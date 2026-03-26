@@ -61,12 +61,31 @@ export const routes: Routes = [
           ),
       },
       {
-        path: 'employment',
-        loadChildren: () =>
-          import('./features/work/work-employment/work-employment.routes').then(
-            (m) => m.EMPLOYMENT_ROUTES,
-          ),
-      }
+        path: 'work',
+        children: [
+          {
+            path: 'attendance',
+            loadChildren: () =>
+              import('./features/work/work-attendance/work-attendance.routes').then(
+                (m) => m.WORK_ATTENDANCE_ROUTES,
+              ),
+          },
+          {
+            path: 'schedule',
+            loadChildren: () =>
+              import('./features/work/work-schedule/work-schedule.routes').then(
+                (m) => m.WORK_SCHEDULE_ROUTES,
+              ),
+          },
+          {
+            path: 'employment',
+            loadChildren: () =>
+              import('./features/work/work-employment/work-employment.routes').then(
+                (m) => m.WORK_EMPLOYMENT_ROUTES,
+              ),
+          },
+        ],
+      },
     ],
   },
   {

@@ -10,7 +10,13 @@ import { UserService } from '../../user/user.service';
 import { WorkEmploymentService } from '../work-employment/work-employment.service';
 import { WorkScheduleService } from './work-schedule.service';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
-
+import {
+  parseLocalDate,
+  formatDate,
+  buildSequentialIsoStrings,
+} from '../../../core/utils/date-time.util';
+import { WorkSchedule } from './work-schedule.model';
+import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
 @Component({
   selector: 'app-work-schedule-list',
   standalone: true,
@@ -70,6 +76,65 @@ export class WorkScheduleList implements OnInit, OnDestroy {
     });
   });
 
+  isGenerateDisabled = computed(() => {
+    if (this.workScheduleService.loading()) return true;
+    const schedules = this.workScheduleService.workSchedules();
+    if (schedules.length === 0) return true;
+
+    const latestDateStr = schedules[0].work_date;
+    const latestDate = parseLocalDate(latestDateStr);
+
+    return latestDate?.getDay() !== 0;
+  });
+
+  async onGenerateNextWeek() {
+    const schedules = this.workScheduleService.workSchedules();
+    if (schedules.length === 0) return;
+
+    const latestRecord = schedules[0];
+    const latestDate = parseLocalDate(latestRecord.work_date);
+    if (!latestDate) return;
+
+    const newRecords: Partial<WorkSchedule>[] = [];
+
+    for (let i = 1; i <= 7; i++) {
+      const targetDate = new Date(latestDate);
+      targetDate.setDate(targetDate.getDate() + i);
+      const dateStr = formatDate(targetDate);
+      const dayOfWeek = targetDate.getDay();
+
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+      const newRecord: Partial<WorkSchedule> = {
+        user_id: latestRecord.user_id,
+        work_date: dateStr,
+        is_day_off: isWeekend,
+        status: 1,
+      };
+
+      if (isWeekend) {
+        newRecord.planned_start_time = null;
+        newRecord.planned_end_time = null;
+        newRecord.planned_meal_minutes = 0;
+        newRecord.mplm_id = null;
+      } else {
+        newRecord.mplm_id = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.mplm_id;
+        newRecord.planned_meal_minutes =
+          WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_meal_minutes;
+        const isoResults = buildSequentialIsoStrings(dateStr, [
+          WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_start_time,
+          WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_end_time,
+        ]);
+        newRecord.planned_start_time = isoResults[0];
+        newRecord.planned_end_time = isoResults[1];
+      }
+
+      newRecords.push(newRecord);
+    }
+
+    await this.workScheduleService.bulkInsertWorkSchedules(newRecords);
+  }
+
   ngOnInit() {
     const isLoading = computed(
       () =>
@@ -86,6 +151,13 @@ export class WorkScheduleList implements OnInit, OnDestroy {
           type: 'secondary',
           disabled: isLoading,
           onClick: () => this.onRefresh(),
+        },
+        {
+          label: 'Generate Next Week',
+          icon: 'auto_awesome',
+          type: 'secondary',
+          disabled: this.isGenerateDisabled,
+          onClick: () => this.onGenerateNextWeek(),
         },
         {
           label: 'New Schedule',

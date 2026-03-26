@@ -68,12 +68,10 @@ export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
 
   userSearch = signal<string>('');
   userOptions = computed<SelectOption[]>(() =>
-    this.userService
-      .users()
-      .map((u) => ({
-        value: u.user_id,
-        label: this.displayNamePipe.transform(u),
-      })),
+    this.userService.users().map((u) => ({
+      value: u.user_id,
+      label: this.displayNamePipe.transform(u),
+    })),
   );
   filteredUsers = computed(() => {
     const q = this.userSearch().toLowerCase();
@@ -131,11 +129,6 @@ export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
-    await Promise.all([
-      this.workEmploymentService.fetchAllWorkEmployments(),
-      this.userService.fetchAllUsers(),
-    ]);
-
     const actions: HeaderAction[] = [];
     if (this.currentId) {
       actions.push({
@@ -165,16 +158,32 @@ export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
       actions: actions,
     });
 
+    Promise.all([
+      this.workEmploymentService.fetchAllWorkEmployments(),
+      this.userService.fetchAllUsers(),
+    ]);
+
     if (this.currentId) {
-      const fresh = await this.workEmploymentService.fetchWorkEmploymentById(
+      const cachedEmp = this.workEmploymentService
+        .workEmployments()
+        .find((e) => e.tb_tyapp_wk_mplm_id === this.currentId);
+
+      if (cachedEmp) {
+        this.item.set(structuredClone(cachedEmp));
+        this.originalDataStr.set(JSON.stringify(cachedEmp));
+        this.userSearch.set(cachedEmp.user_id);
+      }
+
+      const freshEmp = await this.workEmploymentService.fetchWorkEmploymentById(
         this.currentId,
       );
+
       this.zone.run(() => {
-        if (fresh) {
-          this.item.set(structuredClone(fresh));
-          this.originalDataStr.set(JSON.stringify(fresh));
-          this.userSearch.set(fresh.user_id);
-        } else {
+        if (freshEmp) {
+          this.item.set(structuredClone(freshEmp));
+          this.originalDataStr.set(JSON.stringify(freshEmp));
+          this.userSearch.set(freshEmp.user_id);
+        } else if (!cachedEmp) {
           this.router.navigate(['/work/employment/list']);
         }
       });
@@ -192,6 +201,7 @@ export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
       };
       this.item.set(newEmp);
       this.originalDataStr.set(JSON.stringify(newEmp));
+      this.userSearch.set(newEmp.user_id!);
     }
   }
 

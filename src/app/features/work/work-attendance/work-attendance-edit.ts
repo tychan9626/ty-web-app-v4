@@ -36,14 +36,13 @@ import {
 } from '../../../core/services/header.service';
 import { UserService } from '../../user/user.service';
 import { WorkEmploymentService } from '../work-employment/work-employment.service';
-import { WorkSchedule } from './work-schedule.model';
-import { WorkScheduleService } from './work-schedule.service';
+import { WorkAttendance } from './work-attendance.model';
+import { WorkAttendanceService } from './work-attendance.service';
 import { SelectOption } from '../../../core/models/common.model';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
-import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
 
 @Component({
-  selector: 'app-work-schedule-edit',
+  selector: 'app-work-attendance-edit',
   standalone: true,
   imports: [
     CommonModule,
@@ -60,28 +59,35 @@ import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
     MatSlideToggleModule,
   ],
   providers: [DisplayNamePipe],
-  templateUrl: './work-schedule-edit.html',
+  templateUrl: './work-attendance-edit.html',
 })
-export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
+export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private zone = inject(NgZone);
   private headerService = inject(HeaderService);
   private displayNamePipe = inject(DisplayNamePipe);
 
-  public workScheduleService = inject(WorkScheduleService);
+  public workAttendanceService = inject(WorkAttendanceService);
   public workEmploymentService = inject(WorkEmploymentService);
   public userService = inject(UserService);
   public authService = inject(AuthService);
 
-  item = signal<Partial<WorkSchedule> | null>(null);
+  item = signal<Partial<WorkAttendance> | null>(null);
   currentId: string | null = null;
   originalDataStr = signal<string>('');
 
   isDirty = signal(false);
   isSaveDisabled = signal(true);
 
-  timeInputs = signal({ start: '', end: '' });
+  timeInputs = signal({
+    start: '',
+    end: '',
+    meal_start: '',
+    meal_end: '',
+    break_start: '',
+    break_end: '',
+  });
   bindDate = signal<Date | null>(null);
 
   userSearch = signal<string>('');
@@ -109,7 +115,7 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
   });
 
   syncStatus = computed<'loading' | 'up-to-date' | 'unsaved' | 'none'>(() => {
-    if (this.workScheduleService.loading()) return 'loading';
+    if (this.workAttendanceService.loading()) return 'loading';
     if (this.isDirty()) return 'unsaved';
     if (this.currentId) return 'up-to-date';
     return 'none';
@@ -142,16 +148,11 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
       }
 
       const disabled =
-        this.workScheduleService.loading() ||
+        this.workAttendanceService.loading() ||
         !currentlyDirty ||
         !current.user_id ||
         !current.work_date ||
-        (!current.is_day_off &&
-          (!current.mplm_id ||
-            !this.timeInputs().start ||
-            !this.timeInputs().end ||
-            current.planned_meal_minutes === null ||
-            current.planned_meal_minutes === undefined));
+        (!current.is_day_off && !current.mplm_id);
 
       if (this.isSaveDisabled() !== disabled) {
         this.isSaveDisabled.set(disabled);
@@ -168,9 +169,9 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
     if (this.currentId) {
-      const cached = this.workScheduleService
-        .workSchedules()
-        .find((s) => s.tb_tyapp_wk_scdl_id === this.currentId);
+      const cached = this.workAttendanceService
+        .workAttendances()
+        .find((a) => a.tb_tyapp_wk_attn_id === this.currentId);
       if (cached) {
         this.item.set(structuredClone(cached));
         this.originalDataStr.set(JSON.stringify(cached));
@@ -178,42 +179,36 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
         this.bindDate.set(parseLocalDate(cached.work_date));
 
         const times = {
-          start: extractTime(cached.planned_start_time),
-          end: extractTime(cached.planned_end_time),
+          start: extractTime(cached.start_time),
+          end: extractTime(cached.end_time),
+          meal_start: extractTime(cached.meal_start_time),
+          meal_end: extractTime(cached.meal_end_time),
+          break_start: extractTime(cached.break_start_time),
+          break_end: extractTime(cached.break_end_time),
         };
         this.timeInputs.set(times);
         sessionStorage.setItem('orig_times', JSON.stringify(times));
       }
     } else {
-      let nextDate = new Date();
-      const schedules = this.workScheduleService.workSchedules();
-
-      if (schedules.length > 0) {
-        const latestDateStr = schedules[0].work_date;
-        const latestDate = parseLocalDate(latestDateStr);
-        if (latestDate) {
-          latestDate.setDate(latestDate.getDate() + 1);
-          nextDate = latestDate;
-        }
-      }
-
-      const newScdl: Partial<WorkSchedule> = {
+      const newAttn: Partial<WorkAttendance> = {
         user_id: this.authService.userProfile()?.user_id || '',
         work_date: '',
         is_day_off: false,
-        planned_meal_minutes: 60,
+        log_is_secret: false,
         status: 1,
       };
-
-      this.item.set(newScdl);
-      this.originalDataStr.set(JSON.stringify(newScdl));
-      sessionStorage.setItem(
-        'orig_times',
-        JSON.stringify({ start: '', end: '' }),
-      );
-      this.userSearch.set(newScdl.user_id!);
-
-      this.bindDate.set(nextDate);
+      this.item.set(newAttn);
+      this.originalDataStr.set(JSON.stringify(newAttn));
+      const initTimes = {
+        start: '',
+        end: '',
+        meal_start: '',
+        meal_end: '',
+        break_start: '',
+        break_end: '',
+      };
+      sessionStorage.setItem('orig_times', JSON.stringify(initTimes));
+      this.userSearch.set(newAttn.user_id!);
     }
 
     const actions: HeaderAction[] = [];
@@ -234,7 +229,7 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
     });
 
     this.headerService.setConfig({
-      backLink: '/work/schedule/list',
+      backLink: '/work/attendance/list',
       syncStatus: this.syncStatus,
       actions: actions,
     });
@@ -245,7 +240,7 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
     ]);
 
     if (this.currentId) {
-      const fresh = await this.workScheduleService.fetchWorkScheduleById(
+      const fresh = await this.workAttendanceService.fetchWorkAttendanceById(
         this.currentId,
       );
       this.zone.run(() => {
@@ -256,13 +251,17 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
           this.bindDate.set(parseLocalDate(fresh.work_date));
 
           const times = {
-            start: extractTime(fresh.planned_start_time),
-            end: extractTime(fresh.planned_end_time),
+            start: extractTime(fresh.start_time),
+            end: extractTime(fresh.end_time),
+            meal_start: extractTime(fresh.meal_start_time),
+            meal_end: extractTime(fresh.meal_end_time),
+            break_start: extractTime(fresh.break_start_time),
+            break_end: extractTime(fresh.break_end_time),
           };
           this.timeInputs.set(times);
           sessionStorage.setItem('orig_times', JSON.stringify(times));
         } else if (!this.item()) {
-          this.router.navigate(['/work/schedule/list']);
+          this.router.navigate(['/work/attendance/list']);
         }
       });
     }
@@ -276,38 +275,51 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
     data.work_date = formatDate(dateVal);
 
     if (data.is_day_off) {
-      data.mplm_id = null;
-      data.planned_start_time = null;
-      data.planned_end_time = null;
-      data.planned_meal_minutes = 0;
+      data.start_time = null;
+      data.end_time = null;
+      data.meal_start_time = null;
+      data.meal_end_time = null;
+      data.break_start_time = null;
+      data.break_end_time = null;
     } else {
       const times = this.timeInputs();
 
-      const sequence = [times.start, times.end];
+      const sequence = [
+        times.start,
+        times.meal_start,
+        times.meal_end,
+        times.break_start,
+        times.break_end,
+        times.end,
+      ];
 
       const isoResults = buildSequentialIsoStrings(data.work_date, sequence);
 
-      data.planned_start_time = isoResults[0];
-      data.planned_end_time = isoResults[1];
+      data.start_time = isoResults[0];
+      data.meal_start_time = isoResults[1];
+      data.meal_end_time = isoResults[2];
+      data.break_start_time = isoResults[3];
+      data.break_end_time = isoResults[4];
+      data.end_time = isoResults[5];
     }
 
-    const success = await this.workScheduleService.saveWorkSchedule(data);
+    const success = await this.workAttendanceService.saveWorkAttendance(data);
     if (success) {
       this.isDirty.set(false);
       sessionStorage.removeItem('orig_times');
-      this.router.navigate(['/work/schedule/list']);
+      this.router.navigate(['/work/attendance/list']);
     }
   }
 
   async onDelete() {
     if (!this.currentId) return;
-    if (confirm('Are you sure you want to delete this schedule?')) {
-      const success = await this.workScheduleService.deleteWorkSchedule(
+    if (confirm('Are you sure you want to delete this attendance record?')) {
+      const success = await this.workAttendanceService.deleteWorkAttendance(
         this.currentId,
       );
       if (success) {
         this.isDirty.set(false);
-        this.router.navigate(['/work/schedule/list']);
+        this.router.navigate(['/work/attendance/list']);
       }
     }
   }
@@ -315,18 +327,5 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
   ngOnDestroy() {
     this.headerService.clear();
     sessionStorage.removeItem('orig_times');
-  }
-
-  applyFixedShiftShortcut() {
-    const current = this.item();
-    if (!current) return;
-
-    current.mplm_id = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.mplm_id;
-    current.is_day_off = false;
-    current.planned_meal_minutes = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_meal_minutes;
-
-    this.timeInputs.set({ start: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_start_time, end: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_end_time });
-
-    this.item.set({ ...current });
   }
 }

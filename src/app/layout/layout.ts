@@ -77,7 +77,9 @@ export class Layout {
       icon: 'work',
       adminOnly: false,
       links: [
-        { title: 'Employment', route: '/employment/list' },
+        { title: 'Attendance', route: '/work/attendance/list' },
+        { title: 'Schedule', route: '/work/schedule/list' },
+        { title: 'Employment', route: '/work/employment/list' },
       ]
     },
     {
