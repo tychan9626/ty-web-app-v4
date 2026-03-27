@@ -1,55 +1,74 @@
 <div class="standard-list-view">
   <div class="list-container">
-    @for (item of listVM(); track item.tb_tyapp_wk_attn_id) {
-      <a class="item-link" [routerLink]="['../edit', item.tb_tyapp_wk_attn_id]">
-        <div class="item-content">
-          <div class="item-info-group">
-            <span class="main-text">
-              {{ item.work_date }}
-              <span style="color: var(--mat-sys-primary); margin-left: 8px">{{
-                item.displayTime
-              }}</span>
-              @if (item.hasSecretLog) {
-                <mat-icon
-                  style="
-                    font-size: 16px;
-                    width: 16px;
-                    height: 16px;
-                    margin-left: 4px;
-                    color: var(--mat-sys-error);
-                    vertical-align: text-bottom;
-                  "
-                  >lock</mat-icon
-                >
-              }
-            </span>
-            <span class="sub-text"
-              >{{ item.manageUserName }} · {{ item.employmentName }}</span
-            >
-          </div>
-
-          <div class="item-status-group">
-            @if (item.is_day_off) {
-              <span
-                class="status-tag inactive"
-                style="
-                  background-color: var(--mat-sys-surface-variant);
-                  color: var(--mat-sys-on-surface-variant);
-                "
-                >Day Off</span
-              >
-            } @else {
-              <span class="status-tag" [class.inactive]="item.status === 0">
-                {{ item.status === 1 ? "Active" : "Inactive" }}
-              </span>
-            }
-            <mat-icon class="chevron">chevron_right</mat-icon>
-          </div>
+    @for (group of groupedListVM(); track group.weekLabel) {
+      <div class="week-group" style="display: flex; flex-direction: column">
+        <div
+          style="
+            background: var(--mat-sys-surface-variant);
+            color: var(--mat-sys-on-surface-variant);
+            padding: 6px 16px;
+            margin: 16px 0 8px 0;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <span>Week of {{ group.weekLabel }}</span>
+          <span style="font-size: 12px; opacity: 0.7"
+            >{{ group.items.length }} records</span
+          >
         </div>
-      </a>
+
+        @for (item of group.items; track item.tb_tyapp_wk_attn_id) {
+          <a
+            class="item-link"
+            [routerLink]="['../edit', item.tb_tyapp_wk_attn_id]"
+          >
+            <div class="item-content">
+              <div class="item-info-group">
+                <span class="main-text">
+                  {{ item.work_date }}
+                  <span
+                    style="color: var(--mat-sys-primary); margin-left: 8px"
+                    >{{ item.displayTime }}</span
+                  >
+                </span>
+                <span class="sub-text"
+                  >{{ item.manageUserName }} · {{ item.employmentName }}</span
+                >
+              </div>
+
+              <div class="item-status-group">
+                @if (item.is_day_off) {
+                  <span
+                    class="status-tag inactive"
+                    style="
+                      background-color: var(--mat-sys-surface-variant);
+                      color: var(--mat-sys-on-surface-variant);
+                    "
+                    >Day Off</span
+                  >
+                } @else {
+                  <span class="status-tag" [class.inactive]="item.status === 0">
+                    {{ item.status === 1 ? "Active" : "Inactive" }}
+                  </span>
+                }
+                <mat-icon class="chevron">chevron_right</mat-icon>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
     } @empty {
       @if (!workAttendanceService.loading()) {
-        <div class="empty-placeholder">No attendance records found.</div>
+        <div class="empty-placeholder">No items found.</div>
       }
     }
   </div>

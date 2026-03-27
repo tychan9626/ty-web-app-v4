@@ -76,6 +76,26 @@ export class WorkScheduleList implements OnInit, OnDestroy {
     });
   });
 
+  groupedListVM = computed(() => {
+    const flatList = this.listVM();
+    const groups: { weekLabel: string; items: typeof flatList }[] = [];
+
+    let currentGroup: { weekLabel: string; items: typeof flatList } | null =
+      null;
+
+    for (const item of flatList) {
+      const label = this.getWeekRangeLabel(item.work_date);
+
+      if (!currentGroup || currentGroup.weekLabel !== label) {
+        currentGroup = { weekLabel: label, items: [] };
+        groups.push(currentGroup);
+      }
+      currentGroup.items.push(item);
+    }
+
+    return groups;
+  });
+
   isGenerateDisabled = computed(() => {
     if (this.workScheduleService.loading()) return true;
     const schedules = this.workScheduleService.workSchedules();
@@ -183,5 +203,22 @@ export class WorkScheduleList implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.headerService.clear();
+  }
+
+  getWeekRangeLabel(dateStr: string): string {
+    const d = parseLocalDate(dateStr);
+    if (!d) return 'Unknown Week';
+
+    const day = d.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
   }
 }

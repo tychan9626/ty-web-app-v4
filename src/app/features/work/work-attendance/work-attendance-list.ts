@@ -10,6 +10,7 @@ import { UserService } from '../../user/user.service';
 import { WorkEmploymentService } from '../work-employment/work-employment.service';
 import { WorkAttendanceService } from './work-attendance.service';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
+import { parseLocalDate } from '../../../core/utils/date-time.util';
 
 @Component({
   selector: 'app-work-attendance-list',
@@ -67,6 +68,43 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
         hasSecretLog: !!attn.log_is_secret && !!attn.log,
       };
     });
+  });
+
+  getWeekRangeLabel(dateStr: string): string {
+    const d = parseLocalDate(dateStr);
+    if (!d) return 'Unknown Week';
+
+    const day = d.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + diffToMonday);
+
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
+    const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
+  }
+
+  groupedListVM = computed(() => {
+    const flatList = this.listVM();
+    const groups: { weekLabel: string; items: typeof flatList }[] = [];
+
+    let currentGroup: { weekLabel: string; items: typeof flatList } | null =
+      null;
+
+    for (const item of flatList) {
+      const label = this.getWeekRangeLabel(item.work_date);
+
+      if (!currentGroup || currentGroup.weekLabel !== label) {
+        currentGroup = { weekLabel: label, items: [] };
+        groups.push(currentGroup);
+      }
+      currentGroup.items.push(item);
+    }
+
+    return groups;
   });
 
   ngOnInit() {
