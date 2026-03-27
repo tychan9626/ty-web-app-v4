@@ -25,7 +25,6 @@ import {
   parseLocalDate,
   formatDate,
   extractTime,
-  buildIsoString,
   buildSequentialIsoStrings,
 } from '../../../core/utils/date-time.util';
 
@@ -40,6 +39,9 @@ import { WorkAttendance } from './work-attendance.model';
 import { WorkAttendanceService } from './work-attendance.service';
 import { SelectOption } from '../../../core/models/common.model';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
+
+import { WorkScheduleService } from '../work-schedule/work-schedule.service';
+import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
 
 @Component({
   selector: 'app-work-attendance-edit',
@@ -70,6 +72,7 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
 
   public workAttendanceService = inject(WorkAttendanceService);
   public workEmploymentService = inject(WorkEmploymentService);
+  public workScheduleService = inject(WorkScheduleService);
   public userService = inject(UserService);
   public authService = inject(AuthService);
 
@@ -82,11 +85,11 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
 
   timeInputs = signal({
     start: '',
-    end: '',
     meal_start: '',
     meal_end: '',
     break_start: '',
     break_end: '',
+    end: '',
   });
   bindDate = signal<Date | null>(null);
 
@@ -120,6 +123,40 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
     if (this.currentId) return 'up-to-date';
     return 'none';
   });
+
+  addMinutesToTime(timeStr: string, mins: number): string {
+    if (!timeStr) return '';
+    const [h, m] = timeStr.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m + mins, 0, 0);
+    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+  }
+
+  applyKShortcut(mealStart: string) {
+    const current = this.item();
+    if (!current) return;
+
+    current.mplm_id = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.mplm_id;
+    current.is_day_off = false;
+
+    this.timeInputs.set({
+      start: '09:00',
+      meal_start: mealStart,
+      meal_end: this.addMinutesToTime(mealStart, 30),
+      break_start: this.addMinutesToTime(mealStart, 60),
+      break_end: this.addMinutesToTime(mealStart, 90),
+      end: '17:00',
+    });
+
+    this.item.set({ ...current });
+  }
+
+  updateTimeInput(
+    field: keyof ReturnType<typeof this.timeInputs>,
+    value: string,
+  ) {
+    this.timeInputs.update((t) => ({ ...t, [field]: value }));
+  }
 
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent) {
@@ -168,47 +205,95 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
 
-    if (this.currentId) {
-      const cached = this.workAttendanceService
-        .workAttendances()
-        .find((a) => a.tb_tyapp_wk_attn_id === this.currentId);
-      if (cached) {
-        this.item.set(structuredClone(cached));
-        this.originalDataStr.set(JSON.stringify(cached));
-        this.userSearch.set(cached.user_id);
-        this.bindDate.set(parseLocalDate(cached.work_date));
+    await Promise.all([
+      this.workEmploymentService.fetchAllWorkEmployments(),
+      this.userService.fetchAllUsers(),
+      this.workScheduleService.fetchAllWorkSchedules(),
+    ]);
 
-        const times = {
-          start: extractTime(cached.start_time),
-          end: extractTime(cached.end_time),
-          meal_start: extractTime(cached.meal_start_time),
-          meal_end: extractTime(cached.meal_end_time),
-          break_start: extractTime(cached.break_start_time),
-          break_end: extractTime(cached.break_end_time),
-        };
-        this.timeInputs.set(times);
-        sessionStorage.setItem('orig_times', JSON.stringify(times));
-      }
+    if (this.currentId) {
+      const fresh = await this.workAttendanceService.fetchWorkAttendanceById(
+        this.currentId,
+      );
+      this.zone.run(() => {
+        if (fresh) {
+          this.item.set(structuredClone(fresh));
+          this.originalDataStr.set(JSON.stringify(fresh));
+          this.userSearch.set(fresh.user_id);
+          this.bindDate.set(parseLocalDate(fresh.work_date));
+
+          const times = {
+            start: extractTime(fresh.start_time),
+            meal_start: extractTime(fresh.meal_start_time),
+            meal_end: extractTime(fresh.meal_end_time),
+            break_start: extractTime(fresh.break_start_time),
+            break_end: extractTime(fresh.break_end_time),
+            end: extractTime(fresh.end_time),
+          };
+          this.timeInputs.set(times);
+          sessionStorage.setItem('orig_times', JSON.stringify(times));
+        } else if (!this.item()) {
+          this.router.navigate(['/work/attendance/list']);
+        }
+      });
     } else {
+      let nextDate = new Date();
+      const attendances = this.workAttendanceService.workAttendances();
+      const targetUserId = this.authService.userProfile()?.user_id || '';
+
+      if (attendances.length > 0) {
+        const latestDateStr = attendances[0].work_date;
+        const latestDateObj = parseLocalDate(latestDateStr);
+        if (latestDateObj) {
+          latestDateObj.setDate(latestDateObj.getDate() + 1);
+          nextDate = latestDateObj;
+        }
+      }
+
+      const dateStr = formatDate(nextDate);
+
       const newAttn: Partial<WorkAttendance> = {
-        user_id: this.authService.userProfile()?.user_id || '',
-        work_date: '',
+        user_id: targetUserId,
+        work_date: dateStr,
         is_day_off: false,
-        log_is_secret: false,
+        log_is_secret: true,
         status: 1,
       };
-      this.item.set(newAttn);
-      this.originalDataStr.set(JSON.stringify(newAttn));
+
       const initTimes = {
         start: '',
-        end: '',
         meal_start: '',
         meal_end: '',
         break_start: '',
         break_end: '',
+        end: '',
       };
+
+      const schedules = this.workScheduleService.workSchedules();
+      const matchingSchedule = schedules.find(
+        (s) =>
+          s.work_date === dateStr &&
+          s.user_id === targetUserId &&
+          s.status === 1,
+      );
+
+      if (matchingSchedule) {
+        if (matchingSchedule.is_day_off) {
+          newAttn.is_day_off = true;
+        } else {
+          newAttn.mplm_id = matchingSchedule.mplm_id;
+          initTimes.start = extractTime(matchingSchedule.planned_start_time);
+          initTimes.end = extractTime(matchingSchedule.planned_end_time);
+        }
+      }
+
+      this.item.set(newAttn);
+      this.originalDataStr.set(JSON.stringify(newAttn));
       sessionStorage.setItem('orig_times', JSON.stringify(initTimes));
       this.userSearch.set(newAttn.user_id!);
+
+      this.bindDate.set(nextDate);
+      this.timeInputs.set(initTimes);
     }
 
     const actions: HeaderAction[] = [];
@@ -233,38 +318,6 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
       syncStatus: this.syncStatus,
       actions: actions,
     });
-
-    Promise.all([
-      this.workEmploymentService.fetchAllWorkEmployments(),
-      this.userService.fetchAllUsers(),
-    ]);
-
-    if (this.currentId) {
-      const fresh = await this.workAttendanceService.fetchWorkAttendanceById(
-        this.currentId,
-      );
-      this.zone.run(() => {
-        if (fresh) {
-          this.item.set(structuredClone(fresh));
-          this.originalDataStr.set(JSON.stringify(fresh));
-          this.userSearch.set(fresh.user_id);
-          this.bindDate.set(parseLocalDate(fresh.work_date));
-
-          const times = {
-            start: extractTime(fresh.start_time),
-            end: extractTime(fresh.end_time),
-            meal_start: extractTime(fresh.meal_start_time),
-            meal_end: extractTime(fresh.meal_end_time),
-            break_start: extractTime(fresh.break_start_time),
-            break_end: extractTime(fresh.break_end_time),
-          };
-          this.timeInputs.set(times);
-          sessionStorage.setItem('orig_times', JSON.stringify(times));
-        } else if (!this.item()) {
-          this.router.navigate(['/work/attendance/list']);
-        }
-      });
-    }
   }
 
   async onSave() {

@@ -61,70 +61,60 @@
             margin-bottom: 16px;
           "
         >
-          <div style="display: flex; align-items: center; gap: 12px">
-            <h3 style="margin: 0; font-size: 16px; font-weight: 600">
-              Shift Details
-            </h3>
-
-            <button
-              mat-stroked-button
-              color="primary"
-              type="button"
-              (click)="applyFixedShiftShortcut()"
-              style="
-                height: 32px;
-                line-height: 32px;
-                padding: 0 12px;
-                font-size: 13px;
-              "
-            >
-              <mat-icon
-                style="
-                  font-size: 16px;
-                  width: 16px;
-                  height: 16px;
-                  margin-right: 4px;
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                "
-                >flash_on</mat-icon
-              >
-              09:00-17:00
-            </button>
-          </div>
-
-          <mat-slide-toggle [(ngModel)]="scdl.is_day_off" color="primary"
-            >Mark as Day Off</mat-slide-toggle
-          >
+          <h3 style="margin: 0; font-size: 16px; font-weight: 600">
+            Shift Details
+          </h3>
+          <mat-slide-toggle [(ngModel)]="scdl.is_day_off" color="primary">
+            Mark as Day Off
+          </mat-slide-toggle>
         </div>
 
         @if (!scdl.is_day_off) {
-          <div class="fields-grid-2">
-            <mat-form-field
-              appearance="outline"
-              subscriptSizing="dynamic"
-              class="full-width"
-              style="grid-column: span 2"
-            >
-              <mat-label>Select Employment</mat-label>
-              <mat-select [(ngModel)]="scdl.mplm_id" required>
-                @for (
-                  emp of filteredEmployments();
-                  track emp.tb_tyapp_wk_mplm_id
-                ) {
-                  <mat-option [value]="emp.tb_tyapp_wk_mplm_id">
-                    {{ emp.employer_name_en }} ({{ emp.position_title_en }})
-                  </mat-option>
-                }
-              </mat-select>
-              @if (filteredEmployments().length === 0) {
-                <mat-hint style="color: var(--mat-sys-error)"
-                  >No active employment found for this user.</mat-hint
-                >
-              }
-            </mat-form-field>
+          <button
+            mat-stroked-button
+            color="primary"
+            type="button"
+            (click)="applyFixedShiftShortcut()"
+            style="width: 100%; margin-bottom: 16px; height: 40px; font-size: 14px;"
+          >
+            <mat-icon
+              style="
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+                margin-right: 6px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+              "
+            >flash_on</mat-icon>
+            Apply 09:00 - 17:00 Shift
+          </button>
 
+          <mat-form-field
+            appearance="outline"
+            subscriptSizing="dynamic"
+            class="full-width"
+          >
+            <mat-label>Select Employment</mat-label>
+            <mat-select [(ngModel)]="scdl.mplm_id" required>
+              @for (
+                emp of filteredEmployments();
+                track emp.tb_tyapp_wk_mplm_id
+              ) {
+                <mat-option [value]="emp.tb_tyapp_wk_mplm_id">
+                  {{ emp.employer_name_en }} ({{ emp.position_title_en }})
+                </mat-option>
+              }
+            </mat-select>
+            @if (filteredEmployments().length === 0) {
+              <mat-hint style="color: var(--mat-sys-error)">
+                No active employment found for this user.
+              </mat-hint>
+            }
+          </mat-form-field>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Start Time</mat-label>
               <input
@@ -144,17 +134,22 @@
                 required
               />
             </mat-form-field>
-
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-              <mat-label>Planned Meal (Minutes)</mat-label>
-              <input
-                matInput
-                type="number"
-                [(ngModel)]="scdl.planned_meal_minutes"
-                required
-              />
-            </mat-form-field>
           </div>
+
+          <mat-form-field 
+            appearance="outline" 
+            subscriptSizing="dynamic" 
+            class="full-width"
+            style="margin-top: 16px;"
+          >
+            <mat-label>Planned Meal (Minutes)</mat-label>
+            <input
+              matInput
+              type="number"
+              [(ngModel)]="scdl.planned_meal_minutes"
+              required
+            />
+          </mat-form-field>
         } @else {
           <div
             style="
