@@ -1,3 +1,38 @@
+<style>
+  /* 時間輸入框的主排版：手機單欄，電腦雙欄 */
+  .responsive-time-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  @media (min-width: 600px) {
+    .responsive-time-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* 捷徑按鈕共用樣式，確保高度與字體適中 */
+  .shortcut-btn {
+    height: 32px !important;
+    line-height: 32px !important;
+    font-size: 13px !important;
+    padding: 0 8px !important;
+    opacity: 0.9;
+  }
+
+  /* 4 顆按鈕的群組：超小螢幕 2x2，稍大螢幕自動排成一列 */
+  .btn-group-4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  @media (min-width: 380px) {
+    .btn-group-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+</style>
+
 <div class="split-workspace">
   @if (item(); as attn) {
     <div class="form-scroll-area">
@@ -71,10 +106,8 @@
 
         @if (!attn.is_day_off) {
           <div
+            class="btn-group-4"
             style="
-              display: flex;
-              gap: 8px;
-              flex-wrap: wrap;
               margin-bottom: 16px;
               padding-bottom: 16px;
               border-bottom: 1px solid var(--mat-sys-outline-variant);
@@ -84,8 +117,8 @@
               mat-stroked-button
               color="primary"
               type="button"
+              class="shortcut-btn"
               (click)="applyKShortcut('12:00')"
-              style="flex: 1; min-width: 60px; padding: 0 4px; font-size: 13px"
             >
               K1200
             </button>
@@ -93,8 +126,8 @@
               mat-stroked-button
               color="primary"
               type="button"
+              class="shortcut-btn"
               (click)="applyKShortcut('12:30')"
-              style="flex: 1; min-width: 60px; padding: 0 4px; font-size: 13px"
             >
               K1230
             </button>
@@ -102,8 +135,8 @@
               mat-stroked-button
               color="primary"
               type="button"
+              class="shortcut-btn"
               (click)="applyKShortcut('13:00')"
-              style="flex: 1; min-width: 60px; padding: 0 4px; font-size: 13px"
             >
               K1300
             </button>
@@ -111,8 +144,8 @@
               mat-stroked-button
               color="primary"
               type="button"
+              class="shortcut-btn"
               (click)="applyKShortcut('13:30')"
-              style="flex: 1; min-width: 60px; padding: 0 4px; font-size: 13px"
             >
               K1330
             </button>
@@ -137,29 +170,25 @@
             </mat-select>
           </mat-form-field>
 
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px">
-            <div style="display: flex; flex-direction: column; gap: 4px">
+          <div class="responsive-time-grid">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Start Time (Clock In)</mat-label>
                 <input matInput type="time" [(ngModel)]="timeInputs().start" />
               </mat-form-field>
               <button
-                mat-flat-button
+                mat-button
                 color="primary"
                 type="button"
+                class="shortcut-btn"
                 (click)="updateTimeInput('start', '09:00')"
-                style="
-                  height: 28px;
-                  line-height: 28px;
-                  font-size: 12px;
-                  opacity: 0.9;
-                "
+                style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
               >
                 09:00
               </button>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Meal Start</mat-label>
                 <input
@@ -168,73 +197,51 @@
                   [(ngModel)]="timeInputs().meal_start"
                 />
               </mat-form-field>
-              <div
-                style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px"
-              >
+              <div class="btn-group-4">
                 <button
-                  mat-flat-button
+                  mat-button
                   color="primary"
                   type="button"
+                  class="shortcut-btn"
                   (click)="updateTimeInput('meal_start', '12:15')"
-                  style="
-                    height: 28px;
-                    line-height: 28px;
-                    font-size: 11px;
-                    padding: 0;
-                    opacity: 0.9;
-                  "
+                  style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
                 >
                   12:15
                 </button>
                 <button
-                  mat-flat-button
+                  mat-button
                   color="primary"
                   type="button"
+                  class="shortcut-btn"
                   (click)="updateTimeInput('meal_start', '12:45')"
-                  style="
-                    height: 28px;
-                    line-height: 28px;
-                    font-size: 11px;
-                    padding: 0;
-                    opacity: 0.9;
-                  "
+                  style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
                 >
                   12:45
                 </button>
                 <button
-                  mat-flat-button
+                  mat-button
                   color="primary"
                   type="button"
+                  class="shortcut-btn"
                   (click)="updateTimeInput('meal_start', '13:15')"
-                  style="
-                    height: 28px;
-                    line-height: 28px;
-                    font-size: 11px;
-                    padding: 0;
-                    opacity: 0.9;
-                  "
+                  style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
                 >
                   13:15
                 </button>
                 <button
-                  mat-flat-button
+                  mat-button
                   color="primary"
                   type="button"
+                  class="shortcut-btn"
                   (click)="updateTimeInput('meal_start', '13:45')"
-                  style="
-                    height: 28px;
-                    line-height: 28px;
-                    font-size: 11px;
-                    padding: 0;
-                    opacity: 0.9;
-                  "
+                  style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
                 >
                   13:45
                 </button>
               </div>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Meal End</mat-label>
                 <input
@@ -244,27 +251,23 @@
                 />
               </mat-form-field>
               <button
-                mat-flat-button
+                mat-button
                 color="accent"
                 type="button"
+                class="shortcut-btn"
                 (click)="
                   updateTimeInput(
                     'meal_end',
                     addMinutesToTime(timeInputs().meal_start, 30)
                   )
                 "
-                style="
-                  height: 28px;
-                  line-height: 28px;
-                  font-size: 12px;
-                  opacity: 0.9;
-                "
+                style="background: rgba(var(--mat-sys-accent-rgb), 0.1)"
               >
                 + 30 mins
               </button>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Break Start</mat-label>
                 <input
@@ -274,22 +277,18 @@
                 />
               </mat-form-field>
               <button
-                mat-flat-button
+                mat-button
                 color="primary"
                 type="button"
+                class="shortcut-btn"
                 (click)="updateTimeInput('break_start', timeInputs().meal_end)"
-                style="
-                  height: 28px;
-                  line-height: 28px;
-                  font-size: 12px;
-                  opacity: 0.9;
-                "
+                style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
               >
                 = Meal End
               </button>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Break End</mat-label>
                 <input
@@ -299,42 +298,34 @@
                 />
               </mat-form-field>
               <button
-                mat-flat-button
+                mat-button
                 color="accent"
                 type="button"
+                class="shortcut-btn"
                 (click)="
                   updateTimeInput(
                     'break_end',
                     addMinutesToTime(timeInputs().break_start, 30)
                   )
                 "
-                style="
-                  height: 28px;
-                  line-height: 28px;
-                  font-size: 12px;
-                  opacity: 0.9;
-                "
+                style="background: rgba(var(--mat-sys-accent-rgb), 0.1)"
               >
                 + 30 mins
               </button>
             </div>
 
-            <div style="display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>End Time (Clock Out)</mat-label>
                 <input matInput type="time" [(ngModel)]="timeInputs().end" />
               </mat-form-field>
               <button
-                mat-flat-button
+                mat-button
                 color="primary"
                 type="button"
+                class="shortcut-btn"
                 (click)="updateTimeInput('end', '17:00')"
-                style="
-                  height: 28px;
-                  line-height: 28px;
-                  font-size: 12px;
-                  opacity: 0.9;
-                "
+                style="background: rgba(var(--mat-sys-primary-rgb), 0.08)"
               >
                 17:00
               </button>

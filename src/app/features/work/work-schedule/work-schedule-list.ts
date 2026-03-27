@@ -17,6 +17,7 @@ import {
 } from '../../../core/utils/date-time.util';
 import { WorkSchedule } from './work-schedule.model';
 import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-work-schedule-list',
   standalone: true,
@@ -173,6 +174,13 @@ export class WorkScheduleList implements OnInit, OnDestroy {
           onClick: () => this.onRefresh(),
         },
         {
+          label: 'Export',
+          icon: 'download',
+          type: 'secondary',
+          disabled: isLoading,
+          onClick: () => this.onExport(),
+        },
+        {
           label: 'Generate Next Week',
           icon: 'auto_awesome',
           type: 'secondary',
@@ -220,5 +228,47 @@ export class WorkScheduleList implements OnInit, OnDestroy {
 
     const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
     return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
+  }
+
+  onExport() {
+    const schedules = this.listVM();
+    if (schedules.length === 0) return;
+
+    const headers = [
+      'User',
+      'Date',
+      'Is Day Off',
+      'Employment',
+      'Start Time',
+      'End Time',
+      'Meal Minutes',
+      'Remark',
+      'Status',
+    ];
+
+    const rows = schedules.map((s) => {
+      const isDayOff = s.is_day_off;
+      return [
+        s.manageUserName || '',
+        s.work_date || '',
+        isDayOff ? 'Yes' : 'No',
+        isDayOff ? '' : s.employmentName || '',
+        isDayOff
+          ? ''
+          : s.planned_start_time
+            ? this.datePipe.transform(s.planned_start_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : s.planned_end_time
+            ? this.datePipe.transform(s.planned_end_time, 'HH:mm') || ''
+            : '',
+        isDayOff ? '' : s.planned_meal_minutes?.toString() || '0',
+        s.log || '',
+        s.status === 1 ? 'Active' : 'Inactive',
+      ];
+    });
+
+    exportToCsv('Work_Schedule_List', headers, rows);
   }
 }

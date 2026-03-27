@@ -11,6 +11,7 @@ import { WorkEmploymentService } from '../work-employment/work-employment.servic
 import { WorkAttendanceService } from './work-attendance.service';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 import { parseLocalDate } from '../../../core/utils/date-time.util';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-work-attendance-list',
@@ -125,6 +126,13 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
           onClick: () => this.onRefresh(),
         },
         {
+          label: 'Export',
+          icon: 'download',
+          type: 'secondary',
+          disabled: computed(() => this.listVM().length === 0),
+          onClick: () => this.onExport(),
+        },
+        {
           label: 'New Record',
           icon: 'add',
           type: 'primary',
@@ -148,5 +156,67 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.headerService.clear();
+  }
+
+  onExport() {
+    const attendances = this.listVM();
+    if (attendances.length === 0) return;
+
+    const headers = [
+      'User',
+      'Date',
+      'Is Day Off',
+      'Employment',
+      'Start Time',
+      'Meal Start',
+      'Meal End',
+      'Break Start',
+      'Break End',
+      'End Time',
+      'Status',
+    ];
+
+    const rows = attendances.map((a) => {
+      const isDayOff = a.is_day_off;
+      return [
+        a.manageUserName || '',
+        a.work_date || '',
+        isDayOff ? 'Yes' : 'No',
+        isDayOff ? '' : a.employmentName || '',
+        isDayOff
+          ? ''
+          : a.start_time
+            ? this.datePipe.transform(a.start_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : a.meal_start_time
+            ? this.datePipe.transform(a.meal_start_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : a.meal_end_time
+            ? this.datePipe.transform(a.meal_end_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : a.break_start_time
+            ? this.datePipe.transform(a.break_start_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : a.break_end_time
+            ? this.datePipe.transform(a.break_end_time, 'HH:mm') || ''
+            : '',
+        isDayOff
+          ? ''
+          : a.end_time
+            ? this.datePipe.transform(a.end_time, 'HH:mm') || ''
+            : '',
+        a.status === 1 ? 'Active' : 'Inactive',
+      ];
+    });
+
+    exportToCsv('Work_Attendance_List', headers, rows);
   }
 }

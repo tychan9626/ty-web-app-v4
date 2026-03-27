@@ -42,7 +42,7 @@ import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 
 import { WorkScheduleService } from '../work-schedule/work-schedule.service';
 import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
-
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 @Component({
   selector: 'app-work-attendance-edit',
   standalone: true,
@@ -299,6 +299,12 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
     const actions: HeaderAction[] = [];
     if (this.currentId) {
       actions.push({
+        label: 'Export',
+        icon: 'download',
+        type: 'secondary',
+        onClick: () => this.onExport(),
+      });
+      actions.push({
         label: 'Delete',
         icon: 'delete_outline',
         type: 'secondary',
@@ -380,5 +386,53 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
   ngOnDestroy() {
     this.headerService.clear();
     sessionStorage.removeItem('orig_times');
+  }
+
+  onExport() {
+    const a = this.item();
+    if (!a || !this.currentId) return;
+
+    const headers = [
+      'Assigned User',
+      'Work Date',
+      'Is Day Off',
+      'Employment',
+      'Start Time (Clock In)',
+      'End Time (Clock Out)',
+      'Meal Start',
+      'Meal End',
+      'Break Start',
+      'Break End',
+      'Log / Remarks',
+      'Log is Secret',
+      'Status',
+    ];
+
+    const userName = this.displayUserName(a.user_id || '');
+    const emp = this.filteredEmployments().find(
+      (e) => e.tb_tyapp_wk_mplm_id === a.mplm_id,
+    );
+    const empName = emp ? `${emp.employer_name_en}` : '';
+    const times = this.timeInputs();
+
+    const rows = [
+      [
+        userName,
+        this.bindDate() ? formatDate(this.bindDate()!) : a.work_date || '',
+        a.is_day_off ? 'Yes' : 'No',
+        empName,
+        times.start || '',
+        times.end || '',
+        times.meal_start || '',
+        times.meal_end || '',
+        times.break_start || '',
+        times.break_end || '',
+        a.log || '',
+        a.log_is_secret ? 'Yes' : 'No',
+        a.status === 1 ? 'Active' : 'Inactive',
+      ],
+    ];
+
+    exportToCsv(`Work_Attendance_Detail_${a.work_date}`, headers, rows);
   }
 }

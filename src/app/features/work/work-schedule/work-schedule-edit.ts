@@ -41,6 +41,7 @@ import { WorkScheduleService } from './work-schedule.service';
 import { SelectOption } from '../../../core/models/common.model';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-work-schedule-edit',
@@ -219,6 +220,12 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
     const actions: HeaderAction[] = [];
     if (this.currentId) {
       actions.push({
+        label: 'Export',
+        icon: 'download',
+        type: 'secondary',
+        onClick: () => this.onExport(),
+      });
+      actions.push({
         label: 'Delete',
         icon: 'delete_outline',
         type: 'secondary',
@@ -323,10 +330,55 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
 
     current.mplm_id = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.mplm_id;
     current.is_day_off = false;
-    current.planned_meal_minutes = WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_meal_minutes;
+    current.planned_meal_minutes =
+      WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_meal_minutes;
 
-    this.timeInputs.set({ start: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_start_time, end: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_end_time });
+    this.timeInputs.set({
+      start: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_start_time,
+      end: WORK_SCHEDULE_NEW_RECORD_SHORTCUT.planned_end_time,
+    });
 
     this.item.set({ ...current });
+  }
+
+  onExport() {
+    const s = this.item();
+    if (!s || !this.currentId) return;
+
+    const headers = [
+      'Assigned User',
+      'Work Date',
+      'Is Day Off',
+      'Employment',
+      'Start Time',
+      'End Time',
+      'Planned Meal (Minutes)',
+      'Internal Log / Notes',
+      'Status',
+    ];
+
+    const userName = this.displayUserName(s.user_id || '');
+    const emp = this.filteredEmployments().find(
+      (e) => e.tb_tyapp_wk_mplm_id === s.mplm_id,
+    );
+    const empName = emp
+      ? `${emp.employer_name_en} (${emp.position_title_en})`
+      : '';
+
+    const rows = [
+      [
+        userName,
+        this.bindDate() ? formatDate(this.bindDate()!) : s.work_date || '',
+        s.is_day_off ? 'Yes' : 'No',
+        empName,
+        this.timeInputs().start || '',
+        this.timeInputs().end || '',
+        s.planned_meal_minutes?.toString() || '0',
+        s.log || '',
+        s.status === 1 ? 'Active' : 'Inactive',
+      ],
+    ];
+
+    exportToCsv(`Work_Schedule_Detail_${s.work_date}`, headers, rows);
   }
 }
