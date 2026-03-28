@@ -1,38 +1,3 @@
-<style>
-  /* 時間輸入框的主排版：手機單欄，電腦雙欄 */
-  .responsive-time-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-  @media (min-width: 600px) {
-    .responsive-time-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  /* 捷徑按鈕共用樣式，確保高度與字體適中 */
-  .shortcut-btn {
-    height: 32px !important;
-    line-height: 32px !important;
-    font-size: 13px !important;
-    padding: 0 8px !important;
-    opacity: 0.9;
-  }
-
-  /* 4 顆按鈕的群組：超小螢幕 2x2，稍大螢幕自動排成一列 */
-  .btn-group-4 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  @media (min-width: 380px) {
-    .btn-group-4 {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-</style>
-
 <div class="split-workspace">
   @if (item(); as attn) {
     <div class="form-scroll-area">
@@ -258,7 +223,7 @@
                 (click)="
                   updateTimeInput(
                     'meal_end',
-                    addMinutesToTime(timeInputs().meal_start, 30)
+                    addMins(timeInputs().meal_start, 30)
                   )
                 "
                 style="background: rgba(var(--mat-sys-accent-rgb), 0.1)"
@@ -305,7 +270,7 @@
                 (click)="
                   updateTimeInput(
                     'break_end',
-                    addMinutesToTime(timeInputs().break_start, 30)
+                    addMins(timeInputs().break_start, 30)
                   )
                 "
                 style="background: rgba(var(--mat-sys-accent-rgb), 0.1)"
@@ -354,7 +319,7 @@
           style="margin-bottom: 8px"
         >
           <mat-label>Log / Remarks</mat-label>
-          <textarea matInput rows="3" [(ngModel)]="attn.log"></textarea>
+          <textarea matInput rows="10" [(ngModel)]="attn.log"></textarea>
         </mat-form-field>
 
         <mat-slide-toggle

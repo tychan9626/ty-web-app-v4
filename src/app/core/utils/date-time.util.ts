@@ -67,3 +67,48 @@ export function buildSequentialIsoStrings(
 
   return results;
 }
+
+export function addMinutesToTime(timeStr: string, mins: number): string {
+  if (!timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const d = new Date();
+  d.setHours(h, m + mins, 0, 0);
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+}
+
+export function getWeekRangeLabel(dateStr: string): string {
+  const d = parseLocalDate(dateStr);
+  if (!d) return 'Unknown Week';
+
+  const day = d.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
+}
+
+export function groupItemsByWeek<T>(
+  items: T[],
+  dateExtractor: (item: T) => string | null | undefined,
+): { weekLabel: string; items: T[] }[] {
+  const groups: { weekLabel: string; items: T[] }[] = [];
+  let currentGroup: { weekLabel: string; items: T[] } | null = null;
+
+  for (const item of items) {
+    const label = getWeekRangeLabel(dateExtractor(item) || '');
+
+    if (!currentGroup || currentGroup.weekLabel !== label) {
+      currentGroup = { weekLabel: label, items: [] };
+      groups.push(currentGroup);
+    }
+    currentGroup.items.push(item);
+  }
+
+  return groups;
+}

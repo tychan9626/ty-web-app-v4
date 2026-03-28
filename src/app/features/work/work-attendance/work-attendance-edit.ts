@@ -26,6 +26,7 @@ import {
   formatDate,
   extractTime,
   buildSequentialIsoStrings,
+  addMinutesToTime,
 } from '../../../core/utils/date-time.util';
 
 import { AuthService } from '../../../core/services/auth.service';
@@ -62,6 +63,7 @@ import { exportToCsv } from '../../../core/utils/csv-export.util';
   ],
   providers: [DisplayNamePipe],
   templateUrl: './work-attendance-edit.html',
+  styleUrl: './work-attendance-edit.scss',
 })
 export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
   private route = inject(ActivatedRoute);
@@ -75,6 +77,8 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
   public workScheduleService = inject(WorkScheduleService);
   public userService = inject(UserService);
   public authService = inject(AuthService);
+
+  public readonly addMins = addMinutesToTime;
 
   item = signal<Partial<WorkAttendance> | null>(null);
   currentId: string | null = null;
@@ -124,14 +128,6 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
     return 'none';
   });
 
-  addMinutesToTime(timeStr: string, mins: number): string {
-    if (!timeStr) return '';
-    const [h, m] = timeStr.split(':').map(Number);
-    const d = new Date();
-    d.setHours(h, m + mins, 0, 0);
-    return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
-  }
-
   applyKShortcut(mealStart: string) {
     const current = this.item();
     if (!current) return;
@@ -142,9 +138,9 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
     this.timeInputs.set({
       start: '09:00',
       meal_start: mealStart,
-      meal_end: this.addMinutesToTime(mealStart, 30),
-      break_start: this.addMinutesToTime(mealStart, 60),
-      break_end: this.addMinutesToTime(mealStart, 90),
+      meal_end: addMinutesToTime(mealStart, 30),
+      break_start: addMinutesToTime(mealStart, 60),
+      break_end: addMinutesToTime(mealStart, 90),
       end: '17:00',
     });
 
@@ -186,7 +182,7 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
 
       const disabled =
         this.workAttendanceService.loading() ||
-        !currentlyDirty ||
+        (!!this.currentId && !currentlyDirty) ||
         !current.user_id ||
         !current.work_date ||
         (!current.is_day_off && !current.mplm_id);
@@ -334,6 +330,7 @@ export class WorkAttendanceEdit implements OnInit, OnDestroy, DoCheck {
     data.work_date = formatDate(dateVal);
 
     if (data.is_day_off) {
+      data.mplm_id = null;
       data.start_time = null;
       data.end_time = null;
       data.meal_start_time = null;

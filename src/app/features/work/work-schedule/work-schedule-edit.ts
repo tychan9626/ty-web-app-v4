@@ -144,7 +144,7 @@ export class WorkScheduleEdit implements OnInit, OnDestroy, DoCheck {
 
       const disabled =
         this.workScheduleService.loading() ||
-        !currentlyDirty ||
+        (!!this.currentId && !currentlyDirty) ||
         !current.user_id ||
         !current.work_date ||
         (!current.is_day_off &&

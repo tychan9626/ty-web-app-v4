@@ -1,0 +1,30 @@
+.responsive-time-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+
+  @media (min-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.btn-group-4 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+
+  @media (min-width: 380px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+button.shortcut-btn {
+  &.mat-mdc-button,
+  &.mat-mdc-outlined-button {
+    height: 32px;
+    line-height: 32px;
+    font-size: 13px;
+    padding: 0 8px;
+    opacity: 0.9;
+  }
+}
