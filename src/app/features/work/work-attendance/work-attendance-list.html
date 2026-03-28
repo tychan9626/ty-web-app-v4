@@ -1,6 +1,6 @@
 <div class="standard-list-view">
   <div class="list-container">
-    @for (group of groupedListVM(); track group.weekLabel) {
+    @for (group of groupedListVM(); track group.periodLabel) {
       <div class="week-group" style="display: flex; flex-direction: column">
         <div
           style="
@@ -20,7 +20,7 @@
             align-items: center;
           "
         >
-          <span>Week of {{ group.weekLabel }}</span>
+          <span>Week of {{ group.periodLabel }}</span>
           <span style="font-size: 12px; opacity: 0.7"
             >{{ group.items.length }} records</span
           >

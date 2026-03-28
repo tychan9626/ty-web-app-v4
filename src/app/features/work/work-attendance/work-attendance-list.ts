@@ -12,8 +12,7 @@ import { WorkAttendanceService } from './work-attendance.service';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 import {
   getWeekRangeLabel,
-  groupItemsByWeek,
-  parseLocalDate,
+  groupItemsByPeriod,
 } from '../../../core/utils/date-time.util';
 import { exportToCsv } from '../../../core/utils/csv-export.util';
 
@@ -76,7 +75,9 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
   });
 
   groupedListVM = computed(() => {
-    return groupItemsByWeek(this.listVM(), (item) => item.work_date);
+    return groupItemsByPeriod(this.listVM(), (item) =>
+      getWeekRangeLabel(item.work_date),
+    );
   });
 
   ngOnInit() {
@@ -102,6 +103,14 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
           type: 'secondary',
           disabled: computed(() => this.listVM().length === 0),
           onClick: () => this.onExport(),
+        },
+        {
+          label: 'Timesheet Report',
+          icon: 'bar_chart',
+          type: 'secondary',
+          disabled: isLoading,
+          onClick: () =>
+            this.router.navigate(['../report'], { relativeTo: this.route }),
         },
         {
           label: 'New Record',

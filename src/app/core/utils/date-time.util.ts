@@ -93,22 +93,73 @@ export function getWeekRangeLabel(dateStr: string): string {
   return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
 }
 
-export function groupItemsByWeek<T>(
+export function groupItemsByPeriod<T>(
   items: T[],
-  dateExtractor: (item: T) => string | null | undefined,
-): { weekLabel: string; items: T[] }[] {
-  const groups: { weekLabel: string; items: T[] }[] = [];
-  let currentGroup: { weekLabel: string; items: T[] } | null = null;
+  labelGenerator: (item: T) => string,
+): { periodLabel: string; items: T[] }[] {
+  const groups: { periodLabel: string; items: T[] }[] = [];
+  let currentGroup: { periodLabel: string; items: T[] } | null = null;
 
   for (const item of items) {
-    const label = getWeekRangeLabel(dateExtractor(item) || '');
+    const label = labelGenerator(item);
 
-    if (!currentGroup || currentGroup.weekLabel !== label) {
-      currentGroup = { weekLabel: label, items: [] };
+    if (!currentGroup || currentGroup.periodLabel !== label) {
+      currentGroup = { periodLabel: label, items: [] };
       groups.push(currentGroup);
     }
     currentGroup.items.push(item);
   }
 
   return groups;
+}
+
+export function calculateWorkingHours(
+  startIso: string | null | undefined,
+  endIso: string | null | undefined,
+  mealStartIso: string | null | undefined,
+  mealEndIso: string | null | undefined,
+  isDayOff: boolean,
+): number {
+  if (isDayOff || !startIso || !endIso) return 0;
+
+  const start = new Date(startIso).getTime();
+  const end = new Date(endIso).getTime();
+  let diffMs = end - start;
+
+  if (mealStartIso && mealEndIso) {
+    const mStart = new Date(mealStartIso).getTime();
+    const mEnd = new Date(mealEndIso).getTime();
+    if (mEnd > mStart) {
+      diffMs -= mEnd - mStart;
+    }
+  }
+
+  const hours = diffMs / (1000 * 60 * 60);
+
+  if (hours < 0) return 0;
+
+  return Math.round(hours * 100) / 100;
+}
+
+const BIWEEKLY_ANCHOR_DATE = new Date('2024-12-30T00:00:00');
+
+export function getBiWeeklyRangeLabel(
+  dateStr: string | null | undefined,
+): string {
+  const targetDate = parseLocalDate(dateStr);
+  if (!targetDate) return 'Unknown Period';
+
+  const diffTime = targetDate.getTime() - BIWEEKLY_ANCHOR_DATE.getTime();
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  const periodIndex = Math.floor(diffDays / 14);
+
+  const periodStart = new Date(BIWEEKLY_ANCHOR_DATE);
+  periodStart.setDate(periodStart.getDate() + periodIndex * 14);
+
+  const periodEnd = new Date(periodStart);
+  periodEnd.setDate(periodStart.getDate() + 13);
+
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+  return `${periodStart.toLocaleDateString('en-US', opts)} - ${periodEnd.toLocaleDateString('en-US', opts)}, ${periodEnd.getFullYear()}`;
 }

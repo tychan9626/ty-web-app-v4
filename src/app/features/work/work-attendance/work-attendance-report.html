@@ -1,0 +1,57 @@
+<div class="standard-list-view">
+  <div class="toggle-header">
+    <mat-button-toggle-group
+      [value]="viewMode()"
+      (change)="viewMode.set($event.value)"
+      class="full-width-toggle"
+    >
+      <mat-button-toggle value="weekly">Weekly View</mat-button-toggle>
+      <mat-button-toggle value="biweekly"
+        >Bi-weekly (Paystub)</mat-button-toggle
+      >
+    </mat-button-toggle-group>
+  </div>
+
+  <div class="list-container" style="padding-top: 0">
+    @if (workAttendanceService.loading() || workEmploymentService.loading()) {
+      <div class="empty-placeholder">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else {
+      @for (period of reportDataVM(); track period.periodLabel) {
+        <div class="period-section">
+          <h2 class="period-section-title">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <mat-icon>date_range</mat-icon>
+              <span>{{ period.periodLabel }}</span>
+            </div>
+            <span class="period-total"
+              >{{ period.periodTotalHours | number: "1.2-2" }} hrs total</span
+            >
+          </h2>
+
+          <div class="emp-cards">
+            @for (emp of period.employments; track emp.mplm_id) {
+              <div class="emp-card">
+                <div class="emp-info">
+                  <span class="emp-name">{{ emp.employmentName }}</span>
+                  <span class="emp-sub"
+                    >{{ emp.recordCount }} shifts logged</span
+                  >
+                </div>
+                <div class="emp-hours">
+                  <span class="hours-value">{{
+                    emp.totalHours | number: "1.2-2"
+                  }}</span>
+                  <span class="hours-unit">hrs</span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      } @empty {
+        <div class="empty-placeholder">No working hours logged yet.</div>
+      }
+    }
+  </div>
+</div>
