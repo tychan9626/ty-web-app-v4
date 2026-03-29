@@ -76,11 +76,6 @@ export function addMinutesToTime(timeStr: string, mins: number): string {
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 }
 
-export function getWeekRangeLabel(dateStr: string | null | undefined): string {
-  const range = getWeekRange(dateStr);
-  return range ? range.label : 'Unknown Week';
-}
-
 export function groupItemsByPeriod<T>(
   items: T[],
   labelGenerator: (item: T) => string,
@@ -131,36 +126,6 @@ export function calculateWorkingHours(
 
 const BIWEEKLY_ANCHOR_DATE = new Date('2024-12-30T00:00:00');
 
-export function getBiWeeklyRangeLabel(
-  dateStr: string | null | undefined,
-): string {
-  const targetDate = parseLocalDate(dateStr);
-  if (!targetDate) return 'Unknown Period';
-
-  const targetUTC = Date.UTC(
-    targetDate.getFullYear(),
-    targetDate.getMonth(),
-    targetDate.getDate(),
-  );
-  const anchorUTC = Date.UTC(
-    BIWEEKLY_ANCHOR_DATE.getFullYear(),
-    BIWEEKLY_ANCHOR_DATE.getMonth(),
-    BIWEEKLY_ANCHOR_DATE.getDate(),
-  );
-
-  const diffDays = Math.floor((targetUTC - anchorUTC) / (1000 * 60 * 60 * 24));
-
-  const periodIndex = Math.floor(diffDays / 14);
-
-  const periodStart = new Date(BIWEEKLY_ANCHOR_DATE);
-  periodStart.setDate(periodStart.getDate() + periodIndex * 14);
-
-  const periodEnd = new Date(periodStart);
-  periodEnd.setDate(periodStart.getDate() + 13);
-
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  return `${periodStart.toLocaleDateString('en-US', opts)} - ${periodEnd.toLocaleDateString('en-US', opts)}, ${periodEnd.getFullYear()}`;
-}
 
 export interface PeriodRange {
   startDate: string;

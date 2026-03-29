@@ -17,9 +17,6 @@ import { WorkAttendanceService } from './work-attendance.service';
 import { WorkEmploymentService } from '../work-employment/work-employment.service';
 import {
   calculateWorkingHours,
-  getWeekRangeLabel,
-  getBiWeeklyRangeLabel,
-  groupItemsByPeriod,
   getBiWeeklyRange,
   getWeekRange,
   PeriodRange,
@@ -77,8 +74,8 @@ export class WorkAttendanceReport implements OnInit, OnDestroy {
 
     const isWeekly = this.viewMode() === 'weekly';
     const rangeGenerator = isWeekly
-      ? (item: EnrichedRecord) => getWeekRange(item.work_date || '')
-      : (item: EnrichedRecord) => getBiWeeklyRange(item.work_date || '');
+      ? (item: EnrichedRecord) => getWeekRange(item.work_date)
+      : (item: EnrichedRecord) => getBiWeeklyRange(item.work_date);
 
     const periodMap = new Map<
       string,

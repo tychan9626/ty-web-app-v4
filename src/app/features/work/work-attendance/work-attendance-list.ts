@@ -11,7 +11,7 @@ import { WorkEmploymentService } from '../work-employment/work-employment.servic
 import { WorkAttendanceService } from './work-attendance.service';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 import {
-  getWeekRangeLabel,
+  getWeekRange,
   groupItemsByPeriod,
 } from '../../../core/utils/date-time.util';
 import { exportToCsv } from '../../../core/utils/csv-export.util';
@@ -75,9 +75,10 @@ export class WorkAttendanceList implements OnInit, OnDestroy {
   });
 
   groupedListVM = computed(() => {
-    return groupItemsByPeriod(this.listVM(), (item) =>
-      getWeekRangeLabel(item.work_date),
-    );
+    return groupItemsByPeriod(this.listVM(), (item) => {
+      const range = getWeekRange(item.work_date);
+      return range ? range.label : 'Unknown Week';
+    });
   });
 
   ngOnInit() {

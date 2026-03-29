@@ -15,7 +15,7 @@ import {
   formatDate,
   buildSequentialIsoStrings,
   groupItemsByPeriod,
-  getWeekRangeLabel,
+  getWeekRange,
 } from '../../../core/utils/date-time.util';
 import { WorkSchedule } from './work-schedule.model';
 import { WORK_SCHEDULE_NEW_RECORD_SHORTCUT } from '../../../app.constants';
@@ -80,7 +80,10 @@ export class WorkScheduleList implements OnInit, OnDestroy {
   });
 
   groupedListVM = computed(() => {
-    return groupItemsByPeriod(this.listVM(), (item) => getWeekRangeLabel(item.work_date));
+    return groupItemsByPeriod(this.listVM(), (item) => {
+      const range = getWeekRange(item.work_date);
+      return range ? range.label : 'Unknown Week';
+    });
   });
 
   isGenerateDisabled = computed(() => {
