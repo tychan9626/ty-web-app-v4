@@ -21,8 +21,7 @@ export class WorkAttendanceService {
         .from('tyapp_work_attendance')
         .select('*')
         .is('deleted_at', null)
-        .order('work_date', { ascending: false })
-        .order('start_time', { ascending: false });
+        .order('work_date', { ascending: false });
 
       if (error) throw error;
 

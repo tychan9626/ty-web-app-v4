@@ -20,7 +20,11 @@ import {
   getWeekRangeLabel,
   getBiWeeklyRangeLabel,
   groupItemsByPeriod,
+  getBiWeeklyRange,
+  getWeekRange,
+  PeriodRange,
 } from '../../../core/utils/date-time.util';
+import { exportToCsv } from '../../../core/utils/csv-export.util';
 
 @Component({
   selector: 'app-work-attendance-report',
@@ -72,51 +76,67 @@ export class WorkAttendanceReport implements OnInit, OnDestroy {
     type EnrichedRecord = (typeof enrichedRecords)[0];
 
     const isWeekly = this.viewMode() === 'weekly';
-    const labelGenerator = isWeekly
-      ? (item: EnrichedRecord) => getWeekRangeLabel(item.work_date || '')
-      : (item: EnrichedRecord) => getBiWeeklyRangeLabel(item.work_date || '');
+    const rangeGenerator = isWeekly
+      ? (item: EnrichedRecord) => getWeekRange(item.work_date || '')
+      : (item: EnrichedRecord) => getBiWeeklyRange(item.work_date || '');
 
-    const periodGroups = groupItemsByPeriod(enrichedRecords, labelGenerator);
+    const periodMap = new Map<
+      string,
+      { range: PeriodRange; items: EnrichedRecord[] }
+    >();
+    for (const record of enrichedRecords) {
+      const range = rangeGenerator(record);
+      if (!range) continue;
 
-    const finalReport = periodGroups.map((pg) => {
-      const empMap = new Map<
-        string,
-        { employmentName: string; totalHours: number; recordCount: number }
-      >();
-      let periodTotalHours = 0;
+      const key = range.startDate;
+      if (!periodMap.has(key)) {
+        periodMap.set(key, { range, items: [] });
+      }
+      periodMap.get(key)!.items.push(record);
+    }
 
-      for (const item of pg.items) {
-        const empId = item.mplm_id;
-        if (!empMap.has(empId)) {
-          empMap.set(empId, {
-            employmentName: item.employmentName,
-            totalHours: 0,
-            recordCount: 0,
-          });
+    const finalReport = Array.from(periodMap.values())
+      .map(({ range, items }) => {
+        const empMap = new Map<
+          string,
+          { employmentName: string; totalHours: number; recordCount: number }
+        >();
+        let periodTotalHours = 0;
+
+        for (const item of items) {
+          const empId = item.mplm_id;
+          if (!empMap.has(empId)) {
+            empMap.set(empId, {
+              employmentName: item.employmentName,
+              totalHours: 0,
+              recordCount: 0,
+            });
+          }
+
+          const currentData = empMap.get(empId)!;
+          currentData.totalHours += item.hours;
+          currentData.recordCount += 1;
+          periodTotalHours += item.hours;
         }
 
-        const currentData = empMap.get(empId)!;
-        currentData.totalHours += item.hours;
-        currentData.recordCount += 1;
+        const employmentDetails = Array.from(empMap.entries())
+          .map(([id, data]) => ({
+            mplm_id: id,
+            employmentName: data.employmentName,
+            totalHours: Math.round(data.totalHours * 100) / 100,
+            recordCount: data.recordCount,
+          }))
+          .sort((a, b) => b.totalHours - a.totalHours);
 
-        periodTotalHours += item.hours;
-      }
-
-      const employmentDetails = Array.from(empMap.entries())
-        .map(([id, data]) => ({
-          mplm_id: id,
-          employmentName: data.employmentName,
-          totalHours: Math.round(data.totalHours * 100) / 100,
-          recordCount: data.recordCount,
-        }))
-        .sort((a, b) => b.totalHours - a.totalHours);
-
-      return {
-        periodLabel: pg.periodLabel,
-        periodTotalHours: Math.round(periodTotalHours * 100) / 100,
-        employments: employmentDetails,
-      };
-    });
+        return {
+          periodStart: range.startDate,
+          periodEnd: range.endDate,
+          periodLabel: range.label,
+          periodTotalHours: Math.round(periodTotalHours * 100) / 100,
+          employments: employmentDetails,
+        };
+      })
+      .sort((a, b) => b.periodStart.localeCompare(a.periodStart));
 
     return finalReport;
   });
@@ -131,6 +151,15 @@ export class WorkAttendanceReport implements OnInit, OnDestroy {
     this.headerService.setConfig({
       backLink: '/work/attendance/list',
       actions: [
+        {
+          label: 'Export',
+          icon: 'download',
+          type: 'secondary',
+          disabled: computed(
+            () => this.reportDataVM().length === 0 || isLoading(),
+          ),
+          onClick: () => this.onExport(),
+        },
         {
           label: 'Refresh',
           icon: 'refresh',
@@ -152,5 +181,36 @@ export class WorkAttendanceReport implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.headerService.clear();
+  }
+
+  onExport() {
+    const reportData = this.reportDataVM();
+    if (!reportData || reportData.length === 0) return;
+
+    const headers = [
+      'Period Start Date',
+      'Period End Date',
+      'Employment / Position',
+      'Shifts Logged',
+      'Total Hours',
+    ];
+    const rows: string[][] = [];
+
+    for (const period of reportData) {
+      for (const emp of period.employments) {
+        rows.push([
+          period.periodStart,
+          period.periodEnd,
+          emp.employmentName,
+          emp.recordCount.toString(),
+          emp.totalHours.toString(),
+        ]);
+      }
+    }
+
+    const modeName = this.viewMode() === 'weekly' ? 'Weekly' : 'Bi-weekly';
+    const todayStr = new Date().toISOString().split('T')[0];
+
+    exportToCsv(`Timesheet_Report_${modeName}_${todayStr}`, headers, rows);
   }
 }

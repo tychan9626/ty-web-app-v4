@@ -76,21 +76,9 @@ export function addMinutesToTime(timeStr: string, mins: number): string {
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 }
 
-export function getWeekRangeLabel(dateStr: string): string {
-  const d = parseLocalDate(dateStr);
-  if (!d) return 'Unknown Week';
-
-  const day = d.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-
-  const monday = new Date(d);
-  monday.setDate(d.getDate() + diffToMonday);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-
-  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-  return `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${sunday.getFullYear()}`;
+export function getWeekRangeLabel(dateStr: string | null | undefined): string {
+  const range = getWeekRange(dateStr);
+  return range ? range.label : 'Unknown Week';
 }
 
 export function groupItemsByPeriod<T>(
@@ -149,8 +137,18 @@ export function getBiWeeklyRangeLabel(
   const targetDate = parseLocalDate(dateStr);
   if (!targetDate) return 'Unknown Period';
 
-  const diffTime = targetDate.getTime() - BIWEEKLY_ANCHOR_DATE.getTime();
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  const targetUTC = Date.UTC(
+    targetDate.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate(),
+  );
+  const anchorUTC = Date.UTC(
+    BIWEEKLY_ANCHOR_DATE.getFullYear(),
+    BIWEEKLY_ANCHOR_DATE.getMonth(),
+    BIWEEKLY_ANCHOR_DATE.getDate(),
+  );
+
+  const diffDays = Math.floor((targetUTC - anchorUTC) / (1000 * 60 * 60 * 24));
 
   const periodIndex = Math.floor(diffDays / 14);
 
@@ -162,4 +160,83 @@ export function getBiWeeklyRangeLabel(
 
   const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
   return `${periodStart.toLocaleDateString('en-US', opts)} - ${periodEnd.toLocaleDateString('en-US', opts)}, ${periodEnd.getFullYear()}`;
+}
+
+export interface PeriodRange {
+  startDate: string;
+  endDate: string;
+  label: string;
+}
+
+export function getWeekRange(
+  dateStr: string | null | undefined,
+): PeriodRange | null {
+  const d = parseLocalDate(dateStr);
+  if (!d) return null;
+
+  const day = d.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+
+  const monday = new Date(d);
+  monday.setDate(d.getDate() + diffToMonday);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const startYear = monday.getFullYear();
+  const endYear = sunday.getFullYear();
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+
+  const label =
+    startYear !== endYear
+      ? `${monday.toLocaleDateString('en-US', opts)}, ${startYear} - ${sunday.toLocaleDateString('en-US', opts)}, ${endYear}`
+      : `${monday.toLocaleDateString('en-US', opts)} - ${sunday.toLocaleDateString('en-US', opts)}, ${endYear}`;
+
+  return {
+    startDate: formatDate(monday),
+    endDate: formatDate(sunday),
+    label: label,
+  };
+}
+
+export function getBiWeeklyRange(
+  dateStr: string | null | undefined,
+): PeriodRange | null {
+  const targetDate = parseLocalDate(dateStr);
+  if (!targetDate) return null;
+
+  const targetUTC = Date.UTC(
+    targetDate.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate(),
+  );
+  const anchorUTC = Date.UTC(
+    BIWEEKLY_ANCHOR_DATE.getFullYear(),
+    BIWEEKLY_ANCHOR_DATE.getMonth(),
+    BIWEEKLY_ANCHOR_DATE.getDate(),
+  );
+
+  const diffDays = Math.floor((targetUTC - anchorUTC) / (1000 * 60 * 60 * 24));
+  const periodIndex = Math.floor(diffDays / 14);
+
+  const periodStart = new Date(BIWEEKLY_ANCHOR_DATE);
+  periodStart.setDate(periodStart.getDate() + periodIndex * 14);
+
+  const periodEnd = new Date(periodStart);
+  periodEnd.setDate(periodStart.getDate() + 13);
+
+  const startYear = periodStart.getFullYear();
+  const endYear = periodEnd.getFullYear();
+  const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+
+  const label =
+    startYear !== endYear
+      ? `${periodStart.toLocaleDateString('en-US', opts)}, ${startYear} - ${periodEnd.toLocaleDateString('en-US', opts)}, ${endYear}`
+      : `${periodStart.toLocaleDateString('en-US', opts)} - ${periodEnd.toLocaleDateString('en-US', opts)}, ${endYear}`;
+
+  return {
+    startDate: formatDate(periodStart),
+    endDate: formatDate(periodEnd),
+    label: label,
+  };
 }
