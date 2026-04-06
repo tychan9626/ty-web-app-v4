@@ -91,6 +91,12 @@ export class Layout {
         { title: 'Article List', route: '/article/list' }],
     },
     {
+      title: 'TyWeb',
+      icon: 'web',
+      adminOnly: false,
+      links: [{ title: 'Content Manager', route: '/tyweb/content' }],
+    },
+    {
       title: 'User Management',
       icon: 'people_outline',
       adminOnly: true,
