@@ -46,6 +46,40 @@
         <p>同步與分析資料中...</p>
       </div>
     } @else {
+      @if (anomalies().length > 0) {
+        <details class="anomaly-alert-details">
+          <summary class="alert-header">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <mat-icon>warning</mat-icon>
+              <span
+                >偵測到 {{ anomalies().length }} 筆資料異常 (點擊展開詳情)</span
+              >
+            </div>
+            <mat-icon class="expand-icon">expand_more</mat-icon>
+          </summary>
+          <div class="alert-body">
+            <p>
+              在
+              {{
+                selectedCurrency()
+              }}
+              幣別下，有紀錄發生「未設定扣款帳戶」或「跨幣別但缺少
+              wallet_amount」的情況。請點擊對應月份查看紅字明細並回系統修正：
+            </p>
+            <ul>
+              @for (bad of anomalies(); track bad.id) {
+                <li>
+                  <strong>【{{ bad.statMonth }}】</strong>
+                  {{ bad.date | date: "MM/dd" }} - {{ bad.vendorName }} (原帳單:
+                  {{ bad.originalCurrency }}
+                  {{ bad.originalAmount | number: "1.2-2" }})
+                </li>
+              }
+            </ul>
+          </div>
+        </details>
+      }
+
       <div class="group-header">各月收支一覽 (點擊查看明細)</div>
 
       <mat-card class="history-card">
@@ -62,7 +96,8 @@
                     <span class="main-text month-title">{{ stat.month }}</span>
                     <span class="sub-text">
                       <span class="income-text"
-                        >收: {{ stat.totalIn | number: "1.2-2" }}</span
+                        >收: {{ selectedCurrency() }}
+                        {{ stat.totalIn | number: "1.2-2" }}</span
                       >
                       <span
                         style="
@@ -72,7 +107,8 @@
                         >|</span
                       >
                       <span class="expense-text"
-                        >支: {{ stat.totalOut | number: "1.2-2" }}</span
+                        >支: {{ selectedCurrency() }}
+                        {{ stat.totalOut | number: "1.2-2" }}</span
                       >
                     </span>
                   </div>
@@ -87,10 +123,7 @@
                       >
                         {{
                           stat.net
-                            | currency
-                              : selectedCurrency()
-                              : "symbol-narrow"
-                              : "1.2-2"
+                            | currency: selectedCurrency() : "code" : "1.2-2"
                         }}
                       </span>
                     </div>

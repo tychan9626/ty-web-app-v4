@@ -7,7 +7,7 @@ import {
   effect,
   untracked,
 } from '@angular/core';
-import { CommonModule, CurrencyPipe } from '@angular/common';
+import { CommonModule, CurrencyPipe, DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
@@ -27,6 +27,7 @@ import { YyemsRecord } from '../yy525.model';
     CommonModule,
     FormsModule,
     CurrencyPipe,
+    DecimalPipe,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -61,11 +62,13 @@ export class YyemsAnalyticsOverview implements OnInit {
     ).filter(Boolean);
   });
 
-  private getUserShare(record: YyemsRecord, user: string): number {
-    const amt = record.amount;
-    if (record.owner === 'yyems') return amt / 2;
-    return record.owner === user ? amt : 0;
-  }
+  anomalies = computed(() => {
+    const currency = this.selectedCurrency();
+    if (!currency) return [];
+    return this.yy525Data
+      .analyticsRecords()
+      .filter((r) => r.currency === currency && r.isAnomaly);
+  });
 
   monthlyStats = computed(() => {
     const user = this.selectedUser();
@@ -77,7 +80,8 @@ export class YyemsAnalyticsOverview implements OnInit {
     this.yy525Data.analyticsRecords().forEach((r) => {
       if (r.currency !== currency || r.isTransfer || !r.statMonth) return;
 
-      const share = this.getUserShare(r, user);
+      const share = this.yy525Data.calculateUserShare(r, user);
+
       if (share > 0) {
         const month = r.statMonth;
         if (!map.has(month)) map.set(month, { totalIn: 0, totalOut: 0 });

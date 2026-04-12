@@ -10,11 +10,15 @@ export class Yy525DataService {
   private readonly TOKEN = YY525_SOURCE.TOKEN;
 
   loading = signal(false);
-
   fetchDurationSec = signal<number>(0);
   processDurationSec = signal<number>(0);
-
   analyticsRecords = signal<YyemsRecord[]>([]);
+
+  calculateUserShare(record: YyemsRecord, targetUser: string): number {
+    const amt = record.amount;
+    if (record.owner === 'yyems') return amt / 2;
+    return record.owner === targetUser ? amt : 0;
+  }
 
   async fetchAllData(force = false) {
     if (this.analyticsRecords().length > 0 && !force) return;
@@ -36,7 +40,6 @@ export class Yy525DataService {
 
       const accounts: AccountRaw[] = data.accounts || [];
       const yyems: YyemsRaw[] = data.yyems || [];
-
       const accountMap = new Map(accounts.map((a) => [a.ID, a]));
 
       const processedRecords = yyems
@@ -45,20 +48,51 @@ export class Yy525DataService {
           const isTransfer =
             r['auto_vendor_category'] === '內部轉帳' ||
             String(r['Vendor ID'] || '').includes('Internal_transfer');
-
           const statMonth = r['auto_stat_month'] || '';
 
           const displayDate = r['DateTime']
             ? new Date(r['DateTime'])
             : new Date();
+          const utcStr = r['auto_UTC DateTime'] || r['DateTime'];
+          const utcDate = utcStr ? new Date(utcStr) : new Date();
+
+          const account = accountMap.get(r['Financial_Accounts']);
+          const originalAmount = Math.abs(Number(r.Amount) || 0);
+          const originalCurrency = r.Currency || '';
+          const walletCurrency = account?.Currency || '';
+
+          let finalAmount = originalAmount;
+          let finalCurrency = originalCurrency;
+          let isAnomaly = false;
+
+          if (!walletCurrency) {
+            isAnomaly = true;
+          } else if (originalCurrency !== walletCurrency) {
+            const walletAmtRaw = r.wallet_amount;
+            const parsedWalletAmt = Math.abs(Number(walletAmtRaw));
+            if (
+              walletAmtRaw !== '' &&
+              walletAmtRaw !== null &&
+              !isNaN(parsedWalletAmt) &&
+              parsedWalletAmt > 0
+            ) {
+              finalAmount = parsedWalletAmt;
+              finalCurrency = walletCurrency;
+            } else {
+              isAnomaly = true;
+            }
+          }
 
           return {
             id: r['YYEMS ID'],
             date: displayDate,
+            utcDate: utcDate,
             statMonth: statMonth,
             type: r.In_or_out as 'In' | 'Out',
-            amount: Number(r.Amount) || 0,
-            currency: r.Currency || 'CAD',
+            amount: finalAmount,
+            currency: finalCurrency,
+            originalAmount: originalAmount,
+            originalCurrency: originalCurrency,
             owner: String(r.Ownership || '')
               .toLowerCase()
               .trim(),
@@ -67,13 +101,12 @@ export class Yy525DataService {
               .trim(),
             vendorName: r['auto_vendor_name'] || '未知商家',
             category: r['auto_vendor_category'] || '未分類',
-            accountName:
-              accountMap.get(r['Financial_Accounts'])?.['Display Name'] ||
-              '未知帳戶',
+            accountName: account?.['Display Name'] || '未知帳戶',
             isTransfer,
+            isAnomaly,
           };
         })
-        .sort((a, b) => b.date.getTime() - a.date.getTime());
+        .sort((a, b) => b.utcDate.getTime() - a.utcDate.getTime());
 
       const processEnd = performance.now();
 

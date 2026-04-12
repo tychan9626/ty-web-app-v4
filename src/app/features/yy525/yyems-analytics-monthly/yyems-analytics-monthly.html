@@ -1,59 +1,59 @@
-<div class="split-workspace">
-  <div class="form-scroll-area">
-    <div class="analytics-header">
-      <h2 style="margin: 0; color: var(--mat-sys-primary)">個人財務分析</h2>
-      @if (!yy525Data.loading() && yy525Data.fetchDurationSec() > 0) {
-        <div class="timer-badge">
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
-            >cloud_download</mat-icon
-          >
-          {{ yy525Data.fetchDurationSec() | number: "1.2-2" }}s
-          <span style="margin: 0 4px; color: var(--mat-sys-outline-variant)"
-            >|</span
-          >
-          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
-            >memory</mat-icon
-          >
-          {{ yy525Data.processDurationSec() | number: "1.2-2" }}s
-        </div>
-      }
-    </div>
+<div class="split-workspace f525-dashboard">
+  <div class="main-content">
+    <div class="dashboard-header">
+      <div class="title-group">
+        <h2>個人財務分析</h2>
+        @if (!yy525Data.loading() && yy525Data.fetchDurationSec() > 0) {
+          <div class="timer-badge">
+            <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+              >cloud_download</mat-icon
+            >
+            {{ yy525Data.fetchDurationSec() | number: "1.2-2" }}s
+            <span style="margin: 0 4px; color: var(--mat-sys-outline-variant)"
+              >|</span
+            >
+            <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+              >memory</mat-icon
+            >
+            {{ yy525Data.processDurationSec() | number: "1.2-2" }}s
+          </div>
+        }
+      </div>
 
-    <div class="filters-row">
-      <mat-form-field appearance="outline">
-        <mat-label>檢視視角</mat-label>
-        <mat-select
-          [ngModel]="selectedUser()"
-          (ngModelChange)="selectedUser.set($event)"
-        >
-          <mat-option value="cty">CTY</mat-option>
-          <mat-option value="frd">FRD</mat-option>
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>貨幣</mat-label>
-        <mat-select
-          [ngModel]="selectedCurrency()"
-          (ngModelChange)="selectedCurrency.set($event)"
-        >
-          @for (c of availableCurrencies(); track c) {
-            <mat-option [value]="c">{{ c }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>月份</mat-label>
-        <mat-select
-          [ngModel]="selectedMonth()"
-          (ngModelChange)="selectedMonth.set($event)"
-        >
-          @for (m of availableMonths(); track m) {
-            <mat-option [value]="m">{{ m }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+      <div class="filters-row">
+        <mat-form-field appearance="outline">
+          <mat-label>檢視視角</mat-label>
+          <mat-select
+            [ngModel]="selectedUser()"
+            (ngModelChange)="selectedUser.set($event)"
+          >
+            <mat-option value="cty">CTY</mat-option>
+            <mat-option value="frd">FRD</mat-option>
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>貨幣</mat-label>
+          <mat-select
+            [ngModel]="selectedCurrency()"
+            (ngModelChange)="selectedCurrency.set($event)"
+          >
+            @for (c of availableCurrencies(); track c) {
+              <mat-option [value]="c">{{ c }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>月份</mat-label>
+          <mat-select
+            [ngModel]="selectedMonth()"
+            (ngModelChange)="selectedMonth.set($event)"
+          >
+            @for (m of availableMonths(); track m) {
+              <mat-option [value]="m">{{ m }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
     </div>
 
     @if (yy525Data.loading()) {
@@ -61,27 +61,58 @@
         <mat-spinner diameter="40"></mat-spinner>
       </div>
     } @else {
+      @if (anomalies().length > 0) {
+        <details class="anomaly-alert-details">
+          <summary class="alert-header">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <mat-icon>warning</mat-icon>
+              <span
+                >偵測到 {{ anomalies().length }} 筆資料異常 (點擊展開詳情)</span
+              >
+            </div>
+            <mat-icon class="expand-icon">expand_more</mat-icon>
+          </summary>
+          <div class="alert-body">
+            <p>
+              以下紀錄可能「未設定扣款帳戶」、「無法辨識帳戶貨幣」，或「跨幣別但缺少
+              wallet_amount」。系統目前以原始帳單金額暫代，這會影響結餘準確度：
+            </p>
+            <ul>
+              @for (bad of anomalies(); track bad.id) {
+                <li>
+                  <strong
+                    >{{ bad.date | date: "MM/dd" }} -
+                    {{ bad.vendorName }}</strong
+                  >
+                  (原帳單: {{ bad.originalCurrency }}
+                  {{ bad.originalAmount | number: "1.2-2" }} 👉 扣款帳戶:
+                  {{ bad.accountName }})
+                </li>
+              }
+            </ul>
+          </div>
+        </details>
+      }
+
       <div class="stat-cards-grid">
         <mat-card class="stat-card">
           <div class="stat-title">個人真實收入</div>
           <div class="stat-value income">
             {{
               summary().totalIn
-                | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                | currency: selectedCurrency() : "code" : "1.2-2"
             }}
           </div>
         </mat-card>
-
         <mat-card class="stat-card">
           <div class="stat-title">個人真實支出</div>
           <div class="stat-value expense">
             {{
               summary().totalOut
-                | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                | currency: selectedCurrency() : "code" : "1.2-2"
             }}
           </div>
         </mat-card>
-
         <mat-card class="stat-card">
           <div class="stat-title">本月盈餘</div>
           <div
@@ -90,15 +121,19 @@
             [class.negative]="summary().net < 0"
           >
             {{
-              summary().net
-                | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+              summary().net | currency: selectedCurrency() : "code" : "1.2-2"
             }}
           </div>
         </mat-card>
       </div>
 
       @if (incomeBreakdown().length > 0) {
-        <div class="group-header">分類收入明細</div>
+        <div
+          class="group-header"
+          style="color: #2e7d32; border-left-color: #2e7d32"
+        >
+          分類收入明細
+        </div>
         <mat-accordion class="f525-accordion">
           @for (cat of incomeBreakdown(); track cat.name) {
             <mat-expansion-panel>
@@ -107,7 +142,7 @@
                   <span class="name">{{ cat.name }}</span>
                   <span class="amt income">{{
                     cat.totalShare
-                      | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                      | currency: selectedCurrency() : "code" : "1.2-2"
                   }}</span>
                 </mat-panel-title>
               </mat-expansion-panel-header>
@@ -130,11 +165,12 @@
                         </div>
                         <div class="bill-amount-group">
                           <span class="original-amt"
-                            >原額:
+                            >原單: {{ bill.originalCurrency }}
                             {{ bill.originalAmount | number: "1.2-2" }}</span
                           >
                           <span class="real-amt income"
-                            >實收: {{ bill.userShare | number: "1.2-2" }}</span
+                            >實收: {{ selectedCurrency() }}
+                            {{ bill.userShare | number: "1.2-2" }}</span
                           >
                         </div>
                       </div>
@@ -156,7 +192,7 @@
                 <span class="name">{{ cat.name }}</span>
                 <span class="amt expense">{{
                   cat.totalShare
-                    | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                    | currency: selectedCurrency() : "code" : "1.2-2"
                 }}</span>
               </mat-panel-title>
             </mat-expansion-panel-header>
@@ -179,11 +215,12 @@
                       </div>
                       <div class="bill-amount-group">
                         <span class="original-amt"
-                          >帳單:
+                          >原單: {{ bill.originalCurrency }}
                           {{ bill.originalAmount | number: "1.2-2" }}</span
                         >
                         <span class="real-amt expense"
-                          >承擔: {{ bill.userShare | number: "1.2-2" }}</span
+                          >承擔: {{ selectedCurrency() }}
+                          {{ bill.userShare | number: "1.2-2" }}</span
                         >
                       </div>
                     </div>

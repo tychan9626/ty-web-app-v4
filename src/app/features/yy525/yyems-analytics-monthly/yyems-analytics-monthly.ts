@@ -14,6 +14,7 @@ import {
   UpperCasePipe,
 } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,7 +25,6 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-yyems-analytics-monthly',
@@ -34,6 +34,7 @@ import { ActivatedRoute } from '@angular/router';
     FormsModule,
     CurrencyPipe,
     DecimalPipe,
+    UpperCasePipe,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -96,11 +97,14 @@ export class YyemsAnalyticsMonthly implements OnInit {
     });
   });
 
-  private getUserShare(record: YyemsRecord, user: string): number {
-    const amt = record.amount;
-    if (record.owner === 'yyems') return amt / 2;
-    return record.owner === user ? amt : 0;
-  }
+  anomalies = computed(() => {
+    const month = this.selectedMonth();
+    if (!month) return [];
+    return this.yy525Data
+      .analyticsRecords()
+      .filter((r) => r.statMonth === month && r.isAnomaly);
+  });
+
 
   summary = computed(() => {
     const user = this.selectedUser();
@@ -108,7 +112,7 @@ export class YyemsAnalyticsMonthly implements OnInit {
     let totalOut = 0;
 
     this.monthlyRealRecords().forEach((r) => {
-      const share = this.getUserShare(r, user);
+      const share = this.yy525Data.calculateUserShare(r, user);
       if (share > 0) {
         if (r.type === 'In') totalIn += share;
         if (r.type === 'Out') totalOut += share;
@@ -125,7 +129,7 @@ export class YyemsAnalyticsMonthly implements OnInit {
     this.monthlyRealRecords()
       .filter((r) => r.type === type)
       .forEach((r) => {
-        const share = this.getUserShare(r, user);
+        const share = this.yy525Data.calculateUserShare(r, user);
 
         if (share > 0) {
           const cat = r.category || '未分類';
@@ -135,7 +139,8 @@ export class YyemsAnalyticsMonthly implements OnInit {
           entry.totalShare += share;
           entry.bills.push({
             ...r,
-            originalAmount: r.amount,
+            originalAmount: r.originalAmount,
+            originalCurrency: r.originalCurrency,
             userShare: share,
           });
         }
