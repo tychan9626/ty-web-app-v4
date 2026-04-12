@@ -91,6 +91,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/tyweb/tyweb.routes').then((m) => m.TYWEB_ROUTES),
       },
+      {
+        path: 'yy525',
+        loadChildren: () =>
+          import('./features/yy525/yy525.routes').then((m) => m.YY525_ROUTES),
+      },
     ],
   },
   {

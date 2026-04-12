@@ -80,7 +80,7 @@ export class Layout {
         { title: 'Attendance', route: '/work/attendance/list' },
         { title: 'Schedule', route: '/work/schedule/list' },
         { title: 'Employment', route: '/work/employment/list' },
-      ]
+      ],
     },
     {
       title: 'Articles',
@@ -88,7 +88,14 @@ export class Layout {
       adminOnly: false,
       links: [
         { title: 'Article Feed', route: '/article/feed' },
-        { title: 'Article List', route: '/article/list' }],
+        { title: 'Article List', route: '/article/list' },
+      ],
+    },
+    {
+      title: 'YY525 Family',
+      icon: 'account_balance',
+      adminOnly: false,
+      links: [{ title: 'YYEMS Analytics', route: '/yy525/analytics' }],
     },
     {
       title: 'TyWeb',

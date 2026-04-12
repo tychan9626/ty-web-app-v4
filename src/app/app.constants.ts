@@ -2,10 +2,10 @@ export const APP_CONFIG = {
   appName: 'Jaxfr',
   version: {
     major: 4,
-    minor: 18,
+    minor: 19,
     patch: 0,
   },
-  versionDate: '2026-04-06',
+  versionDate: '2026-04-11',
 };
 
 export const WORK_SCHEDULE_NEW_RECORD_SHORTCUT = {
@@ -13,4 +13,10 @@ export const WORK_SCHEDULE_NEW_RECORD_SHORTCUT = {
   planned_start_time: '09:00',
   planned_end_time: '17:00',
   planned_meal_minutes: 30,
+};
+
+export const YY525_SOURCE = {
+  GAS_URL:
+    'https://script.google.com/macros/s/AKfycbxJXfT6MlqzO2Lc3Ip755sxApmU-IwryngtUxj0LXQZGkX4LRVIiP4kZUucugdFfcJoUg/exec',
+  TOKEN: 'jaxfr_finance_2026',
 };
