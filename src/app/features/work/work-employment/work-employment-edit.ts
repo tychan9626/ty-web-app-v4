@@ -108,7 +108,7 @@ export class WorkEmploymentEdit implements OnInit, OnDestroy, DoCheck {
 
       const disabled =
         this.workEmploymentService.loading() ||
-        !currentlyDirty ||
+        (!!this.currentId && !currentlyDirty) ||
         !current.employer_name_en?.trim() ||
         !current.position_title_en?.trim() ||
         !current.workload_type?.trim() ||

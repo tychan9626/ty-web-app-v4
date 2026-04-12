@@ -128,7 +128,7 @@ export class AppLogEdit implements OnInit, OnDestroy, DoCheck {
 
       const disabled =
         this.logService.loading() ||
-        !currentlyDirty ||
+        (!!this.currentId && !currentlyDirty) ||
         !current.log_message?.trim() ||
         !current.category_id ||
         !current.log_user ||

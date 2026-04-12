@@ -116,7 +116,7 @@ export class ArticleEdit implements OnInit, OnDestroy, DoCheck {
 
       const disabled =
         this.articleService.loading() ||
-        !currentlyDirty ||
+        (!!this.currentId && !currentlyDirty) ||
         !current.title?.trim() ||
         !current.author?.trim() ||
         !current.platform?.trim() ||

@@ -61,12 +61,7 @@ export class AppCategoryEdit implements OnInit, OnDestroy, DoCheck {
     return 'none';
   });
 
-  isSaveDisabled = computed(
-    () =>
-      this.categoryService.loading() ||
-      !this.item()?.display_name?.trim() ||
-      !this.isDirty(),
-  );
+  isSaveDisabled = signal(true);
 
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
@@ -149,9 +144,17 @@ export class AppCategoryEdit implements OnInit, OnDestroy, DoCheck {
 
     if (current && original) {
       const currentlyDirty = JSON.stringify(current) !== original;
-
       if (this.isDirty() !== currentlyDirty) {
         this.isDirty.set(currentlyDirty);
+      }
+
+      const disabled =
+        this.categoryService.loading() ||
+        (!!this.currentId && !currentlyDirty) ||
+        !current.display_name?.trim();
+
+      if (this.isSaveDisabled() !== disabled) {
+        this.isSaveDisabled.set(disabled);
       }
     }
   }

@@ -102,13 +102,7 @@ export class AppFunctionEdit implements OnInit, OnDestroy, DoCheck {
     return 'none';
   });
 
-  isSaveDisabled = computed(
-    () =>
-      this.functionService.loading() ||
-      !this.item()?.function_name?.trim() ||
-      !this.isCategoryValid() ||
-      !this.isDirty(),
-  );
+  isSaveDisabled = signal(true);
 
   async ngOnInit() {
     this.currentId = this.route.snapshot.paramMap.get('id');
@@ -186,6 +180,21 @@ export class AppFunctionEdit implements OnInit, OnDestroy, DoCheck {
       const currentlyDirty = JSON.stringify(current) !== original;
       if (this.isDirty() !== currentlyDirty) {
         this.isDirty.set(currentlyDirty);
+      }
+
+      const categoryId = current.category_id;
+      const categoryValid =
+        !!categoryId &&
+        this.categoryOptions().some((opt) => opt.value === categoryId);
+
+      const disabled =
+        this.functionService.loading() ||
+        (!!this.currentId && !currentlyDirty) ||
+        !current.function_name?.trim() ||
+        !categoryValid;
+
+      if (this.isSaveDisabled() !== disabled) {
+        this.isSaveDisabled.set(disabled);
       }
     }
   }

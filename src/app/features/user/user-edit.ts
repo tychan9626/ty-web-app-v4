@@ -80,7 +80,7 @@ export class UserEdit implements OnInit, OnDestroy, DoCheck {
       !this.user() ||
       !this.user()?.legal_first_name?.trim() ||
       !this.user()?.legal_last_name?.trim() ||
-      !this.isDirty(),
+      (!!this.user()?.user_id && !this.isDirty()),
   );
 
   async ngOnInit() {
