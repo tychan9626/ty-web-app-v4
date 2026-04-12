@@ -1,64 +1,67 @@
-<div class="split-workspace f525-dashboard">
-  <div class="main-content">
-    <div class="dashboard-header">
-      <div class="title-group">
-        <h2>個人財務分析</h2>
-        @if (!yy525Data.loading() && yy525Data.fetchDurationSec() > 0) {
-          <div class="timer-badge">
-            <mat-icon>cloud_download</mat-icon> 載入:
-            {{ yy525Data.fetchDurationSec() | number: "1.2-2" }}s
-            <span class="divider"></span>
-            <mat-icon>memory</mat-icon> 處理:
-            {{ yy525Data.processDurationSec() | number: "1.2-2" }}s
-          </div>
-        }
-      </div>
-
-      <div class="filters">
-        <mat-form-field appearance="outline" class="compact-field">
-          <mat-label>檢視視角</mat-label>
-          <mat-select
-            [ngModel]="selectedUser()"
-            (ngModelChange)="selectedUser.set($event)"
+<div class="split-workspace">
+  <div class="form-scroll-area">
+    <div class="analytics-header">
+      <h2 style="margin: 0; color: var(--mat-sys-primary)">個人財務分析</h2>
+      @if (!yy525Data.loading() && yy525Data.fetchDurationSec() > 0) {
+        <div class="timer-badge">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+            >cloud_download</mat-icon
           >
-            <mat-option value="cty">CTY</mat-option>
-            <mat-option value="frd">FRD</mat-option>
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="compact-field">
-          <mat-label>幣別</mat-label>
-          <mat-select
-            [ngModel]="selectedCurrency()"
-            (ngModelChange)="selectedCurrency.set($event)"
+          {{ yy525Data.fetchDurationSec() | number: "1.2-2" }}s
+          <span style="margin: 0 4px; color: var(--mat-sys-outline-variant)"
+            >|</span
           >
-            @for (c of availableCurrencies(); track c) {
-              <mat-option [value]="c">{{ c }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="compact-field">
-          <mat-label>月份</mat-label>
-          <mat-select
-            [ngModel]="selectedMonth()"
-            (ngModelChange)="selectedMonth.set($event)"
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px"
+            >memory</mat-icon
           >
-            @for (m of availableMonths(); track m) {
-              <mat-option [value]="m">{{ m }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-      </div>
+          {{ yy525Data.processDurationSec() | number: "1.2-2" }}s
+        </div>
+      }
+    </div>
+
+    <div class="filters-row">
+      <mat-form-field appearance="outline">
+        <mat-label>檢視視角</mat-label>
+        <mat-select
+          [ngModel]="selectedUser()"
+          (ngModelChange)="selectedUser.set($event)"
+        >
+          <mat-option value="cty">CTY</mat-option>
+          <mat-option value="frd">FRD</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>貨幣</mat-label>
+        <mat-select
+          [ngModel]="selectedCurrency()"
+          (ngModelChange)="selectedCurrency.set($event)"
+        >
+          @for (c of availableCurrencies(); track c) {
+            <mat-option [value]="c">{{ c }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>月份</mat-label>
+        <mat-select
+          [ngModel]="selectedMonth()"
+          (ngModelChange)="selectedMonth.set($event)"
+        >
+          @for (m of availableMonths(); track m) {
+            <mat-option [value]="m">{{ m }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
     </div>
 
     @if (yy525Data.loading()) {
-      <div class="loading-state">
+      <div style="display: flex; justify-content: center; padding: 64px">
         <mat-spinner diameter="40"></mat-spinner>
-        <p>同步與分析資料中...</p>
       </div>
     } @else {
-      <div class="summary-cards">
+      <div class="stat-cards-grid">
         <mat-card class="stat-card">
           <div class="stat-title">個人真實收入</div>
           <div class="stat-value income">
@@ -95,110 +98,113 @@
       </div>
 
       @if (incomeBreakdown().length > 0) {
-        <div class="group-header income-header">分類收入明細 (點擊展開)</div>
-        <mat-accordion multi="false" class="category-accordion mb-4">
+        <div class="group-header">分類收入明細</div>
+        <mat-accordion class="f525-accordion">
           @for (cat of incomeBreakdown(); track cat.name) {
-            <mat-expansion-panel class="cat-panel">
+            <mat-expansion-panel>
               <mat-expansion-panel-header>
-                <mat-panel-title>
-                  <div class="cat-header-content">
-                    <span class="name">{{ cat.name }}</span>
-                    <span class="amt income">{{
-                      cat.totalShare
-                        | currency
-                          : selectedCurrency()
-                          : "symbol-narrow"
-                          : "1.2-2"
-                    }}</span>
-                  </div>
+                <mat-panel-title class="accordion-title">
+                  <span class="name">{{ cat.name }}</span>
+                  <span class="amt income">{{
+                    cat.totalShare
+                      | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                  }}</span>
                 </mat-panel-title>
               </mat-expansion-panel-header>
 
-              <table class="bill-table">
-                <thead>
-                  <tr>
-                    <th>日期</th>
-                    <th>來源商家</th>
-                    <th class="text-right">原始總額</th>
-                    <th class="text-right">個人實收</th>
-                  </tr>
-                </thead>
-                <tbody>
+              <div class="standard-list-view">
+                <div class="list-container">
                   @for (bill of cat.bills; track bill.id) {
-                    <tr>
-                      <td>{{ bill.date | date: "MM/dd" }}</td>
-                      <td>
-                        {{ bill.vendorName }}
-                        @if (bill.owner === "yyems") {
-                          <span class="yy-tag">YYEMS 共用</span>
-                        }
-                      </td>
-                      <td class="text-right text-gray">
-                        {{ bill.originalAmount | number: "1.2-2" }}
-                      </td>
-                      <td class="text-right font-medium income">
-                        {{ bill.userShare | number: "1.2-2" }}
-                      </td>
-                    </tr>
+                    <div class="item-link" style="cursor: default">
+                      <div class="item-content">
+                        <div class="item-info-group">
+                          <span class="main-text">
+                            {{ bill.vendorName }}
+                            @if (bill.owner === "yyems") {
+                              <span class="yy-tag">YYEMS</span>
+                            }
+                          </span>
+                          <span class="sub-text">{{
+                            bill.date | date: "MM/dd"
+                          }}</span>
+                        </div>
+                        <div class="bill-amount-group">
+                          <span class="original-amt"
+                            >原額:
+                            {{ bill.originalAmount | number: "1.2-2" }}</span
+                          >
+                          <span class="real-amt income"
+                            >實收: {{ bill.userShare | number: "1.2-2" }}</span
+                          >
+                        </div>
+                      </div>
+                    </div>
                   }
-                </tbody>
-              </table>
+                </div>
+              </div>
             </mat-expansion-panel>
           }
         </mat-accordion>
       }
 
-      <div class="group-header">分類支出明細 (點擊展開)</div>
-      <mat-accordion multi="false" class="category-accordion">
+      <div class="group-header" style="margin-top: 32px">分類支出明細</div>
+      <mat-accordion class="f525-accordion">
         @for (cat of expenseBreakdown(); track cat.name) {
-          <mat-expansion-panel class="cat-panel">
+          <mat-expansion-panel>
             <mat-expansion-panel-header>
-              <mat-panel-title>
-                <div class="cat-header-content">
-                  <span class="name">{{ cat.name }}</span>
-                  <span class="amt expense">{{
-                    cat.totalShare
-                      | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
-                  }}</span>
-                </div>
+              <mat-panel-title class="accordion-title">
+                <span class="name">{{ cat.name }}</span>
+                <span class="amt expense">{{
+                  cat.totalShare
+                    | currency: selectedCurrency() : "symbol-narrow" : "1.2-2"
+                }}</span>
               </mat-panel-title>
             </mat-expansion-panel-header>
 
-            <table class="bill-table">
-              <thead>
-                <tr>
-                  <th>日期</th>
-                  <th>消費商家</th>
-                  <th class="text-right">帳單總額</th>
-                  <th class="text-right">個人承擔</th>
-                </tr>
-              </thead>
-              <tbody>
+            <div class="standard-list-view">
+              <div class="list-container">
                 @for (bill of cat.bills; track bill.id) {
-                  <tr>
-                    <td>{{ bill.date | date: "MM/dd" }}</td>
-                    <td>
-                      {{ bill.vendorName }}
-                      @if (bill.owner === "yyems") {
-                        <span class="yy-tag">YYEMS 共用</span>
-                      }
-                    </td>
-                    <td class="text-right text-gray">
-                      {{ bill.originalAmount | number: "1.2-2" }}
-                    </td>
-                    <td class="text-right font-medium expense">
-                      {{ bill.userShare | number: "1.2-2" }}
-                    </td>
-                  </tr>
+                  <div class="item-link" style="cursor: default">
+                    <div class="item-content">
+                      <div class="item-info-group">
+                        <span class="main-text">
+                          {{ bill.vendorName }}
+                          @if (bill.owner === "yyems") {
+                            <span class="yy-tag">YYEMS</span>
+                          }
+                        </span>
+                        <span class="sub-text">{{
+                          bill.date | date: "MM/dd"
+                        }}</span>
+                      </div>
+                      <div class="bill-amount-group">
+                        <span class="original-amt"
+                          >帳單:
+                          {{ bill.originalAmount | number: "1.2-2" }}</span
+                        >
+                        <span class="real-amt expense"
+                          >承擔: {{ bill.userShare | number: "1.2-2" }}</span
+                        >
+                      </div>
+                    </div>
+                  </div>
                 }
-              </tbody>
-            </table>
+              </div>
+            </div>
           </mat-expansion-panel>
         }
       </mat-accordion>
 
       @if (expenseBreakdown().length === 0) {
-        <div class="empty-msg">本月無支出紀錄</div>
+        <div
+          style="
+            text-align: center;
+            padding: 32px;
+            color: var(--mat-sys-outline);
+          "
+        >
+          本月無支出紀錄
+        </div>
       }
     }
   </div>
