@@ -95,7 +95,16 @@ export class Layout {
       title: 'YY525 Family',
       icon: 'account_balance',
       adminOnly: false,
-      links: [{ title: 'YYEMS Analytics', route: '/yy525/analytics' }],
+      links: [
+        {
+          title: 'YYEMS Analytics Overview',
+          route: '/yy525/yyems-analytics/overview',
+        },
+        {
+          title: 'YYEMS Analytics Monthly',
+          route: '/yy525/yyems-analytics/monthly',
+        },
+      ],
     },
     {
       title: 'TyWeb',

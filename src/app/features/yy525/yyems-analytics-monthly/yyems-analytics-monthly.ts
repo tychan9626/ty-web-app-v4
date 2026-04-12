@@ -24,9 +24,10 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
-  selector: 'app-yyems-analytics',
+  selector: 'app-yyems-analytics-monthly',
   standalone: true,
   imports: [
     CommonModule,
@@ -40,11 +41,12 @@ import { YyemsRecord } from '../yy525.model';
     MatProgressSpinnerModule,
     MatExpansionModule,
   ],
-  templateUrl: './yyems-analytics.html',
-  styleUrl: './yyems-analytics.scss',
+  templateUrl: './yyems-analytics-monthly.html',
+  styleUrl: './yyems-analytics-monthly.scss',
 })
-export class YyemsAnalytics implements OnInit {
+export class YyemsAnalyticsMonthly implements OnInit {
   yy525Data = inject(Yy525DataService);
+  private route = inject(ActivatedRoute);
 
   selectedUser = signal<'cty' | 'frd'>('cty');
   selectedMonth = signal<string>('');
@@ -79,9 +81,7 @@ export class YyemsAnalytics implements OnInit {
   availableMonths = computed(() => {
     const months = new Set<string>();
     this.yy525Data.analyticsRecords().forEach((r) => {
-      months.add(
-        `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, '0')}`,
-      );
+      if (r.statMonth) months.add(r.statMonth);
     });
     return Array.from(months).sort().reverse();
   });
@@ -92,8 +92,7 @@ export class YyemsAnalytics implements OnInit {
     if (!month || !currency) return [];
 
     return this.yy525Data.analyticsRecords().filter((r) => {
-      const m = `${r.date.getFullYear()}-${String(r.date.getMonth() + 1).padStart(2, '0')}`;
-      return m === month && r.currency === currency && !r.isTransfer;
+      return r.statMonth === month && r.currency === currency && !r.isTransfer;
     });
   });
 
@@ -110,7 +109,7 @@ export class YyemsAnalytics implements OnInit {
 
     this.monthlyRealRecords().forEach((r) => {
       const share = this.getUserShare(r, user);
-      if (share !== 0) {
+      if (share > 0) {
         if (r.type === 'In') totalIn += share;
         if (r.type === 'Out') totalOut += share;
       }
@@ -128,7 +127,7 @@ export class YyemsAnalytics implements OnInit {
       .forEach((r) => {
         const share = this.getUserShare(r, user);
 
-        if (share !== 0) {
+        if (share > 0) {
           const cat = r.category || '未分類';
           if (!catMap.has(cat)) catMap.set(cat, { totalShare: 0, bills: [] });
 
@@ -144,15 +143,20 @@ export class YyemsAnalytics implements OnInit {
 
     return Array.from(catMap.entries())
       .map(([name, data]) => ({ name, ...data }))
-      .sort((a, b) => {
-        return b.totalShare - a.totalShare;
-      });
+      .sort((a, b) => b.totalShare - a.totalShare);
   }
 
   expenseBreakdown = computed(() => this.buildBreakdown('Out'));
   incomeBreakdown = computed(() => this.buildBreakdown('In'));
 
   ngOnInit(): void {
+    const queryParams = this.route.snapshot.queryParams;
+    if (queryParams['user'])
+      this.selectedUser.set(queryParams['user'] as 'cty' | 'frd');
+    if (queryParams['currency'])
+      this.selectedCurrency.set(queryParams['currency']);
+    if (queryParams['month']) this.selectedMonth.set(queryParams['month']);
+
     this.yy525Data.fetchAllData();
   }
 }

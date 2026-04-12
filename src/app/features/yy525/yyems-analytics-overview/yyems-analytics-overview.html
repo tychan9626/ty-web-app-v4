@@ -1,0 +1,111 @@
+<div class="split-workspace f525-dashboard">
+  <div class="main-content">
+    <div class="dashboard-header">
+      <div class="title-group">
+        <h2>歷史總覽 (History)</h2>
+        @if (!yy525Data.loading() && yy525Data.fetchDurationSec() > 0) {
+          <div class="timer-badge">
+            <mat-icon>cloud_download</mat-icon> 載入:
+            {{ yy525Data.fetchDurationSec() | number: "1.2-2" }}s
+            <span class="divider"></span>
+            <mat-icon>memory</mat-icon> 處理:
+            {{ yy525Data.processDurationSec() | number: "1.2-2" }}s
+          </div>
+        }
+      </div>
+
+      <div class="filters">
+        <mat-form-field appearance="outline" class="compact-field">
+          <mat-label>檢視視角</mat-label>
+          <mat-select
+            [ngModel]="selectedUser()"
+            (ngModelChange)="selectedUser.set($event)"
+          >
+            <mat-option value="cty">CTY</mat-option>
+            <mat-option value="frd">FRD</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="compact-field">
+          <mat-label>貨幣</mat-label>
+          <mat-select
+            [ngModel]="selectedCurrency()"
+            (ngModelChange)="selectedCurrency.set($event)"
+          >
+            @for (c of availableCurrencies(); track c) {
+              <mat-option [value]="c">{{ c }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+
+    @if (yy525Data.loading()) {
+      <div class="loading-state">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>同步與分析資料中...</p>
+      </div>
+    } @else {
+      <div class="group-header">各月收支一覽 (點擊查看明細)</div>
+
+      <mat-card class="history-card">
+        <div class="standard-list-view">
+          <div class="list-container">
+            @for (stat of monthlyStats(); track stat.month) {
+              <a
+                class="item-link"
+                (click)="goToMonthDetail(stat.month)"
+                style="cursor: pointer"
+              >
+                <div class="item-content">
+                  <div class="item-info-group">
+                    <span class="main-text month-title">{{ stat.month }}</span>
+                    <span class="sub-text">
+                      <span class="income-text"
+                        >收: {{ stat.totalIn | number: "1.2-2" }}</span
+                      >
+                      <span
+                        style="
+                          margin: 0 6px;
+                          color: var(--mat-sys-outline-variant);
+                        "
+                        >|</span
+                      >
+                      <span class="expense-text"
+                        >支: {{ stat.totalOut | number: "1.2-2" }}</span
+                      >
+                    </span>
+                  </div>
+
+                  <div class="item-status-group">
+                    <div class="net-amount-group">
+                      <span class="net-label">盈餘</span>
+                      <span
+                        class="net-value"
+                        [class.positive]="stat.net >= 0"
+                        [class.negative]="stat.net < 0"
+                      >
+                        {{
+                          stat.net
+                            | currency
+                              : selectedCurrency()
+                              : "symbol-narrow"
+                              : "1.2-2"
+                        }}
+                      </span>
+                    </div>
+                    <mat-icon class="chevron">chevron_right</mat-icon>
+                  </div>
+                </div>
+              </a>
+            }
+          </div>
+        </div>
+      </mat-card>
+
+      @if (monthlyStats().length === 0) {
+        <div class="empty-msg">無歷史紀錄</div>
+      }
+    }
+  </div>
+</div>

@@ -20,8 +20,8 @@ export class Yy525DataService {
     if (this.analyticsRecords().length > 0 && !force) return;
 
     this.loading.set(true);
-
     const fetchStart = performance.now();
+
     try {
       const response = await fetch(`${this.GAS_URL}?token=${this.TOKEN}`, {
         method: 'GET',
@@ -32,30 +32,30 @@ export class Yy525DataService {
       if (data.error) throw new Error(data.error);
 
       const fetchEnd = performance.now();
-
       const processStart = performance.now();
 
-      const vendors: VendorRaw[] = data.vendors || [];
       const accounts: AccountRaw[] = data.accounts || [];
       const yyems: YyemsRaw[] = data.yyems || [];
 
-      const vendorMap = new Map(vendors.map((v) => [v.ID, v]));
       const accountMap = new Map(accounts.map((a) => [a.ID, a]));
 
       const processedRecords = yyems
         .filter((r) => r.In_or_out === 'In' || r.In_or_out === 'Out')
-        .filter(
-          (r) => !String(r['Vendor ID'] || '').includes('Internal_transfer'),
-        )
         .map((r) => {
-          const vendor = vendorMap.get(r['Vendor ID']);
-          const account = accountMap.get(r['Financial_Accounts']);
+          const isTransfer =
+            r['auto_vendor_category'] === '內部轉帳' ||
+            String(r['Vendor ID'] || '').includes('Internal_transfer');
 
-          const isTransfer = String(r['Vendor ID'] || '').includes('Internal_transfer');
+          const statMonth = r['auto_stat_month'] || '';
+
+          const displayDate = r['DateTime']
+            ? new Date(r['DateTime'])
+            : new Date();
 
           return {
             id: r['YYEMS ID'],
-            date: new Date(r.DateTime),
+            date: displayDate,
+            statMonth: statMonth,
             type: r.In_or_out as 'In' | 'Out',
             amount: Number(r.Amount) || 0,
             currency: r.Currency || 'CAD',
@@ -65,9 +65,11 @@ export class Yy525DataService {
             walletOwner: String(r.Wallet_owner || '')
               .toLowerCase()
               .trim(),
-            vendorName: vendor ? vendor.Name : '未知商家',
-            category: vendor ? vendor['Vendor_分類'] : '未分類',
-            accountName: account ? account['Display Name'] : '未知帳戶',
+            vendorName: r['auto_vendor_name'] || '未知商家',
+            category: r['auto_vendor_category'] || '未分類',
+            accountName:
+              accountMap.get(r['Financial_Accounts'])?.['Display Name'] ||
+              '未知帳戶',
             isTransfer,
           };
         })

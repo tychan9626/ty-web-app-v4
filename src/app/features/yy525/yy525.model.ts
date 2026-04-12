@@ -8,6 +8,9 @@ export interface YyemsRaw {
   Ownership: string;
   Wallet_owner: string;
   Financial_Accounts: string;
+  auto_stat_month: string;
+  auto_vendor_name: string;
+  auto_vendor_category: string;
 }
 
 export interface VendorRaw {
@@ -24,6 +27,7 @@ export interface AccountRaw {
 export interface YyemsRecord {
   id: string;
   date: Date;
+  statMonth: string;
   type: 'In' | 'Out';
   amount: number;
   currency: string;
