@@ -14,6 +14,8 @@ export class Yy525DataService {
   processDurationSec = signal<number>(0);
   analyticsRecords = signal<YyemsRecord[]>([]);
 
+  isConsolidatedMode = signal<boolean>(false);
+
   calculateUserShare(
     record: YyemsRecord,
     targetUser: string,

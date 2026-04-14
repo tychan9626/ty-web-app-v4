@@ -12,7 +12,6 @@ import {
   CommonModule,
   CurrencyPipe,
   DecimalPipe,
-  UpperCasePipe,
 } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -36,7 +35,6 @@ import { HeaderService } from '../../../core/services/header.service';
     FormsModule,
     CurrencyPipe,
     DecimalPipe,
-    UpperCasePipe,
     MatCardModule,
     MatFormFieldModule,
     MatSelectModule,
@@ -56,7 +54,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   selectedMonth = signal<string>('');
   selectedCurrency = signal<string>('');
 
-  isConsolidatedMode = signal<boolean>(false);
+  isConsolidatedMode = this.yy525Data.isConsolidatedMode;
 
   constructor() {
     effect(() => {
@@ -78,7 +76,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      const isConsolidated = this.isConsolidatedMode();
+      const isConsolidated = this.yy525Data.isConsolidatedMode();
       this.headerService.setConfig({
         backLink: '/yy525/yyems-analytics/overview',
         actions: [
@@ -87,7 +85,8 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
             label: '合併所有貨幣',
             icon: 'public',
             checked: isConsolidated,
-            onChange: (checked) => this.isConsolidatedMode.set(checked),
+            onChange: (checked) =>
+              this.yy525Data.isConsolidatedMode.set(checked),
           },
         ],
       });
@@ -111,7 +110,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   monthlyRealRecords = computed(() => {
     const month = this.selectedMonth();
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     if (!month || !currency) return [];
 
     return this.yy525Data.analyticsRecords().filter((r) => {
@@ -125,7 +124,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   anomalies = computed(() => {
     const month = this.selectedMonth();
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     if (!month) return [];
 
     return this.yy525Data
@@ -141,7 +140,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   summary = computed(() => {
     const user = this.selectedUser();
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     let totalIn = 0;
     let totalOut = 0;
 
@@ -164,7 +163,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   private buildBreakdown(type: 'In' | 'Out') {
     const user = this.selectedUser();
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     const catMap = new Map<string, { totalShare: number; bills: any[] }>();
 
     this.monthlyRealRecords()
@@ -208,8 +207,6 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
     if (queryParams['currency'])
       this.selectedCurrency.set(queryParams['currency']);
     if (queryParams['month']) this.selectedMonth.set(queryParams['month']);
-    if (queryParams['consolidated'] === 'true')
-      this.isConsolidatedMode.set(true);
 
     this.yy525Data.fetchAllData();
   }

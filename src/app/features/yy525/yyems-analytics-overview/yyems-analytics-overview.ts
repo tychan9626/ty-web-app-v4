@@ -47,7 +47,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
   selectedUser = signal<'cty' | 'frd'>('cty');
   selectedCurrency = signal<string>('');
 
-  isConsolidatedMode = signal<boolean>(false);
+  isConsolidatedMode = this.yy525Data.isConsolidatedMode;
 
   constructor() {
     effect(() => {
@@ -61,7 +61,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      const isConsolidated = this.isConsolidatedMode();
+      const isConsolidated = this.yy525Data.isConsolidatedMode();
       this.headerService.setConfig({
         actions: [
           {
@@ -69,8 +69,9 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
             label: '合併所有貨幣',
             icon: 'public',
             checked: isConsolidated,
-            onChange: (checked) => this.isConsolidatedMode.set(checked)
-          }
+            onChange: (checked) =>
+              this.yy525Data.isConsolidatedMode.set(checked),
+          },
         ],
       });
     });
@@ -84,7 +85,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
 
   anomalies = computed(() => {
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     if (!currency) return [];
 
     return this.yy525Data
@@ -97,7 +98,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
   monthlyStats = computed(() => {
     const user = this.selectedUser();
     const currency = this.selectedCurrency();
-    const isConsolidated = this.isConsolidatedMode();
+    const isConsolidated = this.yy525Data.isConsolidatedMode();
     if (!currency) return [];
 
     const map = new Map<string, { totalIn: number; totalOut: number }>();
@@ -139,7 +140,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
         user: this.selectedUser(),
         currency: this.selectedCurrency(),
         month: month,
-        consolidated: this.isConsolidatedMode(),
+        consolidated: this.yy525Data.isConsolidatedMode(),
       },
     });
   }
