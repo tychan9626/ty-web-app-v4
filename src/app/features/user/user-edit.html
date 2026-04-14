@@ -49,6 +49,7 @@
 
       <section class="form-group">
         <h3 class="group-header">System Access & Admin</h3>
+
         <div class="fields-row-2">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>User Role</mat-label>
@@ -67,10 +68,23 @@
             />
           </mat-form-field>
         </div>
+
+        <div class="fields-row-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>YY525 Identity Binding</mat-label>
+            <mat-select [(ngModel)]="u.appsheet_525_user_id">
+              <mat-option [value]="null">None (Blank)</mat-option>
+              <mat-option value="cty">CTY</mat-option>
+              <mat-option value="frd">FRD</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
         <mat-form-field
           appearance="outline"
           class="full-width"
           subscriptSizing="dynamic"
+          style="margin-top: 16px"
         >
           <mat-label>Internal Remarks</mat-label>
           <textarea matInput rows="3" [(ngModel)]="u.remarks"></textarea>

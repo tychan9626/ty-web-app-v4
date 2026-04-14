@@ -21,6 +21,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
 import { HeaderService } from '../../../core/services/header.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-yyems-analytics-overview',
@@ -43,13 +44,19 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
   yy525Data = inject(Yy525DataService);
   private router = inject(Router);
   public headerService = inject(HeaderService);
+  private authService = inject(AuthService);
 
-  selectedUser = signal<'cty' | 'frd'>('cty');
+  selectedUser = signal<'cty' | 'frd' | 'stranger'>('stranger');
   selectedCurrency = signal<string>('');
 
   isConsolidatedMode = this.yy525Data.isConsolidatedMode;
 
   constructor() {
+    const identity = this.authService.userProfile()?.appsheet_525_user_id;
+    if (identity === 'cty' || identity === 'frd') {
+      this.selectedUser.set(identity); // 成功識別，設為預設視角
+    }
+
     effect(() => {
       const currencies = this.availableCurrencies();
       const current = untracked(this.selectedCurrency);
@@ -97,6 +104,8 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
 
   monthlyStats = computed(() => {
     const user = this.selectedUser();
+    if (user === 'stranger') return [];
+    
     const currency = this.selectedCurrency();
     const isConsolidated = this.yy525Data.isConsolidatedMode();
     if (!currency) return [];

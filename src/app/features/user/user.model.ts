@@ -13,6 +13,7 @@ export interface TyappUser {
   updated_at: string;
   deleted_at: string | null;
   remarks: string | null;
+  appsheet_525_user_id: string | null;
 }
 
 export const USER_ROLES = {

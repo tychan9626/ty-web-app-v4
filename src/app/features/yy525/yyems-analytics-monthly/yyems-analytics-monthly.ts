@@ -26,6 +26,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
 import { HeaderService } from '../../../core/services/header.service';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-yyems-analytics-monthly',
@@ -49,14 +50,20 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   yy525Data = inject(Yy525DataService);
   private route = inject(ActivatedRoute);
   public headerService = inject(HeaderService);
+  private authService = inject(AuthService);
 
-  selectedUser = signal<'cty' | 'frd'>('cty');
+  selectedUser = signal<'cty' | 'frd' | 'stranger'>('stranger');
   selectedMonth = signal<string>('');
   selectedCurrency = signal<string>('');
 
   isConsolidatedMode = this.yy525Data.isConsolidatedMode;
 
   constructor() {
+    const identity = this.authService.userProfile()?.appsheet_525_user_id;
+    if (identity === 'cty' || identity === 'frd') {
+      this.selectedUser.set(identity);
+    }
+
     effect(() => {
       const currencies = this.availableCurrencies();
       const current = untracked(this.selectedCurrency);
@@ -111,7 +118,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
     const month = this.selectedMonth();
     const currency = this.selectedCurrency();
     const isConsolidated = this.yy525Data.isConsolidatedMode();
-    if (!month || !currency) return [];
+    if (!month || !currency || this.selectedUser() === 'stranger') return [];
 
     return this.yy525Data.analyticsRecords().filter((r) => {
       const matchCurrency = isConsolidated ? true : r.currency === currency;
@@ -125,7 +132,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
     const month = this.selectedMonth();
     const currency = this.selectedCurrency();
     const isConsolidated = this.yy525Data.isConsolidatedMode();
-    if (!month) return [];
+    if (!month || this.selectedUser() === 'stranger') return [];
 
     return this.yy525Data
       .analyticsRecords()
@@ -202,7 +209,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const queryParams = this.route.snapshot.queryParams;
-    if (queryParams['user'])
+    if ((queryParams['user'] && this.selectedUser() !== 'stranger'))
       this.selectedUser.set(queryParams['user'] as 'cty' | 'frd');
     if (queryParams['currency'])
       this.selectedCurrency.set(queryParams['currency']);
