@@ -112,6 +112,24 @@
                 </div>
               }
 
+              @for (action of getToggleActions(config.actions); track action.label) {
+                <mat-slide-toggle
+                  color="primary"
+                  style="margin-right: 12px; font-weight: 500;"
+                  [checked]="action.checked"
+                  (change)="action.onChange && action.onChange($event.checked)"
+                  [disabled]="action.disabled ? action.disabled() : false"
+                >
+                  <span class="desktop-only">{{ action.label }}</span>
+                  
+                  @if (action.icon) {
+                    <mat-icon class="mobile-only" style="vertical-align: middle; font-size: 20px; width: 20px; height: 20px;">
+                      {{ action.icon }}
+                    </mat-icon>
+                  }
+                </mat-slide-toggle>
+              }
+
               @for (
                 action of getSecondaryActions(config.actions);
                 track action.label
@@ -119,7 +137,7 @@
                 <button
                   mat-button
                   class="desktop-only"
-                  (click)="action.onClick()"
+                  (click)="action.onClick ? action.onClick() : null"
                   [disabled]="action.disabled ? action.disabled() : false"
                 >
                   <mat-icon>{{ action.icon }}</mat-icon>
@@ -135,7 +153,7 @@
                   mat-flat-button
                   color="primary"
                   class="primary-action-btn"
-                  (click)="action.onClick()"
+                  (click)="action.onClick ? action.onClick() : null"
                   [disabled]="action.disabled ? action.disabled() : false"
                 >
                   <mat-icon>{{ action.icon }}</mat-icon>
@@ -155,7 +173,7 @@
                     ) {
                       <button
                         mat-menu-item
-                        (click)="action.onClick()"
+                        (click)="action.onClick ? action.onClick() : null"
                         [disabled]="action.disabled ? action.disabled() : false"
                       >
                         <mat-icon>{{ action.icon }}</mat-icon>

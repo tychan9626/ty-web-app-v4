@@ -2,10 +2,13 @@ import { Injectable, signal, Signal } from '@angular/core';
 
 export interface HeaderAction {
   label: string;
-  icon: string;
-  type: 'primary' | 'secondary';
+  icon?: string;
+  type: 'primary' | 'secondary' | 'toggle';
   disabled?: Signal<boolean> | (() => boolean);
-  onClick: () => void;
+  onClick?: () => void;
+
+  checked?: boolean;
+  onChange?: (checked: boolean) => void;
 }
 
 export type SyncStatus = 'loading' | 'up-to-date' | 'unsaved' | 'none';

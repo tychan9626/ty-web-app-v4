@@ -27,14 +27,9 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="compact-field">
-          <mat-label>貨幣</mat-label>
-          <mat-select
-            [ngModel]="selectedCurrency()"
-            (ngModelChange)="selectedCurrency.set($event)"
-          >
-            @for (c of availableCurrencies(); track c) {
-              <mat-option [value]="c">{{ c }}</mat-option>
-            }
+          <mat-label>{{ isConsolidatedMode() ? '目標換算基準' : '貨幣' }}</mat-label>
+          <mat-select [ngModel]="selectedCurrency()" (ngModelChange)="selectedCurrency.set($event)">
+            @for (c of availableCurrencies(); track c) { <mat-option [value]="c">{{ c }}</mat-option> }
           </mat-select>
         </mat-form-field>
       </div>
@@ -59,12 +54,8 @@
           </summary>
           <div class="alert-body">
             <p>
-              在
-              {{
-                selectedCurrency()
-              }}
-              幣別下，有紀錄發生「未設定扣款帳戶」或「跨幣別但缺少
-              wallet_amount」的情況。請點擊對應月份查看紅字明細並回系統修正：
+              @if (isConsolidatedMode()) { 在所有幣別下， } @else { 在 {{ selectedCurrency() }} 幣別下， }
+              有紀錄發生「未設定扣款帳戶」或「跨幣別但缺少 wallet_amount」的情況。請點擊對應月份查看紅字明細並回系統修正：
             </p>
             <ul>
               @for (bad of anomalies(); track bad.id) {

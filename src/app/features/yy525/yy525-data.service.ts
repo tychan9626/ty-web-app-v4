@@ -1,6 +1,6 @@
 import { Injectable, signal, NgZone, inject } from '@angular/core';
 import { YyemsRaw, VendorRaw, AccountRaw, YyemsRecord } from './yy525.model';
-import { YY525_SOURCE } from '../../app.constants';
+import { EXCHANGE_RATES, YY525_SOURCE } from '../../app.constants';
 
 @Injectable({ providedIn: 'root' })
 export class Yy525DataService {
@@ -14,8 +14,21 @@ export class Yy525DataService {
   processDurationSec = signal<number>(0);
   analyticsRecords = signal<YyemsRecord[]>([]);
 
-  calculateUserShare(record: YyemsRecord, targetUser: string): number {
-    const amt = record.amount;
+  calculateUserShare(
+    record: YyemsRecord,
+    targetUser: string,
+    isConsolidated: boolean = false,
+    targetCurrency: string = 'CAD',
+  ): number {
+    let amt = record.amount;
+
+    if (isConsolidated && record.currency !== targetCurrency) {
+      const recordRate = EXCHANGE_RATES[record.currency] || 1;
+      const targetRate = EXCHANGE_RATES[targetCurrency] || 1;
+
+      amt = (amt / recordRate) * targetRate;
+    }
+
     if (record.owner === 'yyems') return amt / 2;
     return record.owner === targetUser ? amt : 0;
   }

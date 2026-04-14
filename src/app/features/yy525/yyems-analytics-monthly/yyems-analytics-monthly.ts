@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   inject,
   signal,
   computed,
@@ -25,6 +26,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
+import { HeaderService } from '../../../core/services/header.service';
 
 @Component({
   selector: 'app-yyems-analytics-monthly',
@@ -45,13 +47,16 @@ import { YyemsRecord } from '../yy525.model';
   templateUrl: './yyems-analytics-monthly.html',
   styleUrl: './yyems-analytics-monthly.scss',
 })
-export class YyemsAnalyticsMonthly implements OnInit {
+export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
   yy525Data = inject(Yy525DataService);
   private route = inject(ActivatedRoute);
+  public headerService = inject(HeaderService);
 
   selectedUser = signal<'cty' | 'frd'>('cty');
   selectedMonth = signal<string>('');
   selectedCurrency = signal<string>('');
+
+  isConsolidatedMode = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -70,6 +75,22 @@ export class YyemsAnalyticsMonthly implements OnInit {
       if (months.length > 0 && !current) {
         this.selectedMonth.set(months[0]);
       }
+    });
+
+    effect(() => {
+      const isConsolidated = this.isConsolidatedMode();
+      this.headerService.setConfig({
+        backLink: '/yy525/yyems-analytics/overview',
+        actions: [
+          {
+            type: 'toggle',
+            label: '合併所有貨幣',
+            icon: 'public',
+            checked: isConsolidated,
+            onChange: (checked) => this.isConsolidatedMode.set(checked),
+          },
+        ],
+      });
     });
   }
 
@@ -90,29 +111,47 @@ export class YyemsAnalyticsMonthly implements OnInit {
   monthlyRealRecords = computed(() => {
     const month = this.selectedMonth();
     const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     if (!month || !currency) return [];
 
     return this.yy525Data.analyticsRecords().filter((r) => {
-      return r.statMonth === month && r.currency === currency && !r.isTransfer;
+      const matchCurrency = isConsolidated ? true : r.currency === currency;
+      return (
+        r.statMonth === month && matchCurrency && !r.isTransfer && !r.isAnomaly
+      );
     });
   });
 
   anomalies = computed(() => {
     const month = this.selectedMonth();
+    const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     if (!month) return [];
+
     return this.yy525Data
       .analyticsRecords()
-      .filter((r) => r.statMonth === month && r.isAnomaly);
+      .filter(
+        (r) =>
+          r.statMonth === month &&
+          (isConsolidated || r.currency === currency) &&
+          r.isAnomaly,
+      );
   });
-
 
   summary = computed(() => {
     const user = this.selectedUser();
+    const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     let totalIn = 0;
     let totalOut = 0;
 
     this.monthlyRealRecords().forEach((r) => {
-      const share = this.yy525Data.calculateUserShare(r, user);
+      const share = this.yy525Data.calculateUserShare(
+        r,
+        user,
+        isConsolidated,
+        currency,
+      );
       if (share > 0) {
         if (r.type === 'In') totalIn += share;
         if (r.type === 'Out') totalOut += share;
@@ -124,12 +163,19 @@ export class YyemsAnalyticsMonthly implements OnInit {
 
   private buildBreakdown(type: 'In' | 'Out') {
     const user = this.selectedUser();
+    const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     const catMap = new Map<string, { totalShare: number; bills: any[] }>();
 
     this.monthlyRealRecords()
       .filter((r) => r.type === type)
       .forEach((r) => {
-        const share = this.yy525Data.calculateUserShare(r, user);
+        const share = this.yy525Data.calculateUserShare(
+          r,
+          user,
+          isConsolidated,
+          currency,
+        );
 
         if (share > 0) {
           const cat = r.category || '未分類';
@@ -142,6 +188,7 @@ export class YyemsAnalyticsMonthly implements OnInit {
             originalAmount: r.originalAmount,
             originalCurrency: r.originalCurrency,
             userShare: share,
+            isConverted: isConsolidated && r.currency !== currency,
           });
         }
       });
@@ -161,7 +208,13 @@ export class YyemsAnalyticsMonthly implements OnInit {
     if (queryParams['currency'])
       this.selectedCurrency.set(queryParams['currency']);
     if (queryParams['month']) this.selectedMonth.set(queryParams['month']);
+    if (queryParams['consolidated'] === 'true')
+      this.isConsolidatedMode.set(true);
 
     this.yy525Data.fetchAllData();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clear();
   }
 }

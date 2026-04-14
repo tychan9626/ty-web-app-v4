@@ -1,6 +1,7 @@
 import {
   Component,
   OnInit,
+  OnDestroy,
   inject,
   signal,
   computed,
@@ -19,6 +20,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
+import { HeaderService } from '../../../core/services/header.service';
 
 @Component({
   selector: 'app-yyems-analytics-overview',
@@ -37,12 +39,15 @@ import { YyemsRecord } from '../yy525.model';
   templateUrl: './yyems-analytics-overview.html',
   styleUrl: './yyems-analytics-overview.scss',
 })
-export class YyemsAnalyticsOverview implements OnInit {
+export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
   yy525Data = inject(Yy525DataService);
   private router = inject(Router);
+  public headerService = inject(HeaderService);
 
   selectedUser = signal<'cty' | 'frd'>('cty');
   selectedCurrency = signal<string>('');
+
+  isConsolidatedMode = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -54,6 +59,21 @@ export class YyemsAnalyticsOverview implements OnInit {
         );
       }
     });
+
+    effect(() => {
+      const isConsolidated = this.isConsolidatedMode();
+      this.headerService.setConfig({
+        actions: [
+          {
+            type: 'toggle',
+            label: '合併所有貨幣',
+            icon: 'public',
+            checked: isConsolidated,
+            onChange: (checked) => this.isConsolidatedMode.set(checked)
+          }
+        ],
+      });
+    });
   }
 
   availableCurrencies = computed(() => {
@@ -64,23 +84,34 @@ export class YyemsAnalyticsOverview implements OnInit {
 
   anomalies = computed(() => {
     const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     if (!currency) return [];
+
     return this.yy525Data
       .analyticsRecords()
-      .filter((r) => r.currency === currency && r.isAnomaly);
+      .filter(
+        (r) => (isConsolidated || r.currency === currency) && r.isAnomaly,
+      );
   });
 
   monthlyStats = computed(() => {
     const user = this.selectedUser();
     const currency = this.selectedCurrency();
+    const isConsolidated = this.isConsolidatedMode();
     if (!currency) return [];
 
     const map = new Map<string, { totalIn: number; totalOut: number }>();
 
     this.yy525Data.analyticsRecords().forEach((r) => {
-      if (r.currency !== currency || r.isTransfer || !r.statMonth) return;
+      if (r.isTransfer || !r.statMonth || r.isAnomaly) return;
+      if (!isConsolidated && r.currency !== currency) return;
 
-      const share = this.yy525Data.calculateUserShare(r, user);
+      const share = this.yy525Data.calculateUserShare(
+        r,
+        user,
+        isConsolidated,
+        currency,
+      );
 
       if (share > 0) {
         const month = r.statMonth;
@@ -108,11 +139,16 @@ export class YyemsAnalyticsOverview implements OnInit {
         user: this.selectedUser(),
         currency: this.selectedCurrency(),
         month: month,
+        consolidated: this.isConsolidatedMode(),
       },
     });
   }
 
   ngOnInit(): void {
     this.yy525Data.fetchAllData();
+  }
+
+  ngOnDestroy(): void {
+    this.headerService.clear();
   }
 }

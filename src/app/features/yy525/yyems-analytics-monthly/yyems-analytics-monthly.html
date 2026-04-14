@@ -32,7 +32,9 @@
           </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline">
-          <mat-label>貨幣</mat-label>
+          <mat-label>{{
+            isConsolidatedMode() ? "目標換算基準" : "貨幣"
+          }}</mat-label>
           <mat-select
             [ngModel]="selectedCurrency()"
             (ngModelChange)="selectedCurrency.set($event)"
@@ -164,14 +166,33 @@
                           }}</span>
                         </div>
                         <div class="bill-amount-group">
-                          <span class="original-amt"
-                            >原單: {{ bill.originalCurrency }}
-                            {{ bill.originalAmount | number: "1.2-2" }}</span
+                          <span class="original-amt">
+                            原單: {{ bill.originalCurrency }}
+                            {{ bill.originalAmount | number: "1.2-2" }}
+                          </span>
+
+                          <span
+                            class="real-amt"
+                            [class.income]="bill.type === 'In'"
+                            [class.expense]="bill.type === 'Out'"
                           >
-                          <span class="real-amt income"
-                            >實收: {{ selectedCurrency() }}
-                            {{ bill.userShare | number: "1.2-2" }}</span
-                          >
+                            {{ bill.type === "In" ? "實收" : "承擔" }}:
+                            {{ selectedCurrency() }}
+                            {{ bill.userShare | number: "1.2-2" }}
+
+                            @if (bill.isConverted) {
+                              <span
+                                style="
+                                  font-size: 10px;
+                                  color: var(--mat-sys-outline);
+                                  font-weight: normal;
+                                  margin-left: 4px;
+                                "
+                              >
+                                (已依匯率轉換)
+                              </span>
+                            }
+                          </span>
                         </div>
                       </div>
                     </div>

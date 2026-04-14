@@ -20,6 +20,7 @@ import { HeaderService, HeaderAction } from '../core/services/header.service';
 import { DisplayNamePipe } from '../core/pipes/display-name.pipe';
 import { RoleLabelPipe } from '../core/pipes/role-label.pipe';
 import { APP_CONFIG } from '../app.constants';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 interface MenuLink {
   title: string;
@@ -50,6 +51,7 @@ interface MenuGroup {
     MatProgressSpinnerModule,
     DisplayNamePipe,
     RoleLabelPipe,
+    MatSlideToggleModule,
   ],
   templateUrl: './layout.html',
   styleUrl: './layout.scss',
@@ -154,5 +156,9 @@ export class Layout {
 
   getSecondaryActions(actions?: HeaderAction[]) {
     return (actions || []).filter((a) => a.type === 'secondary');
+  }
+
+  getToggleActions(actions?: HeaderAction[]) {
+    return (actions || []).filter((a) => a.type === 'toggle');
   }
 }
