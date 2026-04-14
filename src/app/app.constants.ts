@@ -22,9 +22,9 @@ export const YY525_SOURCE = {
 };
 
 export const EXCHANGE_RATES: Record<string, number> = {
-  CAD: 1.0,
-  HKD: 5.75,
-  USD: 0.74,
-  CNY: 5.25,
-  JPY: 110.5,
+  CAD: 1.00000,
+  HKD: 5.66422,
+  USD: 0.72354,
+  CNY: 5.11018,
+  JPY: 108.51953,
 };
