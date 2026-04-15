@@ -173,3 +173,44 @@
     }
   }
 }
+
+.stat-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+
+  .stat-card {
+    padding: 24px;
+    border-radius: 16px;
+    background: var(--mat-sys-surface-container-lowest);
+    border: 1px solid var(--mat-sys-outline-variant);
+    box-shadow: none;
+
+    .stat-title {
+      font-size: 13px;
+      color: var(--mat-sys-outline);
+      text-transform: uppercase;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 600;
+
+      &.income {
+        color: #2e7d32;
+      }
+      &.expense {
+        color: #c62828;
+      }
+      &.net.positive {
+        color: #2e7d32;
+      }
+      &.net.negative {
+        color: #c62828;
+      }
+    }
+  }
+}

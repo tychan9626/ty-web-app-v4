@@ -123,7 +123,7 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
         currency,
       );
 
-      if (share > 0) {
+      if (share !== 0) {
         const month = r.statMonth;
         if (!map.has(month)) map.set(month, { totalIn: 0, totalOut: 0 });
 
@@ -141,6 +141,21 @@ export class YyemsAnalyticsOverview implements OnInit, OnDestroy {
         net: data.totalIn - data.totalOut,
       }))
       .sort((a, b) => b.month.localeCompare(a.month));
+  });
+
+  overallSummary = computed(() => {
+    const stats = this.monthlyStats();
+    let totalIn = 0;
+    let totalOut = 0;
+    let net = 0;
+
+    stats.forEach(stat => {
+      totalIn += stat.totalIn;
+      totalOut += stat.totalOut;
+      net += stat.net;
+    });
+
+    return { totalIn, totalOut, net };
   });
 
   goToMonthDetail(month: string) {

@@ -72,7 +72,7 @@ export class Yy525DataService {
           const utcDate = utcStr ? new Date(utcStr) : new Date();
 
           const account = accountMap.get(r['Financial_Accounts']);
-          const originalAmount = Math.abs(Number(r.Amount) || 0);
+          const originalAmount = Number(r.Amount) || 0;
           const originalCurrency = r.Currency || '';
           const walletCurrency = account?.Currency || '';
 
@@ -84,12 +84,11 @@ export class Yy525DataService {
             isAnomaly = true;
           } else if (originalCurrency !== walletCurrency) {
             const walletAmtRaw = r.wallet_amount;
-            const parsedWalletAmt = Math.abs(Number(walletAmtRaw));
+            const parsedWalletAmt = Number(walletAmtRaw);
             if (
               walletAmtRaw !== '' &&
               walletAmtRaw !== null &&
-              !isNaN(parsedWalletAmt) &&
-              parsedWalletAmt > 0
+              !isNaN(parsedWalletAmt)
             ) {
               finalAmount = parsedWalletAmt;
               finalCurrency = walletCurrency;

@@ -158,7 +158,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
         isConsolidated,
         currency,
       );
-      if (share > 0) {
+      if (share !== 0) {
         if (r.type === 'In') totalIn += share;
         if (r.type === 'Out') totalOut += share;
       }
@@ -183,7 +183,7 @@ export class YyemsAnalyticsMonthly implements OnInit, OnDestroy {
           currency,
         );
 
-        if (share > 0) {
+        if (share !== 0) {
           const cat = r.category || '未分類';
           if (!catMap.has(cat)) catMap.set(cat, { totalShare: 0, bills: [] });
 

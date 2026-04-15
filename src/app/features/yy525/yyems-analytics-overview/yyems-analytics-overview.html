@@ -71,6 +71,31 @@
         </details>
       }
 
+      <div class="stat-cards-grid">
+        <mat-card class="stat-card">
+          <div class="stat-title">歷史總收入</div>
+          <div class="stat-value income">
+            {{ overallSummary().totalIn | currency: selectedCurrency() : "code" : "1.2-2" }}
+          </div>
+        </mat-card>
+        <mat-card class="stat-card">
+          <div class="stat-title">歷史總支出</div>
+          <div class="stat-value expense">
+            {{ overallSummary().totalOut | currency: selectedCurrency() : "code" : "1.2-2" }}
+          </div>
+        </mat-card>
+        <mat-card class="stat-card">
+          <div class="stat-title">歷史總盈餘</div>
+          <div 
+            class="stat-value net" 
+            [class.positive]="overallSummary().net >= 0" 
+            [class.negative]="overallSummary().net < 0"
+          >
+            {{ overallSummary().net | currency: selectedCurrency() : "code" : "1.2-2" }}
+          </div>
+        </mat-card>
+      </div>
+
       <div class="group-header">各月收支一覽 (點擊查看明細)</div>
 
       <mat-card class="history-card">
