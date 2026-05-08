@@ -14,10 +14,31 @@
             {{ txn.seq_major }}{{ txn.seq_minor > 0 ? '.' + txn.seq_minor : '' }}
           </span>
           <span class="type-text">{{ getLabel(txn.transaction_type) }}</span>
-          <span class="institution-text">{{ txn.institution_name }}</span>
+          
+          <div class="institution-wrapper">
+            @if (txn.institution_name | institutionLogo; as logoPath) {
+              <img [src]="logoPath" [alt]="txn.institution_name" class="bank-logo">
+            } @else {
+              <span class="institution-text">{{ txn.institution_name }}</span>
+            }
+          </div>
+
           <span class="user-text">{{ getUserById(txn.user_id) | tyDisplayName }}</span>
           
           <div class="spacer"></div>
+
+          <!-- 倒數天數標籤 -->
+          @if (txn.transaction_type === 'term_deposit' && !isExpired(txn.end_date)) {
+            @if (getDaysRemaining(txn.end_date); as days) {
+              <span class="countdown-badge" [class.urgent]="days <= 7">
+                @if (days === 0) {
+                  今日到期
+                } @else {
+                  還有 {{ days }} 天到期
+                }
+              </span>
+            }
+          }
           
           <button mat-icon-button [matMenuTriggerFor]="menu" class="action-btn">
             <mat-icon>more_vert</mat-icon>

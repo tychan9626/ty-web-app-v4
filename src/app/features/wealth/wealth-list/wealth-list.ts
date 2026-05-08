@@ -15,7 +15,9 @@ import { HeaderService } from '../../../core/services/header.service';
 import { WealthTransaction } from '../wealth.model';
 import { CurrencyZhPipe } from '../currency-zh.pipe';
 import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
+import { InstitutionLogoPipe } from '../institution-logo.pipe';
 import { UserService } from '../../user/user.service';
+import html2canvas from 'html2canvas';
 
 @Component({
   selector: 'app-wealth-list',
@@ -31,6 +33,7 @@ import { UserService } from '../../user/user.service';
     MatDividerModule,
     CurrencyZhPipe,
     DisplayNamePipe,
+    InstitutionLogoPipe,
     MatSlideToggleModule,
     FormsModule,
   ],
@@ -61,7 +64,6 @@ export class WealthList implements OnInit {
       const threeDaysAgo = new Date(today);
       threeDaysAgo.setDate(today.getDate() - 3);
 
-      // 先找出哪些 Major Seq 下有 Active 的項目
       const activeMajorSeqs = new Set<number>();
       rawList.forEach((txn) => {
         if (txn.transaction_type === 'term_deposit' && !this.isExpired(txn.end_date)) {
@@ -70,18 +72,15 @@ export class WealthList implements OnInit {
       });
 
       list = list.filter((txn) => {
-        // 定存：看到期日
         if (txn.transaction_type === 'term_deposit') {
           return !this.isExpired(txn.end_date);
         }
-        // 外匯：如果是 3 天內的兌換，或者同一個 Major 下有 Active 定存
         if (txn.transaction_type === 'fx_exchange') {
           const startDate = new Date(txn.start_date);
           const isRecent = startDate >= threeDaysAgo;
           const isPartOfActiveGroup = activeMajorSeqs.has(txn.seq_major);
           return isRecent || isPartOfActiveGroup;
         }
-        // 活期與投資：預設保留 (因為本金依然在裡面)
         return true;
       });
     }
@@ -92,8 +91,6 @@ export class WealthList implements OnInit {
       if (b.seq_major !== a.seq_major) {
         return (b.seq_major - a.seq_major) * multiplier;
       }
-      // Minor 在 Major 確定後，始終保持升序 (X.1 -> X.2) 或跟隨 Major
-      // 根據您的需求：36.2, 36.1, 35 是倒序，所以 Minor 在倒序時也要倒序
       return (b.seq_minor - a.seq_minor) * multiplier;
     });
 
@@ -108,7 +105,6 @@ export class WealthList implements OnInit {
 
   private updateHeader() {
     this.headerService.setConfig({
-      title: 'Wealth Management',
       actions: [
         {
           label: '僅顯示進行中',
@@ -127,6 +123,12 @@ export class WealthList implements OnInit {
             this.sortDescending.set(val);
             this.updateHeader();
           },
+        },
+        {
+          label: '輸出圖片',
+          icon: 'photo_camera',
+          type: 'secondary',
+          onClick: () => this.exportAsImage(),
         },
         {
           label: 'Add Transaction',
@@ -164,5 +166,41 @@ export class WealthList implements OnInit {
     today.setHours(0, 0, 0, 0);
     const end = new Date(endDate);
     return end < today;
+  }
+
+  getDaysRemaining(endDate: string | null): number | null {
+    if (!endDate) return null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  }
+
+  async exportAsImage() {
+    const element = document.querySelector('.wealth-feed') as HTMLElement;
+    if (!element) return;
+
+    this.loading.set(true);
+    try {
+      const canvas = await html2canvas(element, {
+        backgroundColor: '#ffffff',
+        scale: 2,
+        logging: false,
+        useCORS: true,
+      });
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const link = document.createElement('a');
+      const dateStr = new Date().toISOString().split('T')[0];
+      link.download = `Wealth_Summary_${dateStr}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Export image failed', err);
+    } finally {
+      this.loading.set(false);
+    }
   }
 }

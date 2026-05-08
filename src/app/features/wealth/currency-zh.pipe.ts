@@ -7,8 +7,8 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class CurrencyZhPipe implements PipeTransform {
   private currencyMap: Record<string, string> = {
     CAD: '加幣',
-    HKD: '港幣',
-    USD: '美金',
+    HKD: '港元',
+    USD: '美元',
     CNY: '人民幣',
     JPY: '日元',
     GBP: '英鎊',

@@ -58,9 +58,20 @@
     font-size: 13px;
   }
 
-  .institution-text {
-    color: #333;
-    font-weight: 500;
+  .institution-wrapper {
+    display: flex;
+    align-items: center;
+
+    .bank-logo {
+      height: 24px;
+      max-width: 120px;
+      object-fit: contain;
+    }
+
+    .institution-text {
+      color: #333;
+      font-weight: 500;
+    }
   }
 
   .user-text {
@@ -69,6 +80,22 @@
     border: 1px solid #ddd;
     padding: 1px 8px;
     border-radius: 4px;
+  }
+
+  .countdown-badge {
+    font-size: 12px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-weight: 500;
+    border: 1px solid #c8e6c9;
+
+    &.urgent {
+      background: #fff3e0;
+      color: #e65100;
+      border-color: #ffe0b2;
+    }
   }
 }
 
