@@ -1,0 +1,108 @@
+<div class="form-container">
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  <form [formGroup]="txnForm" (ngSubmit)="onSave()">
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Major Seq</mat-label>
+        <input matInput type="number" formControlName="seq_major" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Minor Seq</mat-label>
+        <input matInput type="number" formControlName="seq_minor" />
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Transaction Type</mat-label>
+        <mat-select formControlName="transaction_type">
+          @for (type of transactionTypes; track type.value) {
+            <mat-option [value]="type.value">{{ type.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Institution</mat-label>
+        <input matInput formControlName="institution_name" placeholder="e.g. BMO, HSBC" />
+      </mat-form-field>
+    </div>
+
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="start_date" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Currency</mat-label>
+        <input matInput formControlName="currency" placeholder="CAD, USD, HKD" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Amount</mat-label>
+        <input matInput type="number" formControlName="deposit_amount" />
+      </mat-form-field>
+    </div>
+
+    <!-- Term Deposit Specific Fields -->
+    @if (showTermFields) {
+      <div class="section-title">Term Deposit Details</div>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Duration (Months)</mat-label>
+          <input matInput type="number" formControlName="duration_months" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Annual Interest Rate (%)</mat-label>
+          <input matInput type="number" step="0.01" formControlName="annual_interest_rate" />
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>End Date</mat-label>
+          <input matInput [matDatepicker]="endPicker" formControlName="end_date" />
+          <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+          <mat-datepicker #endPicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Earned Interest</mat-label>
+          <input matInput type="number" formControlName="earned_interest" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Return Amount</mat-label>
+          <input matInput type="number" formControlName="return_amount" />
+        </mat-form-field>
+      </div>
+    }
+
+    <!-- FX Specific Fields -->
+    @if (showFxFields) {
+      <div class="section-title">FX Exchange Details</div>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Source Currency</mat-label>
+          <input matInput formControlName="fx_source_currency" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Source Amount</mat-label>
+          <input matInput type="number" formControlName="fx_source_amount" />
+        </mat-form-field>
+      </div>
+    }
+
+    <div class="form-actions">
+      <button mat-button type="button" routerLink="/wealth/list">Cancel</button>
+      <button mat-raised-button color="primary" type="submit" [disabled]="txnForm.invalid || loading()">
+        Save Transaction
+      </button>
+    </div>
+  </form>
+</div>

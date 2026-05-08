@@ -96,6 +96,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/yy525/yy525.routes').then((m) => m.YY525_ROUTES),
       },
+      {
+        path: 'wealth',
+        loadChildren: () =>
+          import('./features/wealth/wealth.routes').then((m) => m.WEALTH_ROUTES),
+      },
     ],
   },
   {

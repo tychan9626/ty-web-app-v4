@@ -115,6 +115,15 @@ export class Layout {
       links: [{ title: 'Content Manager', route: '/tyweb/content' }],
     },
     {
+      title: 'Wealth Management',
+      icon: 'account_balance_wallet',
+      adminOnly: false,
+      links: [
+        { title: 'Transactions', route: '/wealth/list' },
+        { title: 'Snapshots', route: '/wealth/snapshots' },
+      ],
+    },
+    {
       title: 'User Management',
       icon: 'people_outline',
       adminOnly: true,
