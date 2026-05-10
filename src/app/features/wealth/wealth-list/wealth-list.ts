@@ -160,6 +160,47 @@ export class WealthList implements OnInit {
     return this.userService.users().find((u) => u.user_id === userId);
   }
 
+  wealthSummary = computed(() => {
+    const rawList = this.transactions();
+    // 結構：Map<userId, { guaranteed: Record<currency, amount>, investments: Record<currency, { cost: number, current: number }> }>
+    const summaryMap = new Map<string, { 
+      guaranteed: Record<string, number>, 
+      investments: Record<string, { cost: number, current: number }> 
+    }>();
+
+    rawList.forEach((txn) => {
+      const userData = summaryMap.get(txn.user_id) || { guaranteed: {}, investments: {} };
+
+      if (txn.transaction_type === 'term_deposit' && !this.isExpired(txn.end_date)) {
+        // 定存：統計到期後的總金額 (return_amount)
+        const current = userData.guaranteed[txn.currency] || 0;
+        userData.guaranteed[txn.currency] = current + (Number(txn.return_amount) || 0);
+      } else if (txn.transaction_type === 'cash_flow') {
+        // 活期：統計本金
+        const current = userData.guaranteed[txn.currency] || 0;
+        userData.guaranteed[txn.currency] = current + (Number(txn.deposit_amount) || 0);
+      } else if (txn.transaction_type === 'investment') {
+        // 投資：統計本金 (cost)
+        const invGroup = userData.investments[txn.currency] || { cost: 0, current: 0 };
+        invGroup.cost += (Number(txn.deposit_amount) || 0);
+        userData.investments[txn.currency] = invGroup;
+      }
+
+      summaryMap.set(txn.user_id, userData);
+    });
+
+    return Array.from(summaryMap.entries()).map(([userId, data]) => ({
+      userId,
+      user: this.getUserById(userId),
+      guaranteed: Object.entries(data.guaranteed).map(([code, amount]) => ({ code, amount })),
+      investments: Object.entries(data.investments).map(([code, inv]) => ({ 
+        code, 
+        cost: inv.cost, 
+        current: inv.current || null 
+      })),
+    }));
+  });
+
   isExpired(endDate: string | null): boolean {
     if (!endDate) return false;
     const today = new Date();

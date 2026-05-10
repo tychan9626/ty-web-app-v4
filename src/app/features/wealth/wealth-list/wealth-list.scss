@@ -12,6 +12,120 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.summary-dashboard {
+  background: #f8f9fa;
+  padding: 24px;
+  border-bottom: 2px solid #eee;
+
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    color: #2c3e50;
+    font-weight: bold;
+    font-size: 18px;
+
+    mat-icon {
+      color: #1976d2;
+    }
+  }
+
+  .summary-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .summary-card {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    flex: 1;
+    min-width: 200px;
+    border: 1px solid #e9ecef;
+
+    .owner-name {
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #ddd;
+    }
+
+    .holding-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .asset-section {
+      margin-bottom: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-label {
+        font-size: 11px;
+        color: #999;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+      }
+
+      &.investment {
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+      }
+    }
+
+    .holding-item {
+      font-size: 15px;
+      color: #1976d2;
+      font-weight: 500;
+      margin-bottom: 4px;
+
+      &.inv-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #2c3e50;
+        font-size: 14px;
+
+        .currency-tag {
+          background: #eee;
+          padding: 1px 6px;
+          border-radius: 4px;
+          font-size: 11px;
+          font-weight: bold;
+        }
+
+        .cost-label, .current-label {
+          color: #888;
+          font-size: 11px;
+        }
+
+        .cost-value {
+          color: #2c3e50;
+        }
+
+        .current-value {
+          color: #27ae60;
+          font-weight: bold;
+        }
+      }
+    }
+
+    .empty-text {
+      font-size: 12px;
+      color: #ccc;
+      font-style: italic;
+    }
+  }
+}
+
 .wealth-item {
   padding: 20px 24px;
   transition: all 0.2s;

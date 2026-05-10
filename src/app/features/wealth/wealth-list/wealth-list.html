@@ -6,6 +6,53 @@
   }
 
   <div class="wealth-feed">
+    <!-- 資產匯總區塊 -->
+    <div class="summary-dashboard">
+      <div class="summary-header">
+        <mat-icon>account_balance</mat-icon>
+        <span>目前總資產匯總</span>
+      </div>
+      <div class="summary-grid">
+        @for (owner of wealthSummary(); track owner.userId) {
+          <div class="summary-card">
+            <div class="owner-name">{{ owner.user | tyDisplayName }}</div>
+            
+            <!-- 保證資產 -->
+            <div class="asset-section">
+              <div class="section-label">保證資產 (現金/定存到期)</div>
+              <div class="holding-list">
+                @for (h of owner.guaranteed; track h.code) {
+                  <div class="holding-item">
+                    <span class="holding-amount">{{ h.amount | currencyZh: h.code }}</span>
+                  </div>
+                } @empty {
+                  <div class="empty-text">無資料</div>
+                }
+              </div>
+            </div>
+
+            <!-- 投資項目 -->
+            <div class="asset-section investment">
+              <div class="section-label">投資項目</div>
+              <div class="holding-list">
+                @for (h of owner.investments; track h.code) {
+                  <div class="holding-item inv-row">
+                    <span class="currency-tag">{{ h.code }}</span>
+                    <span class="cost-label">本金:</span>
+                    <span class="cost-value">{{ h.cost | number:'1.0-2' }}</span>
+                    <span class="current-label">市值:</span>
+                    <span class="current-value">{{ h.current ? (h.current | number:'1.0-2') : '--' }}</span>
+                  </div>
+                } @empty {
+                  <div class="empty-text">無資料</div>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
     @for (txn of filteredTransactions(); track txn.tb_tyapp_fin_txn_id) {
       <div class="wealth-item" [class.expired]="isExpired(txn.end_date) || (txn.transaction_type === 'fx_exchange' && isExpired(txn.start_date))">
         <!-- 第一行：序號, 理財類型, 銀行/機構, 持有人 -->
