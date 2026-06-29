@@ -125,6 +125,12 @@ export class WealthList implements OnInit {
           },
         },
         {
+          label: '產生報表',
+          icon: 'assignment',
+          type: 'secondary',
+          onClick: () => this.router.navigate(['/wealth/report']),
+        },
+        {
           label: '輸出圖片',
           icon: 'photo_camera',
           type: 'secondary',

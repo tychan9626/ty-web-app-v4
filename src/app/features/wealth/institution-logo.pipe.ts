@@ -11,7 +11,7 @@ export class InstitutionLogoPipe implements PipeTransform {
     'hsbc bank': 'hsbc.svg',
     匯豐: 'hsbc.svg',
     'hsbc hk': 'hsbc.svg',
-    匯豐銀行: 'hsbc.svg',
+    匯豐銀: 'hsbc.svg',
 
     // Hang Seng / 恒生
     hangseng: 'hangseng.svg',
@@ -19,16 +19,16 @@ export class InstitutionLogoPipe implements PipeTransform {
     'hang seng bank': 'hangseng.svg',
     恒生: 'hangseng.svg',
     恆生: 'hangseng.svg',
-    恆生銀行: 'hangseng.svg',
+    恆生銀: 'hangseng.svg',
 
     // BMO
     bmo: 'bmo.svg',
     'bmo bank': 'bmo.svg',
     滿地可: 'bmo.svg',
-    滿地可銀行: 'bmo.svg',
+    滿地可銀: 'bmo.svg',
 
     // Wealthsimple
-    wealthsimple: 'wealthsimple.svg',
+    wealthsimpl: 'wealthsimple.svg',
   };
 
   transform(value: string | null | undefined): string | null {

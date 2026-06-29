@@ -1,0 +1,397 @@
+<div class="split-workspace">
+  @if (item(); as fit) {
+    <div class="form-scroll-area">
+      <section class="form-group">
+        <h3 class="group-header">訓練資訊</h3>
+
+        <div class="fields-grid-2">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>訓練日期</mat-label>
+            <input
+              matInput
+              [matDatepicker]="sessionDatePicker"
+              [ngModel]="fit.session_date"
+              (ngModelChange)="fit.session_date = $event"
+              name="session_date"
+              required
+            />
+            <mat-datepicker-toggle
+              matIconSuffix
+              [for]="sessionDatePicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #sessionDatePicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>訓練標題</mat-label>
+            <input
+              matInput
+              [(ngModel)]="fit.session_title"
+              name="session_title"
+              placeholder="例如：推胸日 / 晚間有氧"
+            />
+          </mat-form-field>
+        </div>
+
+        <div class="fields-grid-2" style="margin-top: 16px">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>地點</mat-label>
+            <input
+              matInput
+              [(ngModel)]="fit.location"
+              name="location"
+              placeholder="例如：社區健身房 / 家中"
+            />
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>狀態</mat-label>
+            <mat-select [(ngModel)]="fit.status" name="status">
+              <mat-option [value]="1">啟用</mat-option>
+              <mat-option [value]="0">停用</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field
+          appearance="outline"
+          class="full-width"
+          subscriptSizing="dynamic"
+          style="margin-top: 16px"
+        >
+          <mat-label>訓練備註</mat-label>
+          <textarea
+            matInput
+            rows="3"
+            [(ngModel)]="fit.remarks"
+            name="session_remarks"
+            placeholder="整個訓練的補充說明（可留空）"
+          ></textarea>
+        </mat-form-field>
+      </section>
+
+      <section class="form-group">
+        <div class="section-header">
+          <div>
+            <h3 class="group-header" style="margin-bottom: 0">訓練項目</h3>
+            <p class="section-subtitle">
+              可加入重量訓練、有氧、伸展活動或自體重項目。
+            </p>
+          </div>
+
+          <div class="entry-action-row">
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addEntry('strength')"
+            >
+              新增重量訓練
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addEntry('cardio')"
+            >
+              新增有氧
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addEntry('mobility')"
+            >
+              新增伸展
+            </button>
+            <button
+              mat-stroked-button
+              type="button"
+              (click)="addEntry('bodyweight')"
+            >
+              新增自體重
+            </button>
+          </div>
+        </div>
+
+        @for (entry of fit.entries; track entry.id || $index; let entryIndex = $index) {
+          <section class="entry-block">
+            <div class="entry-block__header">
+              <div class="entry-block__title-row">
+                <h4>項目 {{ entryIndex + 1 }}</h4>
+                <span class="entry-type-chip">
+                  {{ entry.entry_type || '未分類' }}
+                </span>
+              </div>
+
+              <button
+                mat-button
+                type="button"
+                color="warn"
+                (click)="removeEntry(entryIndex)"
+              >
+                刪除
+              </button>
+            </div>
+
+            <div class="fields-grid-2">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>項目類型</mat-label>
+                <mat-select
+                  [ngModel]="entry.entry_type"
+                  (ngModelChange)="onEntryTypeChange(entryIndex, $event)"
+                  [name]="'entry_type_' + entryIndex"
+                >
+                  @for (type of entryTypeOptions; track type) {
+                    <mat-option [value]="type">{{ type }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>動作名稱</mat-label>
+                <input
+                  matInput
+                  [ngModel]="entry.exercise_name"
+                  (ngModelChange)="updateEntryField(entryIndex, 'exercise_name', $event)"
+                  [name]="'exercise_name_' + entryIndex"
+                  required
+                  placeholder="例如：啞鈴臥推"
+                />
+              </mat-form-field>
+            </div>
+
+            <div class="fields-grid-2" style="margin-top: 16px">
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>參考網址</mat-label>
+                <input
+                  matInput
+                  [ngModel]="entry.source_url"
+                  (ngModelChange)="updateEntryField(entryIndex, 'source_url', $event)"
+                  [name]="'source_url_' + entryIndex"
+                  placeholder="可選填參考連結"
+                />
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>狀態</mat-label>
+                <mat-select
+                  [ngModel]="entry.status"
+                  (ngModelChange)="updateEntryField(entryIndex, 'status', $event)"
+                  [name]="'entry_status_' + entryIndex"
+                >
+                  <mat-option [value]="1">啟用</mat-option>
+                  <mat-option [value]="0">停用</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <mat-form-field
+              appearance="outline"
+              class="full-width"
+              subscriptSizing="dynamic"
+              style="margin-top: 16px"
+            >
+              <mat-label>項目備註</mat-label>
+              <textarea
+                matInput
+                rows="2"
+                [ngModel]="entry.remarks"
+                (ngModelChange)="updateEntryField(entryIndex, 'remarks', $event)"
+                [name]="'entry_remarks_' + entryIndex"
+                placeholder="此項目的補充說明（可留空）"
+              ></textarea>
+            </mat-form-field>
+
+            <div class="sets-toolbar">
+              <div>
+                <div class="sets-title">組數</div>
+                <div class="sets-subtitle">
+                  紀錄這個項目的每組訓練細節。
+                </div>
+              </div>
+
+              <div class="entry-action-row">
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="addSet(entryIndex)"
+                >
+                  新增一組
+                </button>
+                <button
+                  mat-stroked-button
+                  type="button"
+                  (click)="duplicateFirstSet(entryIndex, 3)"
+                >
+                  複製成 3 組相同內容
+                </button>
+              </div>
+            </div>
+
+            @for (set of entry.sets; track set.id || $index; let setIndex = $index) {
+              <div class="set-block">
+                <div class="set-block__header">
+                  <h5>第 {{ setIndex + 1 }} 組</h5>
+
+                  <button
+                    mat-button
+                    type="button"
+                    color="warn"
+                    (click)="removeSet(entryIndex, setIndex)"
+                  >
+                    刪除
+                  </button>
+                </div>
+
+                <div class="fields-grid-2">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>重量</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [ngModel]="set.weight_value"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'weight_value', $event)"
+                      [name]="'weight_value_' + entryIndex + '_' + setIndex"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>重量單位</mat-label>
+                    <input
+                      matInput
+                      [ngModel]="set.weight_unit"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'weight_unit', $event)"
+                      [name]="'weight_unit_' + entryIndex + '_' + setIndex"
+                      placeholder="lb / kg"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="fields-grid-2" style="margin-top: 16px">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>次數</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [ngModel]="set.reps_value"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'reps_value', $event)"
+                      [name]="'reps_value_' + entryIndex + '_' + setIndex"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>時間（秒）</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [ngModel]="set.duration_sec"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'duration_sec', $event)"
+                      [name]="'duration_sec_' + entryIndex + '_' + setIndex"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="fields-grid-2" style="margin-top: 16px">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>卡路里</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [ngModel]="set.calories_value"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'calories_value', $event)"
+                      [name]="'calories_value_' + entryIndex + '_' + setIndex"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>距離</mat-label>
+                    <input
+                      matInput
+                      type="number"
+                      [ngModel]="set.distance_value"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'distance_value', $event)"
+                      [name]="'distance_value_' + entryIndex + '_' + setIndex"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="fields-grid-2" style="margin-top: 16px">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>距離單位</mat-label>
+                    <input
+                      matInput
+                      [ngModel]="set.distance_unit"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'distance_unit', $event)"
+                      [name]="'distance_unit_' + entryIndex + '_' + setIndex"
+                      placeholder="km / m"
+                    />
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>等級</mat-label>
+                    <input
+                      matInput
+                      [ngModel]="set.level_text"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'level_text', $event)"
+                      [name]="'level_text_' + entryIndex + '_' + setIndex"
+                      placeholder="例如：Level 8"
+                    />
+                  </mat-form-field>
+                </div>
+
+                <div class="fields-grid-2" style="margin-top: 16px">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>側別</mat-label>
+                    <mat-select
+                      [ngModel]="set.side_code"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'side_code', $event)"
+                      [name]="'side_code_' + entryIndex + '_' + setIndex"
+                    >
+                      <mat-option [value]="null">--</mat-option>
+                      @for (opt of sideCodeOptions; track opt.value) {
+                        <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>狀態</mat-label>
+                    <mat-select
+                      [ngModel]="set.status"
+                      (ngModelChange)="updateSetField(entryIndex, setIndex, 'status', $event)"
+                      [name]="'set_status_' + entryIndex + '_' + setIndex"
+                    >
+                      <mat-option [value]="1">啟用</mat-option>
+                      <mat-option [value]="0">停用</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+
+                <mat-form-field
+                  appearance="outline"
+                  class="full-width"
+                  subscriptSizing="dynamic"
+                  style="margin-top: 16px"
+                >
+                  <mat-label>組別備註</mat-label>
+                  <textarea
+                    matInput
+                    rows="2"
+                    [ngModel]="set.remarks"
+                    (ngModelChange)="updateSetField(entryIndex, setIndex, 'remarks', $event)"
+                    [name]="'set_remarks_' + entryIndex + '_' + setIndex"
+                    placeholder="此組的補充說明（可留空）"
+                  ></textarea>
+                </mat-form-field>
+              </div>
+            } @empty {
+              <div class="empty-inline-note">這個項目目前還沒有任何組數。</div>
+            }
+          </section>
+        } @empty {
+          <div class="empty-inline-note">
+            目前還沒有訓練項目，請用上方按鈕新增第一個項目。
+          </div>
+        }
+      </section>
+    </div>
+  }
+</div>

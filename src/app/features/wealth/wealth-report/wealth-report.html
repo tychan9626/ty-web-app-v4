@@ -1,0 +1,114 @@
+<div class="report-container">
+  @if (loading()) {
+    <div class="loading-shade">
+      <mat-spinner></mat-spinner>
+    </div>
+  }
+
+  <div class="report-capture-area">
+    <div class="report-title">資產匯報報表 - {{ today | date:'yyyy-MM-dd' }}</div>
+
+    <!-- 1. 總資產匯總表 -->
+    <div class="section-title">目前總資產匯總</div>
+    <table class="excel-table summary-table">
+      <thead>
+        <tr>
+          <th>持有人</th>
+          <th>幣種</th>
+          <th>保證資產 (活期+定存到期)</th>
+          <th>投資項目 (本金)</th>
+          <th>市值 (預留)</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (owner of wealthSummary(); track owner.userId) {
+          <!-- Guaranteed Row -->
+          @for (g of owner.guaranteed; track g.code; let first = $first) {
+            <tr>
+              @if (first) {
+                <td [rowSpan]="owner.guaranteed.length + owner.investments.length" class="owner-cell">
+                  {{ owner.user | tyDisplayName }}
+                </td>
+              }
+              <td class="currency-cell">{{ g.name }}</td>
+              <td class="amount-cell bold">{{ g.amount | number:'1.2' }}</td>
+              <td class="amount-cell muted">--</td>
+              <td class="amount-cell muted">--</td>
+            </tr>
+          }
+          <!-- Investment Rows -->
+          @for (inv of owner.investments; track inv.code) {
+            <tr>
+              <td class="currency-cell">{{ inv.name }}</td>
+              <td class="amount-cell muted">--</td>
+              <td class="amount-cell">{{ inv.cost | number:'1.2' }}</td>
+              <td class="amount-cell highlight-blue">{{ inv.current ? (inv.current | number:'1.2') : '--' }}</td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- 2. 活躍項目明細表 -->
+    <div class="section-title">活躍項目明細</div>
+    <table class="excel-table details-table">
+      <thead>
+        <tr>
+          <th>序號</th>
+          <th>持有人</th>
+          <th>機構</th>
+          <th>類型</th>
+          <th>幣種</th>
+          <th>開始日期</th>
+          <th>金額/本金</th>
+          <th>時期</th>
+          <th>利率</th>
+          <th>到期日</th>
+          <th>利息</th>
+          <th>到期總額</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (txn of reportDetails(); track txn.tb_tyapp_fin_txn_id) {
+          <tr [class.expired-row]="isExpired(txn.end_date)">
+            <td class="center">{{ txn.seq_major }}{{ txn.seq_minor > 0 ? '.' + txn.seq_minor : '' }}</td>
+            <td>{{ getUserById(txn.user_id) | tyDisplayName }}</td>
+            <td>{{ txn.institution_name }}</td>
+            <td class="center">{{ getTypeLabel(txn.transaction_type) }}</td>
+            <td class="center bold">{{ getCurrencyName(txn.currency) }}</td>
+            <td class="center">{{ txn.start_date }}</td>
+            <td class="amount-cell">
+                @if (txn.transaction_type === 'fx_exchange') {
+                    {{ txn.fx_source_amount | number:'1.2' }}
+                } @else {
+                    {{ txn.deposit_amount | number:'1.2' }}
+                }
+            </td>
+            <td class="center">{{ txn.duration_months ? txn.duration_months + '個月' : '--' }}</td>
+            <td class="center">{{ txn.annual_interest_rate ? ((txn.annual_interest_rate || 0) * 100 | number:'1.1') + '%' : '--' }}</td>
+            <td class="center" [class.highlight-date]="!isExpired(txn.end_date) && txn.end_date">{{ txn.end_date || '--' }}</td>
+            <td class="amount-cell interest">{{ txn.earned_interest ? (txn.earned_interest | number:'1.2') : '--' }}</td>
+            <td class="amount-cell total-bold">
+                @if (txn.transaction_type === 'fx_exchange') {
+                    ➔ {{ txn.deposit_amount | number:'1.2' }}
+                } @else if (txn.transaction_type === 'term_deposit') {
+                    {{ txn.return_amount | number:'1.2' }}
+                } @else {
+                    {{ txn.deposit_amount | number:'1.2' }}
+                }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="12" class="center muted">目前沒有活躍的交易項目</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="report-footer">
+      <p>香港時間：{{ hkTime }}</p>
+<p>多倫多時間：{{ torontoTime }}</p>
+    </div>
+  </div>
+</div>

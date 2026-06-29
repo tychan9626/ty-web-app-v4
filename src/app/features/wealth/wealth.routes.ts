@@ -21,6 +21,10 @@ export const WEALTH_ROUTES: Routes = [
     loadComponent: () => import('./asset-snapshot/asset-snapshot').then((m) => m.AssetSnapshotComponent),
   },
   {
+    path: 'report',
+    loadComponent: () => import('./wealth-report/wealth-report').then((m) => m.WealthReport),
+  },
+  {
     path: '',
     redirectTo: 'list',
     pathMatch: 'full',

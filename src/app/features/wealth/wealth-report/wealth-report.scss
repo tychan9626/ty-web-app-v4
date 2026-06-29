@@ -1,0 +1,143 @@
+.report-container {
+  padding: 20px;
+  background: #f0f2f5;
+  min-height: 100vh;
+}
+
+.report-capture-area {
+  background: #fff;
+  padding: 40px;
+  width: 1300px; // 固定寬度對抗壓縮
+  margin: 0 auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.report-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #1a1a1a;
+  text-align: center;
+  margin-bottom: 30px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid #1976d2;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  margin: 30px 0 15px 0;
+  display: flex;
+  align-items: center;
+  
+  &::before {
+    content: "";
+    width: 4px;
+    height: 18px;
+    background: #1976d2;
+    margin-right: 10px;
+    border-radius: 2px;
+  }
+}
+
+.excel-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  table-layout: fixed;
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 8px 10px;
+    word-wrap: break-word;
+  }
+
+  th {
+    background: #f1f3f5;
+    color: #444;
+    font-weight: bold;
+    text-align: center;
+    height: 35px;
+  }
+
+  tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .center {
+    text-align: center;
+  }
+
+  .amount-cell {
+    text-align: right;
+    font-family: 'Roboto Mono', monospace;
+    font-size: 15px;
+  }
+
+  .bold { font-weight: bold; }
+  .muted { color: #aaa; }
+  
+  .owner-cell {
+    font-weight: bold;
+    background: #fff;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 16px;
+    color: #1976d2;
+  }
+
+  .currency-cell {
+    text-align: center;
+    background: #fdfdfe;
+  }
+}
+
+// Summary Table Specifics
+.summary-table {
+  th { background: #e3f2fd; }
+  .highlight-blue { color: #1976d2; font-weight: bold; }
+}
+
+// Details Table Specifics
+.details-table {
+  th { background: #f8f9fa; }
+  
+  .highlight-date {
+    color: #e65100;
+    font-weight: bold;
+  }
+
+  .interest { color: #2e7d32; }
+  
+  .total-bold {
+    font-weight: 800;
+    color: #000;
+    font-size: 16px;
+    background: #fffde7; // 淡淡的黃色背景強調最終數字
+  }
+
+  .expired-row {
+    opacity: 0.5;
+    background: #fdfdfd !important;
+    
+    .total-bold { background: transparent; }
+  }
+}
+
+.report-footer {
+  margin-top: 40px;
+  text-align: right;
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
+}
+
+.loading-shade {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}

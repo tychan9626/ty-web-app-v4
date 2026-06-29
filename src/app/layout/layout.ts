@@ -94,35 +94,43 @@ export class Layout {
       ],
     },
     {
-      title: 'YY525 Family',
-      icon: 'account_balance',
+      title: 'Fitness',
+      icon: 'fitness_center',
       adminOnly: false,
       links: [
-        {
-          title: 'YYEMS Analytics Overview',
-          route: '/yy525/yyems-analytics/overview',
-        },
-        {
-          title: 'YYEMS Analytics Monthly',
-          route: '/yy525/yyems-analytics/monthly',
-        },
+        { title: 'Fit Sessions', route: '/fit' },
       ],
     },
-    {
-      title: 'TyWeb',
-      icon: 'web',
-      adminOnly: false,
-      links: [{ title: 'Content Manager', route: '/tyweb/content' }],
-    },
-    {
-      title: 'Wealth Management',
-      icon: 'account_balance_wallet',
-      adminOnly: false,
-      links: [
-        { title: 'Transactions', route: '/wealth/list' },
-        { title: 'Snapshots', route: '/wealth/snapshots' },
-      ],
-    },
+    // {
+    //   title: 'YY525 Family',
+    //   icon: 'account_balance',
+    //   adminOnly: false,
+    //   links: [
+    //     {
+    //       title: 'YYEMS Analytics Overview',
+    //       route: '/yy525/yyems-analytics/overview',
+    //     },
+    //     {
+    //       title: 'YYEMS Analytics Monthly',
+    //       route: '/yy525/yyems-analytics/monthly',
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: 'TyWeb',
+    //   icon: 'web',
+    //   adminOnly: false,
+    //   links: [{ title: 'Content Manager', route: '/tyweb/content' }],
+    // },
+    // {
+    //   title: 'Wealth Management',
+    //   icon: 'account_balance_wallet',
+    //   adminOnly: false,
+    //   links: [
+    //     { title: 'Transactions', route: '/wealth/list' },
+    //     { title: 'Snapshots', route: '/wealth/snapshots' },
+    //   ],
+    // },
     {
       title: 'User Management',
       icon: 'people_outline',
