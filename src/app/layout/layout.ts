@@ -98,7 +98,7 @@ export class Layout {
       icon: 'fitness_center',
       adminOnly: false,
       links: [
-        { title: 'Fit Sessions', route: '/fit' },
+        { title: 'Fit List', route: '/fit/list' },
         { title: 'Fit Thread', route: '/fit/thread' },
       ],
     },
