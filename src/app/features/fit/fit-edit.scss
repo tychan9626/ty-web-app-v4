@@ -138,3 +138,74 @@
 :host {
   display: block;
 }
+
+.compact-sets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.compact-set-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--mat-sys-surface);
+  border: 1px solid var(--mat-sys-outline-variant);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.set-number-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: var(--mat-sys-surface-variant);
+  color: var(--mat-sys-on-surface-variant);
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 4px;
+  margin-top: 14px;
+  flex-shrink: 0;
+}
+
+.set-inputs-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    padding: 0 8px;
+  }
+  ::ng-deep .mat-mdc-form-field-infix {
+    min-height: 44px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+}
+
+.full-width-span {
+  grid-column: 1 / -1;
+}
+
+.delete-set-btn {
+  margin-top: 4px;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+@media (max-width: 400px) {
+  .set-inputs-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

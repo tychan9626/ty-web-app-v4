@@ -18,6 +18,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 import {
   HeaderAction,
@@ -48,6 +49,7 @@ type FitEditVm = FitEditSessionInput;
     MatButtonModule,
     MatIconModule,
     MatDatepickerModule,
+    MatSlideToggleModule,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './fit-edit.html',
@@ -221,7 +223,20 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       if (!target) return current;
 
       const nextSets = [...(target.sets || [])];
-      nextSets.push(this.createNewSet(nextSets.length + 1));
+
+      const lastSet =
+        nextSets.length > 0 ? nextSets[nextSets.length - 1] : null;
+
+      const newSet: FitEditSetInput = lastSet
+        ? {
+            ...structuredClone(lastSet),
+            id: null,
+            set_no: nextSets.length + 1,
+            remarks: '',
+          }
+        : this.createNewSet(nextSets.length + 1);
+
+      nextSets.push(newSet);
 
       nextEntries[entryIndex] = {
         ...target,
@@ -274,11 +289,14 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       const firstSet = target.sets?.[0];
       if (!firstSet) return current;
 
-      const nextSets: FitEditSetInput[] = Array.from({ length: count }, (_, i) => ({
-        ...structuredClone(firstSet),
-        id: null,
-        set_no: i + 1,
-      }));
+      const nextSets: FitEditSetInput[] = Array.from(
+        { length: count },
+        (_, i) => ({
+          ...structuredClone(firstSet),
+          id: null,
+          set_no: i + 1,
+        }),
+      );
 
       nextEntries[entryIndex] = {
         ...target,
@@ -398,7 +416,9 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
 
   private createNewItem(): FitEditVm {
     const today = new Date();
-    const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+    const localDate = new Date(
+      today.getTime() - today.getTimezoneOffset() * 60000,
+    )
       .toISOString()
       .split('T')[0];
 
@@ -425,6 +445,7 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       source_url: '',
       remarks: '',
       status: 1,
+      showAdvanced: false,
       sets: [this.createNewSet(1)],
     };
   }

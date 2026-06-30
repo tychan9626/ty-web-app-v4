@@ -86,6 +86,7 @@ export interface FitEditEntryInput {
   remarks: string | null;
   status: number;
   sets: FitEditSetInput[];
+  showAdvanced?: boolean;
 }
 
 export interface FitEditSessionInput {
