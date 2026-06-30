@@ -99,6 +99,7 @@ export class Layout {
       adminOnly: false,
       links: [
         { title: 'Fit Sessions', route: '/fit' },
+        { title: 'Fit Thread', route: '/fit/thread' },
       ],
     },
     // {

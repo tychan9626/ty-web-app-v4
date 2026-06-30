@@ -1,0 +1,39 @@
+<div class="thread-page">
+  <div class="thread-container">
+    @if (loading()) {
+      <div class="empty-placeholder">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    } @else {
+      @for (item of threadItems(); track item.id) {
+        <article class="thread-card">
+          <div class="thread-card__header">
+            <div>
+              <h2 class="thread-card__title">{{ item.title }}</h2>
+              <div class="thread-card__meta">{{ item.sessionDate }}</div>
+            </div>
+
+            <button
+              mat-icon-button
+              type="button"
+              aria-label="Edit fit session"
+              (click)="onEdit(item.id)"
+            >
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+
+          <pre class="thread-card__body">{{ item.text }}</pre>
+
+          <div class="thread-card__footer">
+            <span class="status-tag" [class.inactive]="item.status === 0">
+              {{ item.status === 1 ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </article>
+      } @empty {
+        <div class="empty-placeholder">No fit sessions found.</div>
+      }
+    }
+  </div>
+</div>
