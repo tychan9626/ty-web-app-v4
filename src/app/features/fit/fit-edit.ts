@@ -106,7 +106,9 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
 
     if (!current || !original) return;
 
-    const currentlyDirty = JSON.stringify(current) !== original;
+    const normalizedCurrentStr = JSON.stringify(this.normalizePayload(current));
+    const currentlyDirty = normalizedCurrentStr !== original;
+
     if (this.isDirty() !== currentlyDirty) {
       this.isDirty.set(currentlyDirty);
     }
@@ -164,10 +166,11 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       const vm = this.mapDetailToVm(detail);
       this.item.set(vm);
       this.originalDataStr.set(JSON.stringify(vm));
+      this.originalDataStr.set(JSON.stringify(this.normalizePayload(vm)));
     } else {
       const newItem = this.createNewItem();
       this.item.set(newItem);
-      this.originalDataStr.set(JSON.stringify(newItem));
+      this.originalDataStr.set(JSON.stringify(this.normalizePayload(newItem)));
     }
   }
 
@@ -183,7 +186,11 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
     this.item.update((current) => {
       if (!current) return current;
 
-      const nextEntries = [...(current.entries || [])];
+      const nextEntries: FitEditEntryInput[] = (current.entries || []).map((entry) => ({
+        ...entry,
+        isExpanded: false,
+      }));
+
       nextEntries.push(this.createNewEntry(type, nextEntries.length + 1));
 
       return {
@@ -333,7 +340,7 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
   updateEntryField(
     entryIndex: number,
     field: keyof FitEditEntryInput,
-    value: string | number | null,
+    value: string | number | boolean | null,
   ) {
     this.item.update((current) => {
       if (!current) return current;
@@ -446,6 +453,7 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       remarks: '',
       status: 1,
       showAdvanced: false,
+      isExpanded: true,
       sets: [this.createNewSet(1)],
     };
   }

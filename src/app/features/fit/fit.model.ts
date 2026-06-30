@@ -87,6 +87,7 @@ export interface FitEditEntryInput {
   status: number;
   sets: FitEditSetInput[];
   showAdvanced?: boolean;
+  isExpanded?: boolean;
 }
 
 export interface FitEditSessionInput {

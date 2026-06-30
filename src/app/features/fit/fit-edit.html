@@ -117,307 +117,266 @@
           let entryIndex = $index
         ) {
           <section class="entry-block">
-            <div class="entry-block__header">
-              <div class="entry-block__title-row">
+            <div 
+              class="entry-block__header" 
+              style="cursor: pointer; user-select: none;"
+              (click)="updateEntryField(entryIndex, 'isExpanded', !entry.isExpanded)"
+            >
+              <div class="entry-block__title-row" style="flex: 1; flex-wrap: wrap;">
+                <mat-icon style="color: var(--mat-sys-outline); margin-right: 4px;">
+                  {{ entry.isExpanded ? 'expand_less' : 'expand_more' }}
+                </mat-icon>
                 <h4>項目 {{ entryIndex + 1 }}</h4>
                 <span class="entry-type-chip">
                   {{ entry.entry_type || "未分類" }}
                 </span>
+                
+                @if (!entry.isExpanded && entry.exercise_name) {
+                  <span style="font-weight: 500; color: var(--mat-sys-primary); margin-left: 8px;">
+                    {{ entry.exercise_name }}
+                  </span>
+                  <span style="font-size: 13px; color: var(--mat-sys-outline); margin-left: 4px;">
+                    ({{ entry.sets.length }} 組)
+                  </span>
+                }
               </div>
 
               <button
                 mat-button
                 type="button"
                 color="warn"
-                (click)="removeEntry(entryIndex)"
+                (click)="$event.stopPropagation(); removeEntry(entryIndex)"
               >
                 刪除
               </button>
             </div>
 
-            <div class="fields-grid-2">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>項目類型</mat-label>
-                <mat-select
-                  [ngModel]="entry.entry_type"
-                  (ngModelChange)="onEntryTypeChange(entryIndex, $event)"
-                  [name]="'entry_type_' + entryIndex"
-                >
-                  @for (type of entryTypeOptions; track type) {
-                    <mat-option [value]="type">{{ type }}</mat-option>
-                  }
-                </mat-select>
-              </mat-form-field>
+            @if (entry.isExpanded) {
+              <div class="fields-grid-2">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>項目類型</mat-label>
+                  <mat-select
+                    [ngModel]="entry.entry_type"
+                    (ngModelChange)="onEntryTypeChange(entryIndex, $event)"
+                    [name]="'entry_type_' + entryIndex"
+                  >
+                    @for (type of entryTypeOptions; track type) {
+                      <mat-option [value]="type">{{ type }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
 
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>動作名稱</mat-label>
-                <input
-                  matInput
-                  [ngModel]="entry.exercise_name"
-                  (ngModelChange)="
-                    updateEntryField(entryIndex, 'exercise_name', $event)
-                  "
-                  [name]="'exercise_name_' + entryIndex"
-                  required
-                  placeholder="例如：啞鈴臥推"
-                />
-              </mat-form-field>
-            </div>
-
-            <div class="fields-grid-2" style="margin-top: 16px">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>參考網址</mat-label>
-                <input
-                  matInput
-                  [ngModel]="entry.source_url"
-                  (ngModelChange)="
-                    updateEntryField(entryIndex, 'source_url', $event)
-                  "
-                  [name]="'source_url_' + entryIndex"
-                  placeholder="可選填參考連結"
-                />
-              </mat-form-field>
-
-              <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>狀態</mat-label>
-                <mat-select
-                  [ngModel]="entry.status"
-                  (ngModelChange)="
-                    updateEntryField(entryIndex, 'status', $event)
-                  "
-                  [name]="'entry_status_' + entryIndex"
-                >
-                  <mat-option [value]="1">啟用</mat-option>
-                  <mat-option [value]="0">停用</mat-option>
-                </mat-select>
-              </mat-form-field>
-            </div>
-
-            <mat-form-field
-              appearance="outline"
-              class="full-width"
-              subscriptSizing="dynamic"
-              style="margin-top: 16px"
-            >
-              <mat-label>項目備註</mat-label>
-              <textarea
-                matInput
-                rows="2"
-                [ngModel]="entry.remarks"
-                (ngModelChange)="
-                  updateEntryField(entryIndex, 'remarks', $event)
-                "
-                [name]="'entry_remarks_' + entryIndex"
-                placeholder="此項目的補充說明（可留空）"
-              ></textarea>
-            </mat-form-field>
-
-            <div class="sets-toolbar">
-              <div style="display: flex; align-items: center; gap: 12px">
-                <div class="sets-title">訓練組數</div>
-                <mat-slide-toggle
-                  [ngModel]="entry.showAdvanced"
-                  (ngModelChange)="
-                    updateEntryField(entryIndex, 'showAdvanced', $event)
-                  "
-                  [name]="'show_advanced_' + entryIndex"
-                  color="primary"
-                  style="transform: scale(0.9); transform-origin: left center"
-                >
-                  顯示全部欄位
-                </mat-slide-toggle>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>動作名稱</mat-label>
+                  <input
+                    matInput
+                    [ngModel]="entry.exercise_name"
+                    (ngModelChange)="updateEntryField(entryIndex, 'exercise_name', $event)"
+                    [name]="'exercise_name_' + entryIndex"
+                    required
+                    placeholder="例如：啞鈴臥推"
+                  />
+                </mat-form-field>
               </div>
 
-              <div class="entry-action-row">
-                <button
-                  mat-stroked-button
-                  type="button"
-                  (click)="addSet(entryIndex)"
-                >
-                  + 新增一組
-                </button>
+              <div class="fields-grid-2" style="margin-top: 16px">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>參考網址</mat-label>
+                  <input
+                    matInput
+                    [ngModel]="entry.source_url"
+                    (ngModelChange)="updateEntryField(entryIndex, 'source_url', $event)"
+                    [name]="'source_url_' + entryIndex"
+                    placeholder="可選填參考連結"
+                  />
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>狀態</mat-label>
+                  <mat-select
+                    [ngModel]="entry.status"
+                    (ngModelChange)="updateEntryField(entryIndex, 'status', $event)"
+                    [name]="'entry_status_' + entryIndex"
+                  >
+                    <mat-option [value]="1">啟用</mat-option>
+                    <mat-option [value]="0">停用</mat-option>
+                  </mat-select>
+                </mat-form-field>
               </div>
-            </div>
 
-            <div class="compact-sets-container">
-              @for (
-                set of entry.sets;
-                track set.id || $index;
-                let setIndex = $index
-              ) {
-                <div class="compact-set-row">
-                  <div class="set-number-badge">
-                    {{ setIndex + 1 }}
-                  </div>
+              <mat-form-field
+                appearance="outline"
+                class="full-width"
+                subscriptSizing="dynamic"
+                style="margin-top: 16px"
+              >
+                <mat-label>項目備註</mat-label>
+                <textarea
+                  matInput
+                  rows="2"
+                  [ngModel]="entry.remarks"
+                  (ngModelChange)="updateEntryField(entryIndex, 'remarks', $event)"
+                  [name]="'entry_remarks_' + entryIndex"
+                  placeholder="此項目的補充說明（可留空）"
+                ></textarea>
+              </mat-form-field>
 
-                  <div class="set-inputs-grid">
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
-                      <mat-label>重量</mat-label>
-                      <input
-                        matInput
-                        type="number"
-                        [ngModel]="set.weight_value"
-                        (ngModelChange)="
-                          updateSetField(
-                            entryIndex,
-                            setIndex,
-                            'weight_value',
-                            $event
-                          )
-                        "
-                        [name]="'weight_value_' + entryIndex + '_' + setIndex"
-                      />
-                    </mat-form-field>
+              <div class="sets-toolbar">
+                <div style="display: flex; align-items: center; gap: 12px">
+                  <div class="sets-title">訓練組數</div>
+                  <mat-slide-toggle
+                    [ngModel]="entry.showAdvanced"
+                    (ngModelChange)="updateEntryField(entryIndex, 'showAdvanced', $event)"
+                    [name]="'show_advanced_' + entryIndex"
+                    color="primary"
+                    style="transform: scale(0.9); transform-origin: left center"
+                  >
+                    顯示全部欄位
+                  </mat-slide-toggle>
+                </div>
 
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
-                      <mat-label>單位</mat-label>
-                      <input
-                        matInput
-                        [ngModel]="set.weight_unit"
-                        (ngModelChange)="
-                          updateSetField(
-                            entryIndex,
-                            setIndex,
-                            'weight_unit',
-                            $event
-                          )
-                        "
-                        [name]="'weight_unit_' + entryIndex + '_' + setIndex"
-                        placeholder="lb/kg"
-                      />
-                    </mat-form-field>
+                <div class="entry-action-row">
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    (click)="addSet(entryIndex)"
+                  >
+                    + 新增一組
+                  </button>
+                </div>
+              </div>
 
-                    <mat-form-field
-                      appearance="outline"
-                      subscriptSizing="dynamic"
-                    >
-                      <mat-label>次數</mat-label>
-                      <input
-                        matInput
-                        type="number"
-                        [ngModel]="set.reps_value"
-                        (ngModelChange)="
-                          updateSetField(
-                            entryIndex,
-                            setIndex,
-                            'reps_value',
-                            $event
-                          )
-                        "
-                        [name]="'reps_value_' + entryIndex + '_' + setIndex"
-                      />
-                    </mat-form-field>
+              <div class="compact-sets-container">
+                @for (
+                  set of entry.sets;
+                  track set.id || $index;
+                  let setIndex = $index
+                ) {
+                  <div class="compact-set-row">
+                    <div class="set-number-badge">
+                      {{ setIndex + 1 }}
+                    </div>
 
-                    @if (entry.showAdvanced) {
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                      >
+                    <div class="set-inputs-grid">
+                    @if (entry.showAdvanced || entry.entry_type === 'strength') {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>重量</mat-label>
+                        <input
+                          matInput
+                          type="number"
+                          [ngModel]="set.weight_value"
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'weight_value', $event)"
+                          [name]="'weight_value_' + entryIndex + '_' + setIndex"
+                        />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>單位</mat-label>
+                        <input
+                          matInput
+                          [ngModel]="set.weight_unit"
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'weight_unit', $event)"
+                          [name]="'weight_unit_' + entryIndex + '_' + setIndex"
+                          placeholder="lb/kg"
+                        />
+                      </mat-form-field>
+                    }
+
+                    @if (entry.showAdvanced || entry.entry_type === 'strength' || entry.entry_type === 'bodyweight' || entry.entry_type === 'mobility') {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>次數</mat-label>
+                        <input
+                          matInput
+                          type="number"
+                          [ngModel]="set.reps_value"
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'reps_value', $event)"
+                          [name]="'reps_value_' + entryIndex + '_' + setIndex"
+                        />
+                      </mat-form-field>
+                    }
+
+                    @if (entry.showAdvanced || entry.entry_type === 'cardio' || entry.entry_type === 'mobility') {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-label>時間(秒)</mat-label>
                         <input
                           matInput
                           type="number"
                           [ngModel]="set.duration_sec"
-                          (ngModelChange)="
-                            updateSetField(
-                              entryIndex,
-                              setIndex,
-                              'duration_sec',
-                              $event
-                            )
-                          "
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'duration_sec', $event)"
                           [name]="'duration_sec_' + entryIndex + '_' + setIndex"
                         />
                       </mat-form-field>
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                      >
+                    }
+
+                    @if (entry.showAdvanced || entry.entry_type === 'cardio') {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-label>卡路里</mat-label>
                         <input
                           matInput
                           type="number"
                           [ngModel]="set.calories_value"
-                          (ngModelChange)="
-                            updateSetField(
-                              entryIndex,
-                              setIndex,
-                              'calories_value',
-                              $event
-                            )
-                          "
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'calories_value', $event)"
                           [name]="'cal_' + entryIndex + '_' + setIndex"
                         />
                       </mat-form-field>
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                      >
+
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-label>距離</mat-label>
                         <input
                           matInput
                           type="number"
                           [ngModel]="set.distance_value"
-                          (ngModelChange)="
-                            updateSetField(
-                              entryIndex,
-                              setIndex,
-                              'distance_value',
-                              $event
-                            )
-                          "
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'distance_value', $event)"
                           [name]="'dist_' + entryIndex + '_' + setIndex"
                         />
                       </mat-form-field>
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                      >
+
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>距離單位</mat-label>
+                        <input
+                          matInput
+                          [ngModel]="set.distance_unit"
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'distance_unit', $event)"
+                          [name]="'dist_unit_' + entryIndex + '_' + setIndex"
+                          placeholder="km/m"
+                        />
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                        <mat-label>等級</mat-label>
+                        <input
+                          matInput
+                          [ngModel]="set.level_text"
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'level_text', $event)"
+                          [name]="'level_text_' + entryIndex + '_' + setIndex"
+                          placeholder="例如：Level 8"
+                        />
+                      </mat-form-field>
+                    }
+
+                    @if (entry.showAdvanced) {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic">
                         <mat-label>側別</mat-label>
                         <mat-select
                           [ngModel]="set.side_code"
-                          (ngModelChange)="
-                            updateSetField(
-                              entryIndex,
-                              setIndex,
-                              'side_code',
-                              $event
-                            )
-                          "
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'side_code', $event)"
                           [name]="'side_' + entryIndex + '_' + setIndex"
                         >
                           <mat-option [value]="null">--</mat-option>
                           @for (opt of sideCodeOptions; track opt.value) {
-                            <mat-option [value]="opt.value">{{
-                              opt.label
-                            }}</mat-option>
+                            <mat-option [value]="opt.value">{{ opt.label }}</mat-option>
                           }
                         </mat-select>
                       </mat-form-field>
+                    }
 
-                      <mat-form-field
-                        appearance="outline"
-                        subscriptSizing="dynamic"
-                        class="full-width-span"
-                      >
+                    @if (entry.showAdvanced) {
+                      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full-width-span">
                         <mat-label>組別備註</mat-label>
                         <input
                           matInput
                           [ngModel]="set.remarks"
-                          (ngModelChange)="
-                            updateSetField(
-                              entryIndex,
-                              setIndex,
-                              'remarks',
-                              $event
-                            )
-                          "
+                          (ngModelChange)="updateSetField(entryIndex, setIndex, 'remarks', $event)"
                           [name]="'remark_' + entryIndex + '_' + setIndex"
                           placeholder="例如：做到力竭"
                         />
@@ -425,21 +384,21 @@
                     }
                   </div>
 
-                  <button
-                    mat-icon-button
-                    color="warn"
-                    type="button"
-                    (click)="removeSet(entryIndex, setIndex)"
-                    class="delete-set-btn"
-                  >
-                    <mat-icon>close</mat-icon>
-                  </button>
-                </div>
-              } @empty {
-                <div class="empty-inline-note">目前沒有任何組數。</div>
-              }
-            </div>
-          </section>
+                    <button
+                      mat-icon-button
+                      color="warn"
+                      type="button"
+                      (click)="removeSet(entryIndex, setIndex)"
+                      class="delete-set-btn"
+                    >
+                      <mat-icon>close</mat-icon>
+                    </button>
+                  </div>
+                } @empty {
+                  <div class="empty-inline-note">目前沒有任何組數。</div>
+                }
+              </div>
+            } </section>
         } @empty {
           <div class="empty-inline-note">
             目前還沒有訓練項目，請用上方按鈕新增第一個項目。
