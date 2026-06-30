@@ -14,6 +14,11 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { HeaderService } from '../../core/services/header.service';
 import { FitService } from './fit.service';
 
+import {
+  getWeekRange,
+  groupItemsByPeriod,
+} from '../../core/utils/date-time.util';
+
 type FitListItemVm = {
   tb_tyapp_fit_ssn_id: string;
   session_date: string;
@@ -78,21 +83,11 @@ export class FitList implements OnInit, OnDestroy {
   });
 
   groupedListVM = computed<FitListGroupVm[]>(() => {
-    const sessions = this.listVM();
-    const map = new Map<string, FitListItemVm[]>();
-
-    for (const item of sessions) {
-      const periodLabel = this.getWeekLabel(item.session_date);
-      if (!map.has(periodLabel)) {
-        map.set(periodLabel, []);
-      }
-      map.get(periodLabel)!.push(item);
-    }
-
-    return Array.from(map.entries()).map(([periodLabel, items]) => ({
-      periodLabel,
-      items,
-    }));
+    // 🌟 直接呼叫你完美處理過時區的核心工具
+    return groupItemsByPeriod(this.listVM(), (item) => {
+      const range = getWeekRange(item.session_date);
+      return range ? range.label : 'Unknown Week';
+    });
   });
 
   ngOnInit() {
@@ -127,28 +122,5 @@ export class FitList implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.headerService.clear();
-  }
-
-  private getWeekLabel(dateStr: string): string {
-    const date = new Date(dateStr);
-    if (Number.isNaN(date.getTime())) return 'Unknown Week';
-
-    const day = date.getDay();
-    const diffToMonday = day === 0 ? -6 : 1 - day;
-
-    const monday = new Date(date);
-    monday.setDate(date.getDate() + diffToMonday);
-
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-
-    const format = (d: Date) =>
-      d.toLocaleDateString('en-CA', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-      });
-
-    return `${format(monday)} - ${format(sunday)}`;
   }
 }

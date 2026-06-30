@@ -96,7 +96,9 @@ export class FitService {
         session: sessionData as FitSession,
         entries: entries.map((entry) => ({
           ...entry,
-          sets: sets.filter((set) => set.fit_entry_id === entry.tb_tyapp_fit_ntry_id),
+          sets: sets.filter(
+            (set) => set.fit_entry_id === entry.tb_tyapp_fit_ntry_id,
+          ),
         })),
       };
 
@@ -179,18 +181,23 @@ export class FitService {
 
       if (sessionError) throw sessionError;
 
-      const { data: existingEntriesData, error: existingEntriesError } = await this.supabase
-        .from('tyapp_fit_entry')
-        .select('*')
-        .eq('fit_session_id', sessionId)
-        .is('deleted_at', null);
+      const { data: existingEntriesData, error: existingEntriesError } =
+        await this.supabase
+          .from('tyapp_fit_entry')
+          .select('*')
+          .eq('fit_session_id', sessionId)
+          .is('deleted_at', null);
 
       if (existingEntriesError) throw existingEntriesError;
 
       const existingEntries = (existingEntriesData || []) as FitEntry[];
-      const existingEntryIds = new Set(existingEntries.map((item) => item.tb_tyapp_fit_ntry_id));
+      const existingEntryIds = new Set(
+        existingEntries.map((item) => item.tb_tyapp_fit_ntry_id),
+      );
       const incomingEntryIds = new Set(
-        payload.entries.map((item) => item.id).filter((id): id is string => !!id)
+        payload.entries
+          .map((item) => item.id)
+          .filter((id): id is string => !!id),
       );
 
       for (const entry of payload.entries) {
@@ -202,7 +209,7 @@ export class FitService {
       }
 
       const removedEntries = existingEntries.filter(
-        (item) => !incomingEntryIds.has(item.tb_tyapp_fit_ntry_id)
+        (item) => !incomingEntryIds.has(item.tb_tyapp_fit_ntry_id),
       );
 
       for (const removedEntry of removedEntries) {
@@ -239,7 +246,9 @@ export class FitService {
 
       if (entryError) throw entryError;
 
-      const entryIds = (entryData || []).map((item) => item.tb_tyapp_fit_ntry_id);
+      const entryIds = (entryData || []).map(
+        (item) => item.tb_tyapp_fit_ntry_id,
+      );
 
       if (entryIds.length > 0) {
         const { error: setDeleteError } = await this.supabase
@@ -269,7 +278,7 @@ export class FitService {
 
       this.zone.run(() => {
         this.sessions.update((list) =>
-          list.filter((item) => item.tb_tyapp_fit_ssn_id !== id)
+          list.filter((item) => item.tb_tyapp_fit_ssn_id !== id),
         );
       });
 
@@ -326,7 +335,10 @@ export class FitService {
     }));
   }
 
-  private async insertEntryWithSets(sessionId: string, entry: FitEditEntryInput) {
+  private async insertEntryWithSets(
+    sessionId: string,
+    entry: FitEditEntryInput,
+  ) {
     const { data: createdEntry, error: entryError } = await this.supabase
       .from('tyapp_fit_entry')
       .insert({
@@ -390,18 +402,21 @@ export class FitService {
 
     if (updateEntryError) throw updateEntryError;
 
-    const { data: existingSetsData, error: existingSetsError } = await this.supabase
-      .from('tyapp_fit_entry_set')
-      .select('*')
-      .eq('fit_entry_id', entryId)
-      .is('deleted_at', null);
+    const { data: existingSetsData, error: existingSetsError } =
+      await this.supabase
+        .from('tyapp_fit_entry_set')
+        .select('*')
+        .eq('fit_entry_id', entryId)
+        .is('deleted_at', null);
 
     if (existingSetsError) throw existingSetsError;
 
     const existingSets = (existingSetsData || []) as FitEntrySet[];
-    const existingSetIds = new Set(existingSets.map((item) => item.tb_tyapp_fit_set_id));
+    const existingSetIds = new Set(
+      existingSets.map((item) => item.tb_tyapp_fit_set_id),
+    );
     const incomingSetIds = new Set(
-      entry.sets.map((item) => item.id).filter((id): id is string => !!id)
+      entry.sets.map((item) => item.id).filter((id): id is string => !!id),
     );
 
     for (const set of entry.sets) {
@@ -413,7 +428,7 @@ export class FitService {
     }
 
     const removedSets = existingSets.filter(
-      (item) => !incomingSetIds.has(item.tb_tyapp_fit_set_id)
+      (item) => !incomingSetIds.has(item.tb_tyapp_fit_set_id),
     );
 
     if (removedSets.length > 0) {
@@ -424,7 +439,7 @@ export class FitService {
         .update({ deleted_at: deletedAt })
         .in(
           'tb_tyapp_fit_set_id',
-          removedSets.map((item) => item.tb_tyapp_fit_set_id)
+          removedSets.map((item) => item.tb_tyapp_fit_set_id),
         )
         .is('deleted_at', null);
 
@@ -433,23 +448,21 @@ export class FitService {
   }
 
   private async insertSet(entryId: string, set: FitEditSetInput) {
-    const { error } = await this.supabase
-      .from('tyapp_fit_entry_set')
-      .insert({
-        fit_entry_id: entryId,
-        set_no: set.set_no,
-        weight_value: set.weight_value,
-        weight_unit: set.weight_unit,
-        reps_value: set.reps_value,
-        duration_sec: set.duration_sec,
-        calories_value: set.calories_value,
-        distance_value: set.distance_value,
-        distance_unit: set.distance_unit,
-        level_text: set.level_text,
-        side_code: set.side_code,
-        remarks: set.remarks,
-        status: set.status,
-      });
+    const { error } = await this.supabase.from('tyapp_fit_entry_set').insert({
+      fit_entry_id: entryId,
+      set_no: set.set_no,
+      weight_value: set.weight_value,
+      weight_unit: set.weight_unit,
+      reps_value: set.reps_value,
+      duration_sec: set.duration_sec,
+      calories_value: set.calories_value,
+      distance_value: set.distance_value,
+      distance_unit: set.distance_unit,
+      level_text: set.level_text,
+      side_code: set.side_code,
+      remarks: set.remarks,
+      status: set.status,
+    });
 
     if (error) throw error;
   }
@@ -497,5 +510,87 @@ export class FitService {
       .is('deleted_at', null);
 
     if (deleteEntryError) throw deleteEntryError;
+  }
+
+  async fetchUniqueExerciseNames(): Promise<string[]> {
+    try {
+      const { data, error } = await this.supabase
+        .from('tyapp_fit_entry')
+        .select('exercise_name')
+        .is('deleted_at', null)
+        .not('exercise_name', 'is', null);
+
+      if (error) throw error;
+
+      const names = new Set<string>();
+      data.forEach((row: any) => {
+        const name = row.exercise_name?.trim();
+        if (name) names.add(name);
+      });
+
+      return Array.from(names).sort();
+    } catch (error: unknown) {
+      console.error('Fetch exercise names failed', error);
+      return [];
+    }
+  }
+
+  async fetchRecentThreadDetails(limit = 15): Promise<FitSessionDetail[]> {
+    const userId = this.authService.userProfile()?.user_id;
+    if (!userId) return [];
+
+    try {
+      const { data: sessions, error: sessionErr } = await this.supabase
+        .from('tyapp_fit_session')
+        .select('*')
+        .eq('user_id', userId)
+        .is('deleted_at', null)
+        .order('session_date', { ascending: false })
+        .limit(limit);
+
+      if (sessionErr) throw sessionErr;
+      if (!sessions || sessions.length === 0) return [];
+
+      const sessionIds = sessions.map((s) => s.tb_tyapp_fit_ssn_id);
+
+      const { data: entries, error: entryErr } = await this.supabase
+        .from('tyapp_fit_entry')
+        .select('*')
+        .in('fit_session_id', sessionIds)
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true });
+
+      if (entryErr) throw entryErr;
+
+      const entryIds = (entries || []).map((e) => e.tb_tyapp_fit_ntry_id);
+      let sets: FitEntrySet[] = [];
+
+      if (entryIds.length > 0) {
+        const { data: setsData, error: setErr } = await this.supabase
+          .from('tyapp_fit_entry_set')
+          .select('*')
+          .in('fit_entry_id', entryIds)
+          .is('deleted_at', null)
+          .order('set_no', { ascending: true });
+
+        if (setErr) throw setErr;
+        sets = setsData as FitEntrySet[];
+      }
+
+      return sessions.map((session) => ({
+        session: session as FitSession,
+        entries: (entries || [])
+          .filter((e) => e.fit_session_id === session.tb_tyapp_fit_ssn_id)
+          .map((entry) => ({
+            ...entry,
+            sets: sets.filter(
+              (s) => s.fit_entry_id === entry.tb_tyapp_fit_ntry_id,
+            ),
+          })) as any[],
+      }));
+    } catch (error) {
+      console.error('Fetch recent threads failed:', error);
+      return [];
+    }
   }
 }

@@ -19,6 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 import {
   HeaderAction,
@@ -50,6 +51,7 @@ type FitEditVm = FitEditSessionInput;
     MatIconModule,
     MatDatepickerModule,
     MatSlideToggleModule,
+    MatAutocompleteModule,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './fit-edit.html',
@@ -70,6 +72,8 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
   originalDataStr = signal<string>('');
   isDirty = signal(false);
   isSaveDisabled = signal(true);
+
+  exerciseNameSuggestions = signal<string[]>([]);
 
   entryTypeOptions: FitEntryType[] = [
     'strength',
@@ -165,13 +169,16 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
 
       const vm = this.mapDetailToVm(detail);
       this.item.set(vm);
-      this.originalDataStr.set(JSON.stringify(vm));
       this.originalDataStr.set(JSON.stringify(this.normalizePayload(vm)));
     } else {
       const newItem = this.createNewItem();
       this.item.set(newItem);
       this.originalDataStr.set(JSON.stringify(this.normalizePayload(newItem)));
     }
+
+    this.exerciseNameSuggestions.set(
+      await this.fitService.fetchUniqueExerciseNames(),
+    );
   }
 
   ngOnDestroy() {
@@ -182,14 +189,52 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
     return !this.isDirty();
   }
 
+  getFilteredExercises(currentName: string | null | undefined): string[] {
+    const search = (currentName || '').toLowerCase().trim();
+    const allNames = this.exerciseNameSuggestions();
+    if (!search) return allNames.slice(0, 8);
+    return allNames
+      .filter((name) => name.toLowerCase().includes(search))
+      .slice(0, 8);
+  }
+
+  formatSecToMmSs(sec: number | null | undefined): string {
+    if (sec === null || sec === undefined || Number.isNaN(sec)) return '';
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  updateSetDuration(entryIndex: number, setIndex: number, value: string) {
+    if (!value?.trim()) {
+      this.updateSetField(entryIndex, setIndex, 'duration_sec', null);
+      return;
+    }
+
+    let totalSec = 0;
+    if (value.includes(':')) {
+      const parts = value.split(':');
+      const mins = parseInt(parts[0], 10) || 0;
+      const secs = parseInt(parts[1], 10) || 0;
+      totalSec = mins * 60 + secs;
+    } else {
+      const mins = parseInt(value, 10) || 0;
+      totalSec = mins * 60;
+    }
+
+    this.updateSetField(entryIndex, setIndex, 'duration_sec', totalSec);
+  }
+
   addEntry(type: FitEntryType = 'strength') {
     this.item.update((current) => {
       if (!current) return current;
 
-      const nextEntries: FitEditEntryInput[] = (current.entries || []).map((entry) => ({
-        ...entry,
-        isExpanded: false,
-      }));
+      const nextEntries: FitEditEntryInput[] = (current.entries || []).map(
+        (entry) => ({
+          ...entry,
+          isExpanded: false,
+        }),
+      );
 
       nextEntries.push(this.createNewEntry(type, nextEntries.length + 1));
 
@@ -230,7 +275,6 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       if (!target) return current;
 
       const nextSets = [...(target.sets || [])];
-
       const lastSet =
         nextSets.length > 0 ? nextSets[nextSets.length - 1] : null;
 
@@ -316,6 +360,8 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       };
     });
   }
+
+  onRenameGroup() {}
 
   onEntryTypeChange(entryIndex: number, type: FitEntryType) {
     this.item.update((current) => {
@@ -463,12 +509,12 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
       id: null,
       set_no: setNo,
       weight_value: null,
-      weight_unit: '',
+      weight_unit: 'lb',
       reps_value: null,
       duration_sec: null,
       calories_value: null,
       distance_value: null,
-      distance_unit: '',
+      distance_unit: 'km',
       level_text: '',
       side_code: null,
       remarks: '',
@@ -496,12 +542,12 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
           id: set.tb_tyapp_fit_set_id,
           set_no: set.set_no ?? setIndex + 1,
           weight_value: set.weight_value ?? null,
-          weight_unit: set.weight_unit || '',
+          weight_unit: set.weight_unit || 'lb',
           reps_value: set.reps_value ?? null,
           duration_sec: set.duration_sec ?? null,
           calories_value: set.calories_value ?? null,
           distance_value: set.distance_value ?? null,
-          distance_unit: set.distance_unit || '',
+          distance_unit: set.distance_unit || 'km',
           level_text: set.level_text || '',
           side_code: set.side_code || null,
           remarks: set.remarks || '',

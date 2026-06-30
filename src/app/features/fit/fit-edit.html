@@ -168,7 +168,11 @@
                 (click)="$event.stopPropagation()"
                 [name]="'show_advanced_' + entryIndex"
                 color="primary"
-                style="transform: scale(0.9); transform-origin: left center"
+                style="
+                  transform: scale(0.9);
+                  transform-origin: left center;
+                  margin-right: 8px;
+                "
               >
                 顯示全部欄位
               </mat-slide-toggle>
@@ -207,9 +211,18 @@
                       updateEntryField(entryIndex, 'exercise_name', $event)
                     "
                     [name]="'exercise_name_' + entryIndex"
+                    [matAutocomplete]="exerciseAuto"
                     required
                     placeholder="例如：啞鈴臥推"
                   />
+                  <mat-autocomplete #exerciseAuto="matAutocomplete">
+                    @for (
+                      opt of getFilteredExercises(entry.exercise_name);
+                      track opt
+                    ) {
+                      <mat-option [value]="opt">{{ opt }}</mat-option>
+                    }
+                  </mat-autocomplete>
                 </mat-form-field>
               </div>
 
@@ -328,8 +341,7 @@
                           subscriptSizing="dynamic"
                         >
                           <mat-label>單位</mat-label>
-                          <input
-                            matInput
+                          <mat-select
                             [ngModel]="set.weight_unit"
                             (ngModelChange)="
                               updateSetField(
@@ -342,8 +354,10 @@
                             [name]="
                               'weight_unit_' + entryIndex + '_' + setIndex
                             "
-                            placeholder="lb/kg"
-                          />
+                          >
+                            <mat-option value="lb">lb</mat-option>
+                            <mat-option value="kg">kg</mat-option>
+                          </mat-select>
                         </mat-form-field>
                       }
 
@@ -384,21 +398,17 @@
                           appearance="outline"
                           subscriptSizing="dynamic"
                         >
-                          <mat-label>時間(秒)</mat-label>
+                          <mat-label>時間(mm:ss)</mat-label>
                           <input
                             matInput
-                            type="number"
-                            [ngModel]="set.duration_sec"
+                            type="text"
+                            placeholder="分:秒，例如 10:30"
+                            [ngModel]="formatSecToMmSs(set.duration_sec)"
                             (ngModelChange)="
-                              updateSetField(
-                                entryIndex,
-                                setIndex,
-                                'duration_sec',
-                                $event
-                              )
+                              updateSetDuration(entryIndex, setIndex, $event)
                             "
                             [name]="
-                              'duration_sec_' + entryIndex + '_' + setIndex
+                              'duration_str_' + entryIndex + '_' + setIndex
                             "
                           />
                         </mat-form-field>
@@ -454,8 +464,7 @@
                           subscriptSizing="dynamic"
                         >
                           <mat-label>距離單位</mat-label>
-                          <input
-                            matInput
+                          <mat-select
                             [ngModel]="set.distance_unit"
                             (ngModelChange)="
                               updateSetField(
@@ -466,8 +475,10 @@
                               )
                             "
                             [name]="'dist_unit_' + entryIndex + '_' + setIndex"
-                            placeholder="km/m"
-                          />
+                          >
+                            <mat-option value="km">km</mat-option>
+                            <mat-option value="m">m</mat-option>
+                          </mat-select>
                         </mat-form-field>
 
                         <mat-form-field
@@ -518,9 +529,7 @@
                             }
                           </mat-select>
                         </mat-form-field>
-                      }
 
-                      @if (entry.showAdvanced) {
                         <mat-form-field
                           appearance="outline"
                           subscriptSizing="dynamic"
@@ -570,3 +579,9 @@
     </div>
   }
 </div>
+
+<datalist id="exercise-names">
+  @for (name of exerciseNameSuggestions(); track name) {
+    <option [value]="name"></option>
+  }
+</datalist>

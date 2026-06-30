@@ -13,14 +13,25 @@
               <div class="thread-card__meta">{{ item.sessionDate }}</div>
             </div>
 
-            <button
-              mat-icon-button
-              type="button"
-              aria-label="Edit fit session"
-              (click)="onEdit(item.id)"
-            >
-              <mat-icon>edit</mat-icon>
-            </button>
+            <div style="display: flex; gap: 4px;">
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Copy to clipboard"
+                (click)="copyText(item.text)"
+              >
+                <mat-icon>content_copy</mat-icon>
+              </button>
+
+              <button
+                mat-icon-button
+                type="button"
+                aria-label="Edit fit session"
+                (click)="onEdit(item.id)"
+              >
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
           </div>
 
           <pre class="thread-card__body">{{ item.text }}</pre>
