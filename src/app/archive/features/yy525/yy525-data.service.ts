@@ -1,6 +1,6 @@
 import { Injectable, signal, NgZone, inject } from '@angular/core';
 import { YyemsRaw, VendorRaw, AccountRaw, YyemsRecord } from './yy525.model';
-import { EXCHANGE_RATES, YY525_SOURCE } from '../../app.constants';
+import { YY525_SOURCE, EXCHANGE_RATES } from '../../../app.constants';
 
 @Injectable({ providedIn: 'root' })
 export class Yy525DataService {

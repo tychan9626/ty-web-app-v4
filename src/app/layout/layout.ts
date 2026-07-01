@@ -31,6 +31,7 @@ interface MenuGroup {
   title: string;
   icon: string;
   adminOnly: boolean;
+  defaultExpanded?: boolean;
   links: MenuLink[];
 }
 
@@ -102,50 +103,41 @@ export class Layout {
         { title: 'Fit Thread', route: '/fit/thread' },
       ],
     },
-    // {
-    //   title: 'YY525 Family',
-    //   icon: 'account_balance',
-    //   adminOnly: false,
-    //   links: [
-    //     {
-    //       title: 'YYEMS Analytics Overview',
-    //       route: '/yy525/yyems-analytics/overview',
-    //     },
-    //     {
-    //       title: 'YYEMS Analytics Monthly',
-    //       route: '/yy525/yyems-analytics/monthly',
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: 'TyWeb',
-    //   icon: 'web',
-    //   adminOnly: false,
-    //   links: [{ title: 'Content Manager', route: '/tyweb/content' }],
-    // },
-    // {
-    //   title: 'Wealth Management',
-    //   icon: 'account_balance_wallet',
-    //   adminOnly: false,
-    //   links: [
-    //     { title: 'Transactions', route: '/wealth/list' },
-    //     { title: 'Snapshots', route: '/wealth/snapshots' },
-    //   ],
-    // },
     {
       title: 'User Management',
       icon: 'people_outline',
       adminOnly: true,
+      defaultExpanded: false,
       links: [{ title: 'User List', route: '/users/list' }],
     },
     {
       title: 'Development',
       icon: 'code',
       adminOnly: true,
+      defaultExpanded: false,
       links: [
         { title: 'App Categories', route: '/development/category/list' },
         { title: 'App Functions', route: '/development/function/list' },
         { title: 'App Logs', route: '/development/log/list' },
+      ],
+    },
+    {
+      title: 'Archive',
+      icon: 'folder',
+      adminOnly: false,
+      defaultExpanded: false,
+      links: [
+        {
+          title: 'YYEMS Analytics Overview',
+          route: '/archive/yy525/yyems-analytics/overview',
+        },
+        {
+          title: 'YYEMS Analytics Monthly',
+          route: '/archive/yy525/yyems-analytics/monthly',
+        },
+        { title: 'TyWeb Content Manager', route: '/archive/tyweb/content' },
+        { title: 'Wealth Transactions', route: '/archive/wealth/list' },
+        { title: 'Wealth Snapshots', route: '/archive/wealth/snapshots' },
       ],
     },
   ];

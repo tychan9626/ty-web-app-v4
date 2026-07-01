@@ -21,7 +21,7 @@
       <nav class="nav-container">
         @for (group of navMenu(); track group.title) {
           <mat-accordion displayMode="flat">
-            <mat-expansion-panel class="nav-panel" [expanded]="true">
+            <mat-expansion-panel class="nav-panel" [expanded]="group.defaultExpanded ?? true">
               <mat-expansion-panel-header>
                 <mat-panel-title>
                   <mat-icon>{{ group.icon }}</mat-icon>

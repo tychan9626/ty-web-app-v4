@@ -9,6 +9,7 @@ import { HeaderService } from '../../core/services/header.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { FitService } from './fit.service';
 import { FitSessionDetail } from './fit.model';
+import { MatCardModule } from '@angular/material/card';
 
 type FitThreadItemVm = {
   id: string;
@@ -27,6 +28,7 @@ type FitThreadItemVm = {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatCardModule,
   ],
   templateUrl: './fit-thread.html',
   styleUrl: './fit-thread.scss',

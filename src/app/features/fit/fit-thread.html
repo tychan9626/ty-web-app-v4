@@ -1,50 +1,57 @@
-<div class="thread-page">
-  <div class="thread-container">
-    @if (loading()) {
-      <div class="empty-placeholder">
-        <mat-spinner diameter="32"></mat-spinner>
-      </div>
-    } @else {
-      @for (item of threadItems(); track item.id) {
-        <article class="thread-card">
-          <div class="thread-card__header">
-            <div>
-              <h2 class="thread-card__title">{{ item.title }}</h2>
-              <div class="thread-card__meta">{{ item.sessionDate }}</div>
-            </div>
+<div class="feed-container">
+  @if (loading()) {
+    <div style="text-align: center; padding: 40px;">
+      <mat-spinner diameter="32" style="margin: 0 auto;"></mat-spinner>
+    </div>
+  } @else {
+    @for (item of threadItems(); track item.id) {
+      <mat-card class="feed-card">
+        <mat-card-header class="custom-header">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              width: 100%;
+              align-items: flex-start;
+              gap: 8px;
+            "
+          >
+            <div class="article-title">{{ item.title }}</div>
 
-            <div style="display: flex; gap: 4px;">
+            <div style="display: flex; gap: 4px; margin-top: -8px; margin-right: -8px; flex-shrink: 0;">
               <button
                 mat-icon-button
-                type="button"
-                aria-label="Copy to clipboard"
                 (click)="copyText(item.text)"
+                style="color: var(--mat-sys-outline);"
               >
                 <mat-icon>content_copy</mat-icon>
               </button>
-
               <button
                 mat-icon-button
-                type="button"
-                aria-label="Edit fit session"
                 (click)="onEdit(item.id)"
+                style="color: var(--mat-sys-outline);"
               >
                 <mat-icon>edit</mat-icon>
               </button>
             </div>
           </div>
 
-          <pre class="thread-card__body">{{ item.text }}</pre>
-
-          <div class="thread-card__footer">
-            <span class="status-tag" [class.inactive]="item.status === 0">
-              {{ item.status === 1 ? 'Active' : 'Inactive' }}
-            </span>
+          <div class="article-meta">
+            {{ item.sessionDate }}
+            @if (item.status === 0) {
+              <span style="color: #e74c3c; margin-left: 4px;">· Inactive</span>
+            }
           </div>
-        </article>
-      } @empty {
-        <div class="empty-placeholder">No fit sessions found.</div>
-      }
+        </mat-card-header>
+
+        <mat-card-content style="padding: 0 16px 16px 16px !important">
+          <div class="article-body">{{ item.text }}</div>
+        </mat-card-content>
+      </mat-card>
+    } @empty {
+      <div style="text-align: center; padding: 40px; color: gray">
+        No fit sessions found.
+      </div>
     }
-  </div>
+  }
 </div>

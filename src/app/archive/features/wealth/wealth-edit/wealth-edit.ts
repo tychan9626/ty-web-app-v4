@@ -16,9 +16,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { WealthService } from '../wealth.service';
-import { AuthService } from '../../../core/services/auth.service';
-import { HeaderService } from '../../../core/services/header.service';
 import { WealthTransaction, TransactionType } from '../wealth.model';
+import { HeaderService } from '../../../../core/services/header.service';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-wealth-edit',

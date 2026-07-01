@@ -25,8 +25,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 
 import { Yy525DataService } from '../yy525-data.service';
 import { YyemsRecord } from '../yy525.model';
-import { HeaderService } from '../../../core/services/header.service';
-import { AuthService } from '../../../core/services/auth.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { HeaderService } from '../../../../core/services/header.service';
 
 @Component({
   selector: 'app-yyems-analytics-monthly',

@@ -9,15 +9,14 @@ import { MatCardModule } from '@angular/material/card';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
-
-import { WealthService } from '../wealth.service';
-import { HeaderService } from '../../../core/services/header.service';
-import { WealthTransaction } from '../wealth.model';
-import { CurrencyZhPipe } from '../currency-zh.pipe';
-import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
-import { InstitutionLogoPipe } from '../institution-logo.pipe';
-import { UserService } from '../../user/user.service';
 import html2canvas from 'html2canvas';
+import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
+import { HeaderService } from '../../../../core/services/header.service';
+import { UserService } from '../../../../features/user/user.service';
+import { CurrencyZhPipe } from '../currency-zh.pipe';
+import { InstitutionLogoPipe } from '../institution-logo.pipe';
+import { WealthTransaction } from '../wealth.model';
+import { WealthService } from '../wealth.service';
 
 @Component({
   selector: 'app-wealth-list',

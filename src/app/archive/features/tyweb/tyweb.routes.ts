@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
-import { unsavedChangesGuard } from '../../core/guards/unsaved-changes.guard';
 import { TyWebContentManager } from './content-manager';
+import { unsavedChangesGuard } from '../../../core/guards/unsaved-changes.guard';
 
 export const TYWEB_ROUTES: Routes = [
   {

@@ -1,7 +1,7 @@
 import { Injectable, inject, NgZone, signal } from '@angular/core';
-import { SupabaseService } from '../../core/services/supabase.service';
-import { NotificationService } from '../../core/services/notification.service';
 import { WealthTransaction, AssetSnapshot } from './wealth.model';
+import { NotificationService } from '../../../core/services/notification.service';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Injectable({ providedIn: 'root' })
 export class WealthService {

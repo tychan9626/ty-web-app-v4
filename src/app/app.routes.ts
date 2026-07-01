@@ -87,24 +87,35 @@ export const routes: Routes = [
         ],
       },
       {
-        path: 'tyweb',
-        loadChildren: () =>
-          import('./features/tyweb/tyweb.routes').then((m) => m.TYWEB_ROUTES),
-      },
-      {
-        path: 'yy525',
-        loadChildren: () =>
-          import('./features/yy525/yy525.routes').then((m) => m.YY525_ROUTES),
-      },
-      {
-        path: 'wealth',
-        loadChildren: () =>
-          import('./features/wealth/wealth.routes').then((m) => m.WEALTH_ROUTES),
-      },
-      {
         path: 'fit',
         loadChildren: () =>
           import('./features/fit/fit.routes').then((m) => m.FIT_ROUTES),
+      },
+      {
+        path: 'archive',
+        children: [
+          {
+            path: 'tyweb',
+            loadChildren: () =>
+              import('./archive/features/tyweb/tyweb.routes').then(
+                (m) => m.TYWEB_ROUTES,
+              ),
+          },
+          {
+            path: 'yy525',
+            loadChildren: () =>
+              import('./archive/features/yy525/yy525.routes').then(
+                (m) => m.YY525_ROUTES,
+              ),
+          },
+          {
+            path: 'wealth',
+            loadChildren: () =>
+              import('./archive/features/wealth/wealth.routes').then(
+                (m) => m.WEALTH_ROUTES,
+              ),
+          },
+        ],
       },
     ],
   },

@@ -6,7 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { WealthService } from '../wealth.service';
-import { HeaderService } from '../../../core/services/header.service';
+import { HeaderService } from '../../../../core/services/header.service';
 
 @Component({
   selector: 'app-asset-snapshot',

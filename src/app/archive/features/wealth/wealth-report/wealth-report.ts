@@ -5,12 +5,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { WealthService } from '../wealth.service';
-import { HeaderService } from '../../../core/services/header.service';
-import { DisplayNamePipe } from '../../../core/pipes/display-name.pipe';
 import { CurrencyZhPipe } from '../currency-zh.pipe';
-import { UserService } from '../../user/user.service';
+
 import html2canvas from 'html2canvas';
 import { formatInTimeZone } from 'date-fns-tz';
+import { DisplayNamePipe } from '../../../../core/pipes/display-name.pipe';
+import { HeaderService } from '../../../../core/services/header.service';
+import { UserService } from '../../../../features/user/user.service';
 
 @Component({
   selector: 'app-wealth-report',
@@ -21,7 +22,6 @@ import { formatInTimeZone } from 'date-fns-tz';
     MatIconModule,
     MatProgressSpinnerModule,
     DisplayNamePipe,
-    CurrencyZhPipe,
   ],
   templateUrl: './wealth-report.html',
   styleUrl: './wealth-report.scss',

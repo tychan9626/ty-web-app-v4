@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { SupabaseService } from '../../core/services/supabase.service';
 import { TyWebIntroUserProfile } from './tyweb.model';
+import { SupabaseService } from '../../../core/services/supabase.service';
 
 @Injectable({
   providedIn: 'root',

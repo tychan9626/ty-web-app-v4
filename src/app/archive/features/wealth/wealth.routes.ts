@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { unsavedChangesGuard } from '../../core/guards/unsaved-changes.guard';
+import { unsavedChangesGuard } from '../../../core/guards/unsaved-changes.guard';
 
 export const WEALTH_ROUTES: Routes = [
   {
