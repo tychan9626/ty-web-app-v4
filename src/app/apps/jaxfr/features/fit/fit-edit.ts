@@ -20,6 +20,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {
+  CdkDrag,
+  CdkDragDrop,
+  CdkDragHandle,
+  CdkDropList,
+  moveItemInArray,
+} from '@angular/cdk/drag-drop';
 
 import {
   HeaderAction,
@@ -60,6 +67,9 @@ type FitEditVm = Omit<FitEditSessionInput, 'session_date'> & {
     MatDatepickerModule,
     MatSlideToggleModule,
     MatAutocompleteModule,
+    CdkDropList,
+    CdkDrag,
+    CdkDragHandle,
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './fit-edit.html',
@@ -349,6 +359,50 @@ export class FitEdit implements OnInit, OnDestroy, DoCheck {
         })),
       };
     });
+  }
+
+  moveEntry(index: number, direction: -1 | 1) {
+    this.item.update((current) => {
+      if (!current) return current;
+
+      const nextEntries = [...(current.entries || [])];
+      const swapIndex = index + direction;
+      if (index < 0 || swapIndex < 0 || swapIndex >= nextEntries.length) {
+        return current;
+      }
+
+      const temp = nextEntries[index];
+      nextEntries[index] = nextEntries[swapIndex];
+      nextEntries[swapIndex] = temp;
+
+      return {
+        ...current,
+        entries: this.reindexEntries(nextEntries),
+      };
+    });
+  }
+
+  onEntryDrop(event: CdkDragDrop<FitEditEntryInput[]>) {
+    if (event.previousIndex === event.currentIndex) return;
+
+    this.item.update((current) => {
+      if (!current) return current;
+
+      const nextEntries = [...(current.entries || [])];
+      moveItemInArray(nextEntries, event.previousIndex, event.currentIndex);
+
+      return {
+        ...current,
+        entries: this.reindexEntries(nextEntries),
+      };
+    });
+  }
+
+  private reindexEntries(entries: FitEditEntryInput[]): FitEditEntryInput[] {
+    return entries.map((entry, i) => ({
+      ...entry,
+      sort_order: i + 1,
+    }));
   }
 
   addSet(entryIndex: number) {

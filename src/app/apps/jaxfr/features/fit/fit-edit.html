@@ -88,59 +88,104 @@
           </div>
         </div>
 
-        @for (
-          entry of fit.entries;
-          track entry.id || $index;
-          let entryIndex = $index
-        ) {
-          <section class="entry-block">
-            <div
-              class="entry-block__header"
-              (click)="
-                updateEntryField(entryIndex, 'isExpanded', !entry.isExpanded)
-              "
-            >
-              <div class="entry-block__title-row">
-                <mat-icon class="expand-icon">
-                  {{ entry.isExpanded ? "expand_less" : "expand_more" }}
-                </mat-icon>
-                <h4>項目 {{ entryIndex + 1 }}</h4>
-                <span class="entry-type-chip">
-                  {{ getEntryTypeLabel(entry.entry_type) }}
-                </span>
-
-                @if (!entry.isExpanded && entry.exercise_name) {
-                  <span class="entry-name-preview">
-                    {{ entry.exercise_name }}
-                  </span>
-                  <span class="entry-sets-count-preview">
-                    ({{ entry.sets.length }} 組)
-                  </span>
-                }
-              </div>
-
-              <mat-slide-toggle
-                [ngModel]="entry.showAdvanced"
-                (ngModelChange)="
-                  updateEntryField(entryIndex, 'showAdvanced', $event)
+        <div
+          class="entries-drop-list"
+          cdkDropList
+          [cdkDropListData]="fit.entries"
+          (cdkDropListDropped)="onEntryDrop($event)"
+        >
+          @for (
+            entry of fit.entries;
+            track entry.id || $index;
+            let entryIndex = $index;
+            let first = $first;
+            let last = $last
+          ) {
+            <section class="entry-block" cdkDrag>
+              <div
+                class="entry-block__header"
+                (click)="
+                  updateEntryField(entryIndex, 'isExpanded', !entry.isExpanded)
                 "
-                (click)="$event.stopPropagation()"
-                [name]="'show_advanced_' + entryIndex"
-                color="primary"
-                class="advanced-toggle"
               >
-                顯示全部欄位
-              </mat-slide-toggle>
+                <button
+                  mat-icon-button
+                  type="button"
+                  class="entry-drag-handle"
+                  cdkDragHandle
+                  title="拖曳調整順序"
+                  aria-label="拖曳調整順序"
+                  (click)="$event.stopPropagation()"
+                >
+                  <mat-icon>drag_indicator</mat-icon>
+                </button>
 
-              <button
-                mat-button
-                type="button"
-                color="warn"
-                (click)="$event.stopPropagation(); removeEntry(entryIndex)"
-              >
-                刪除
-              </button>
-            </div>
+                <div class="entry-block__title-row">
+                  <mat-icon class="expand-icon">
+                    {{ entry.isExpanded ? "expand_less" : "expand_more" }}
+                  </mat-icon>
+                  <h4>項目 {{ entryIndex + 1 }}</h4>
+                  <span class="entry-type-chip">
+                    {{ getEntryTypeLabel(entry.entry_type) }}
+                  </span>
+
+                  @if (!entry.isExpanded && entry.exercise_name) {
+                    <span class="entry-name-preview">
+                      {{ entry.exercise_name }}
+                    </span>
+                    <span class="entry-sets-count-preview">
+                      ({{ entry.sets.length }} 組)
+                    </span>
+                  }
+                </div>
+
+                <div
+                  class="entry-block__actions"
+                  (click)="$event.stopPropagation()"
+                >
+                  <button
+                    mat-icon-button
+                    type="button"
+                    title="上移"
+                    aria-label="上移"
+                    [disabled]="first"
+                    (click)="moveEntry(entryIndex, -1)"
+                  >
+                    <mat-icon>arrow_upward</mat-icon>
+                  </button>
+                  <button
+                    mat-icon-button
+                    type="button"
+                    title="下移"
+                    aria-label="下移"
+                    [disabled]="last"
+                    (click)="moveEntry(entryIndex, 1)"
+                  >
+                    <mat-icon>arrow_downward</mat-icon>
+                  </button>
+
+                  <mat-slide-toggle
+                    [ngModel]="entry.showAdvanced"
+                    (ngModelChange)="
+                      updateEntryField(entryIndex, 'showAdvanced', $event)
+                    "
+                    [name]="'show_advanced_' + entryIndex"
+                    color="primary"
+                    class="advanced-toggle"
+                  >
+                    顯示全部欄位
+                  </mat-slide-toggle>
+
+                  <button
+                    mat-button
+                    type="button"
+                    color="warn"
+                    (click)="removeEntry(entryIndex)"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </div>
 
             @if (entry.isExpanded) {
               <div class="fields-grid-2">
@@ -550,13 +595,14 @@
                   <div class="empty-inline-note">目前沒有任何組數。</div>
                 }
               </div>
-            }
-          </section>
-        } @empty {
-          <div class="empty-inline-note">
-            目前還沒有訓練項目，請點擊上方導覽列的「新增項目」開始。
-          </div>
-        }
+              }
+            </section>
+          } @empty {
+            <div class="empty-inline-note">
+              目前還沒有訓練項目，請點擊上方導覽列的「新增項目」開始。
+            </div>
+          }
+        </div>
       </section>
     </div>
   }
