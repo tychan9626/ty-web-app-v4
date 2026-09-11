@@ -3,6 +3,7 @@
 @use "app/styles/shared-list";
 @use "app/styles/shared-form";
 @use "app/styles/aero-controls";
+@use "app/styles/aero-motion";
 @use "app/apps/jaxfr/features/daily-log/daily-log-theme" as dl;
 
 @include dl.log-globals;

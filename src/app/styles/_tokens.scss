@@ -42,14 +42,19 @@ html {
   --app-input-shadow: inset 1px 1px 2px rgba(0, 40, 80, 0.12);
   --app-button-bg: linear-gradient(180deg, #f7fbff 0%, #d5e6f4 48%, #b7cfe4 100%);
   --app-button-bg-hover: linear-gradient(180deg, #fff 0%, #e3f2fc 50%, #c5e0f4 100%);
+  --app-button-bg-pressed: linear-gradient(180deg, #c5d8ea 0%, #a8c0d6 48%, #92aec8 100%);
   --app-button-border: #6a8aaa;
   --app-button-shadow: inset 0 1px 0 #fff, 0 1px 1px rgba(0, 0, 0, 0.12);
+  --app-button-pressed-shadow: inset 0 2px 4px rgba(0, 40, 80, 0.28);
   --app-button-primary-bg: linear-gradient(180deg, #7ec4f5 0%, #2f7dcc 48%, #1b5fa8 100%);
   --app-button-primary-bg-hover: linear-gradient(180deg, #9ad2fa 0%, #3b8fe0 48%, #226bb8 100%);
+  --app-button-primary-bg-pressed: linear-gradient(180deg, #1b5fa8 0%, #226bb8 48%, #185090 100%);
   --app-button-primary-border: #2b5c8a;
   --app-button-primary-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.35),
     0 1px 1px rgba(0, 0, 0, 0.12);
+  --app-button-primary-pressed-shadow: inset 0 2px 4px rgba(0, 20, 50, 0.4);
+  --app-tile-pressed-bg: linear-gradient(180deg, #c5dceb 0%, #b0cee4 100%);
   --app-button-disabled-bg: linear-gradient(180deg, #f4f5f6 0%, #e4e6e8 48%, #d0d3d6 100%);
   --app-button-disabled-border: #b4bac0;
   --app-button-disabled-text: #8a8f94;
@@ -104,13 +109,22 @@ html.theme-aero.mode-dark {
   --app-input-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.35);
   --app-button-bg: linear-gradient(180deg, #3a5874 0%, #2a4258 48%, #1e3246 100%);
   --app-button-bg-hover: linear-gradient(180deg, #4a6c8c 0%, #34506a 50%, #263c54 100%);
+  --app-button-bg-pressed: linear-gradient(180deg, #1e3246 0%, #182836 48%, #121e2a 100%);
   --app-button-border: #6a8aaa;
   --app-button-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 1px 1px rgba(0, 0, 0, 0.28);
+  --app-button-pressed-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
   --app-button-primary-bg: linear-gradient(180deg, #5aa8e0 0%, #2f7dcc 48%, #1b5fa8 100%);
   --app-button-primary-bg-hover: linear-gradient(180deg, #7ec4f5 0%, #3b8fe0 48%, #226bb8 100%);
+  --app-button-primary-bg-pressed: linear-gradient(180deg, #1b5fa8 0%, #185090 48%, #124078 100%);
+  --app-button-primary-pressed-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
   --app-button-disabled-bg: linear-gradient(180deg, #2a3440 0%, #222a33 48%, #1b222a 100%);
   --app-button-disabled-border: #4a5560;
   --app-button-disabled-text: #7a858f;
+  --app-tile-pressed-bg: linear-gradient(
+    180deg,
+    rgba(20, 40, 60, 0.65),
+    rgba(12, 24, 36, 0.75)
+  );
   --app-overlay-bg: linear-gradient(180deg, #243a4e 0%, #1a2e40 100%);
   --app-overlay-border: rgba(160, 196, 224, 0.35);
   --app-overlay-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);

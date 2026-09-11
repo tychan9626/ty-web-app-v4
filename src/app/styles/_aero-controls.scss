@@ -11,10 +11,15 @@ html.theme-aero {
       --mdc-filled-button-label-text-color: var(--app-accent-contrast);
       --mdc-filled-button-icon-color: var(--app-accent-contrast);
       --mdc-filled-button-disabled-container-color: transparent;
+      transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
     }
 
     button.mat-mdc-unelevated-button:not(.action-btn):hover:not(:disabled) {
       @include aero.gloss-primary-surface-hover;
+    }
+
+    button.mat-mdc-unelevated-button:not(.action-btn):active:not(:disabled) {
+      @include aero.gloss-primary-pressed-surface;
     }
 
     button.mat-mdc-unelevated-button:not(.action-btn):disabled {
@@ -38,10 +43,15 @@ html.theme-aero {
       --mdc-outlined-button-outline-color: transparent;
       --mdc-outlined-button-label-text-color: var(--app-text-primary);
       --mdc-outlined-button-hover-label-text-color: var(--app-text-primary);
+      transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
     }
 
     button.mat-mdc-outlined-button:hover:not(:disabled) {
       @include aero.gloss-surface-hover;
+    }
+
+    button.mat-mdc-outlined-button:active:not(:disabled) {
+      @include aero.gloss-pressed-surface;
     }
 
     button.shortcut-btn.mat-mdc-button,
@@ -54,6 +64,7 @@ html.theme-aero {
       --mdc-text-button-label-text-color: var(--app-text-primary);
       --mdc-outlined-button-outline-color: transparent;
       --mdc-outlined-button-label-text-color: var(--app-text-primary);
+      transition: background 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
     }
 
     button.shortcut-btn.mat-mdc-button:hover:not(:disabled),
@@ -61,11 +72,25 @@ html.theme-aero {
       @include aero.gloss-surface-hover;
     }
 
+    button.shortcut-btn.mat-mdc-button:active:not(:disabled),
+    button.shortcut-btn.mat-mdc-outlined-button:active:not(:disabled) {
+      @include aero.gloss-pressed-surface;
+    }
+
     button.shortcut-btn.mat-mdc-button:disabled,
     button.shortcut-btn.mat-mdc-outlined-button:disabled {
       @include aero.gloss-disabled-surface;
       --mdc-text-button-label-text-color: var(--app-button-disabled-text);
       --mdc-outlined-button-label-text-color: var(--app-button-disabled-text);
+    }
+
+    button.mat-mdc-icon-button {
+      transition: color 0.12s ease, opacity 0.12s ease, transform 0.1s ease;
+    }
+
+    button.mat-mdc-icon-button:active:not(:disabled) {
+      opacity: 0.72;
+      transform: scale(0.92);
     }
 
     .mat-mdc-paginator {
@@ -95,6 +120,10 @@ html.theme-aero {
   button.mat-mdc-menu-item:hover,
   button.mat-mdc-menu-item.mat-mdc-menu-item-highlighted {
     background: var(--app-tile-hover-bg);
+  }
+
+  button.mat-mdc-menu-item:active {
+    background: var(--app-tile-pressed-bg);
   }
 }
 
